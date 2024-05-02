@@ -1,0 +1,114 @@
+IGUI_CH = {
+	--[[roleplay
+		texts that are just describing what the survivor is doing
+	]]--
+
+
+		IGUI_SS_Drinking = "���Τ�...",
+		IGUI_SS_EatFood_Before = "�Y ",
+		IGUI_SS_EatFood_After = "",
+		IGUI_SS_Opens_Before = "���} ",
+		IGUI_SS_Opens_After = "",
+		IGUI_SS_Takes_Before = "�B�� ",
+		IGUI_SS_Takes_After = "",
+		IGUI_SS_EquipsArmor = "��W��A",
+		IGUI_SS_EquipsArmor_Before = "*�˳� ",
+		IGUI_SS_EquipsArmor_After = "*",
+		IGUI_SS_TakesItemFromGround_Before = "����",
+		IGUI_SS_TakesItemFromGround_After = " �q�a��",
+		IGUI_SS_TakesFromGround_Before = "*�B�� ",
+		IGUI_SS_TakesFromGround_After = " �q�a���W*",
+		IGUI_SS_TakesFromCont_Before = "*�B�� ",
+		IGUI_SS_TakesFromCont_After = " �q �e����*",
+		IGUI_SS_UndressingClothes = "*��U��A*",
+		IGUI_SS_PickUpCorpse = "*�q�a���h�B����*",
+		IGUI_SS_Resting = "�𮧤�...",
+		IGUI_SS_BandageBP_Before = "���^�a�]�Ϥ�...",
+		IGUI_SS_BandageBP_After = "",
+		IGUI_SS_DoctorSplint = "*�T�w���O��...*",
+		IGUI_SS_DoctorBandageRemove = "*�����^�a��...*",
+		IGUI_SS_DoctorStitches = "*�_�X�ˤf��*",
+		IGUI_SS_DoctorGlass = "*���X������...*",
+		IGUI_SS_DoctorBullet = "*���X�u����...*",
+		IGUI_SS_DoctorBandage = "*�ϥ��^�a��...*",
+		IGUI_SS_Foraging = "*���~�Ķ���...",
+		IGUI_SS_FarmingActionPlanting = "*�N�ؤl�I�i�g�[��...*",
+		IGUI_SS_FarmingActionHarvesting = "*���ιA�@����...*",
+		IGUI_SS_FarmingActionWatering = "*�����...*",
+	--[[END roleplay]]--
+
+	--[[starting tasks
+		dialogue lines that indicate the start of a task
+	]]--
+
+
+		IGUI_SS_IGoRelax = "�ڲq�ڥi�H�y�L���P�@�U",
+		IGUI_SS_IGoGetWood = "�ڲq�ڸӥh��������F",
+		IGUI_SS_IGoPileCorpse = "�ڲq�ڸӥh�B�z����F",
+		IGUI_SS_IGoForage = "�ڲq�ڸӥh���~�Ķ��F",
+		IGUI_SS_IGoChopWood = "�ڲq�ڸӥh�����F",
+		IGUI_SS_IGoFarm = "�ڲq�ڸӥh�Ѻإж�F",
+		IGUI_SS_IGoGuard = "�ڲq�ڸӥhĵ�٨��ޤF",
+		IGUI_SS_IGoBackBase = "�ڲq�ڸӪ�^��a�F",
+	--[[END starting tasks]]--
+
+	--[[loot
+		dialogue lines that indicate the start of a loot task
+	]]--
+
+
+		IGUI_SS_LookForItem_Before = "�n�M�� ",
+		IGUI_SS_LookForItem_After = "",
+		IGUI_SS_NoForagingHere = "�ڦb�o��䤣�����F��",
+		IGUI_SS_NoFindItem_Before = "�n�����O ",
+		IGUI_SS_NoFindItem_After = " �b�o�P��",
+		IGUI_SS_NoWoodHere = "�P��èS�����",
+	--[[END loot]]--
+
+	--[[giving
+		dialogue lines that indicate a giving item task
+	]]--
+
+
+		IGUI_SS_TakeArmor = "�L�Ө��o���A",
+		IGUI_SS_Nothing = "�L",
+		IGUI_SS_EveryOneUseMelee = "�j�a���ϥΪ�ԪZ��!",
+		IGUI_SS_EveryOneUseGun = "�j�a���ϥκj��!",
+		IGUI_SS_WantSomeFood = "�ݭn������?",
+		IGUI_SS_YouWantWater = "�ݭn������?",
+		IGUI_SS_YouWantAmmo = "�ݭn�u�Ļ�?",
+		IGUI_SS_TakeMyWeapon = "�L�Ө��o��Z��",
+	--[[END giving]]--
+
+	--[[interactions
+		dialogue lines that indicate a giving item task
+	]]--
+
+
+		IGUI_SS_OverHere = "��! �o��!",
+		IGUI_SS_HoldStill = "�еy������...",
+		IGUI_SS_ComeWithMe_Before = "",
+		IGUI_SS_ComeWithMe_After = ", ��ڹL��!",
+		IGUI_SS_CallName_Before = "",
+		IGUI_SS_CallName_After = "! �L��!",
+		IGUI_SS_CanIJoin = "�ڥi�H�[�J�A���ζ���?",
+		IGUI_SS_YouWantToJoin = "�Q�[�J�ڪ��ζ���?",
+		IGUI_SS_WeBackToBase = "�^�a�u�n",
+		IGUI_SS_DoctorDone = "���n�o�{�ή�!���P��!",
+	--[[END interactions]]--
+
+	--[[not able to do
+		dialogue lines that indicate that the task couldn't be done
+	]]--
+
+
+		IGUI_SS_NotInBuilding = "�ڭ̤��b�@�ɫؿv�̭�",
+		IGUI_SS_NoTrees = "�P��èS����",
+		IGUI_SS_NoAxeNoChopWood = "��B���䤣���l�A�����...",
+		IGUI_SS_CantCarryMore = "����a���F��h���F���",
+		IGUI_SS_NoFarmingArea = "�S�����w���A�~��",
+		IGUI_SS_IDontKnowHowFarming = "�ڤ����D�Ӧp��Ѻ�"
+	--[[END not able to do]]--
+
+}
+
