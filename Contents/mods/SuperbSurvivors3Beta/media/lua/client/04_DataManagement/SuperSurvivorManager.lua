@@ -9,6 +9,7 @@ function SuperSurvivorManager:new()
 	setmetatable(o, self)
 	self.__index = self
 
+	o.SuperSurvivors = {}
 	o.SurvivorCount = 3
 	o.MainPlayer = 0
 
@@ -157,7 +158,7 @@ function SuperSurvivorManager:spawnSurvivor(isFemale, square)
 		local newSurvivor = SuperSurvivor:newSurvivor(isFemale, square)
 		if not newSurvivor then return nil end
 
-		-- Replaced Iteration -- This is busted, it causes ai to overwrite each other making shells
+		-- Replaced Iteration
 		-- for idx = 1, Limit_Npcs_Spawn + 10, 1 do
 		-- 	CreateLogLine("Spawn Survivor", true, "Looping to find idx to spawn surivor " .. tostring(idx));
 		-- 	if not self.SuperSurvivors[idx] then

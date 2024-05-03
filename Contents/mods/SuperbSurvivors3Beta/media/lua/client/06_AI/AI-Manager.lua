@@ -152,7 +152,7 @@ function AIEssentialTasks(TaskMangerIn)
 		return false
 	end
 	-- if checkAiTaskIs(TaskMangerIn, "Follow") then return false end -- Need to follow must not return early because we can allow other tasks while follow is the active
-	-- DO NOT RETURN AFTER NEED TO FOLLOW, ALLOW OTHER TASKS TO OCCUR
+
 
 	-- Reequip Gun Tasks - I dont know what this does. 
 	-- It just rerequips gun if you run out of ammo for current gun and can equip the last one you had?
