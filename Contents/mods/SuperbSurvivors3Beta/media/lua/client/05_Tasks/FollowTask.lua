@@ -149,16 +149,16 @@ function FollowTask:update()
 		return -- We do not need to process further if NPC is in the same car as player
 	end
 
-	if 
-		-- not self.InBaseAtStart and -- Redundant phase out completely
-		self.parent:isInBase() and -- Maybe should phase this out -- Kinda annoying to get them to refollow
-		not self.parent:Get():getVehicle()
-	then			
-		self.Complete = true
+	-- if 
+	-- 	-- not self.InBaseAtStart and -- Redundant phase out completely
+	-- 	self.parent:isInBase() and -- Maybe should phase this out -- Kinda annoying to get them to refollow
+	-- 	not self.parent:Get():getVehicle()
+	-- then			
+	-- 	self.Complete = true
 
-		self.parent:Speak(Get_SS_UIActionText("WeBackToBase"))
-		return -- We do not need to process further if we are done
-	end
+	-- 	self.parent:Speak(Get_SS_UIActionText("WeBackToBase"))
+	-- 	return -- We do not need to process further if we are done
+	-- end
 
 
 	if distance > GFollowDistance + self.FollowDistanceOffset + 5 
