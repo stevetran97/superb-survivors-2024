@@ -9,8 +9,7 @@ function SuperSurvivorManager:new()
 	setmetatable(o, self)
 	self.__index = self
 
-	o.SuperSurvivors = {}
-	-- o.SurvivorCount = 3
+	o.SurvivorCount = 3
 	o.MainPlayer = 0
 
 	return o
@@ -88,15 +87,14 @@ function SuperSurvivorManager:LoadSurvivor(ID, square)
 			self.SuperSurvivors[ID]:setHostile(true)
 		end
 
-		-- Old Logic to count number of survivors - No longer needed - it was phased out
-		-- if (self.SurvivorCount == nil) then
-		-- 	self.SurvivorCount = 1
-		-- end
+		if (self.SurvivorCount == nil) then
+			self.SurvivorCount = 1
+		end
 
-		-- if (ID > self.SurvivorCount) then
-		-- 	self.SurvivorCount = ID;
-		-- end
-		-- 
+		if (ID > self.SurvivorCount) then
+			self.SurvivorCount = ID;
+		end
+		
 
 		self.SuperSurvivors[ID].player:getModData().LastSquareSaveX = nil
 		self.SuperSurvivors[ID]:SaveSurvivor()
@@ -159,26 +157,24 @@ function SuperSurvivorManager:spawnSurvivor(isFemale, square)
 		local newSurvivor = SuperSurvivor:newSurvivor(isFemale, square)
 		if not newSurvivor then return nil end
 
-		-- Replaced Iteration
-		for idx = 1, Limit_Npcs_Spawn + 10, 1 do
-			CreateLogLine("Spawn Survivor", true, "Looping to find idx to spawn surivor " .. tostring(idx));
-			if not self.SuperSurvivors[idx] then
-				CreateLogLine("Spawn Survivor", true, "Found empty idx at " .. tostring(idx));
-				self.SuperSurvivors[idx] = newSurvivor
-				self.SuperSurvivors[idx]:setID(idx)
-				CreateLogLine("Spawn Survivor", true, "New Survivor " .. tostring(self.SuperSurvivors[idx]));
-				return self.SuperSurvivors[idx]
-			end
-		end
-		-- 
-		CreateLogLine("Error", true, "Error spawning New Survivor: could not find empty idx to spawn survivor... ");
+		-- Replaced Iteration -- This is busted, it causes ai to overwrite each other making shells
+		-- for idx = 1, Limit_Npcs_Spawn + 10, 1 do
+		-- 	CreateLogLine("Spawn Survivor", true, "Looping to find idx to spawn surivor " .. tostring(idx));
+		-- 	if not self.SuperSurvivors[idx] then
+		-- 		CreateLogLine("Spawn Survivor", true, "Found empty idx at " .. tostring(idx));
+		-- 		self.SuperSurvivors[idx] = newSurvivor
+		-- 		self.SuperSurvivors[idx]:setID(idx)
+		-- 		CreateLogLine("Spawn Survivor", true, "New Survivor " .. tostring(self.SuperSurvivors[idx]));
+		-- 		return self.SuperSurvivors[idx]
+		-- 	end
+		-- end
+		-- -- 
 
-		-- Old Assignment or survivor to survivor list -- 
-		-- self.SuperSurvivors[self.SurvivorCount + 1] = newSurvivor
-		-- self.SurvivorCount = self.SurvivorCount + 1;
-		-- self.SuperSurvivors[self.SurvivorCount]:setID(self.SurvivorCount)
-		-- 
-		-- return self.SuperSurvivors[self.SurvivorCount]
+		-- CreateLogLine("Error", true, "Error spawning New Survivor: could not find empty idx to spawn survivor... ");
+		self.SuperSurvivors[self.SurvivorCount + 1] = newSurvivor
+		self.SurvivorCount = self.SurvivorCount + 1;
+		self.SuperSurvivors[self.SurvivorCount]:setID(self.SurvivorCount)
+		return self.SuperSurvivors[self.SurvivorCount]
 	end
 end
 
@@ -197,10 +193,10 @@ function SuperSurvivorManager:OnDeath(ID)
 	if not self.SuperSurvivors[ID] then return end
 	-- CreateLogLine("Test On Death", true, "SSM is handling dead player.");
 	
-	if not self.SuperSurvivors[ID].player:shouldBecomeZombieAfterDeath() then 
-		CreateLogLine("OnDeath", true, tostring(self.SuperSurvivors[ID]:getName()) .. ' is becoming a corpse');
-		self.SuperSurvivors[ID].player:becomeCorpse() 
-	end-- Batmane Test - Turn Dead NPC into corpse -- Not activated yet
+	-- if not self.SuperSurvivors[ID].player:shouldBecomeZombieAfterDeath() then 
+	-- 	CreateLogLine("OnDeath", true, tostring(self.SuperSurvivors[ID]:getName()) .. ' is becoming a corpse');
+	-- 	self.SuperSurvivors[ID].player:becomeCorpse() 
+	-- end-- Batmane Test - Turn Dead NPC into corpse -- Not activated yet
 
 	CreateLogLine("OnDeath", true, tostring(self.SuperSurvivors[ID]:getName()) .. ' is becoming getting nilled');
 	self.SuperSurvivors[ID] = nil
@@ -412,7 +408,6 @@ function LoadSurvivorMap()
 
 	if (tempTable) and (tempTable[1]) then
 		SSM.SurvivorCount = tonumber(tempTable[1]);
-		-- SSM.SurvivorCount = #SSM.SuperSurvivors
 	else
 		CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "LoadSurvivorMap Failed, possibly corrupted");
 	end

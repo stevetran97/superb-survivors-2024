@@ -82,7 +82,7 @@ function SuperSurvivorGroupManager:newGroup()
 			self.Groups[i] = SuperSurvivorGroup:new(i)
 			self.GroupCount = self.GroupCount + 1
 
-			CreateLogLine("Create Group ", true, "Batmane create group of  = " .. tostring(self.Groups[i]) .. " at idx " .. tostring(i));
+			-- CreateLogLine("Create Group ", true, "Batmane create group of  = " .. tostring(self.Groups[i]) .. " at idx " .. tostring(i));
 			return self.Groups[i]
 		end
 	end

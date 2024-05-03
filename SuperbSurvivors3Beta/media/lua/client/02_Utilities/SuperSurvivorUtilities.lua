@@ -180,7 +180,7 @@ end
 function Get_SS_Alive_Count()
 	local actualLivingSurvivors = 0;
 
-	CreateLogLine("Live Survivors", true, "Live Survivors = " .. tostring(#SSM.SuperSurvivors)); -- Dont rely on # - Cautionary tale - It returned 1 less than the actual
+	CreateLogLine("Live Survivors", true, "Live Survivors = " .. tostring(#SSM.SuperSurvivors)); -- Dont rely on # - Cautionary tale - It something completely different 
 
 	-- Note you can use #SSM.SuperSurvivors but it will include only the count of survivors - 1 (which is ok because we dont count player)
 	for i, Survivor in pairs(SSM.SuperSurvivors) do

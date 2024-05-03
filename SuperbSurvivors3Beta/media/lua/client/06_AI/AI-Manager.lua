@@ -19,6 +19,7 @@ function AiNPC_Job_Is(currentNPC, JobName)
 end
 
 
+
 function AIEssentialTasks(TaskMangerIn) 
 	local currentNPC = TaskMangerIn.parent;
 
@@ -45,6 +46,7 @@ function AIEssentialTasks(TaskMangerIn)
 		distance_AnyEnemy = GetCheap3DDistanceBetween(currentNPC.LastEnemySeen, currentNPC:Get());
 		distanceBetweenEnemyAndFollowTarget = GetCheap3DDistanceBetween(currentNPC.LastEnemySeen, currentNPC:getFollowChar())
 	end
+	local distanceBetweenMainPlayer = GetXYDistanceBetween(getSpecificPlayer(0), currentNPC:Get());
 	local isEnemySurvivor = instanceof(currentNPC.LastEnemySeen, "IsoPlayer");
 	local enemySurvivor = nil;
 	if isEnemySurvivor then
@@ -55,7 +57,6 @@ function AIEssentialTasks(TaskMangerIn)
 	
 
 	-- Flee Task
-    -- if TaskMangerIn:getCurrentTask() ~= "Flee" then
 	-- Injured and need to Heal
 	if currentNPC:HasInjury() and 
 		-- currentNPC:getDangerSeenCount() > 0
@@ -83,7 +84,7 @@ function AIEssentialTasks(TaskMangerIn)
 	elseif
 		currentNPC:hasGun() and
 		currentNPC:usingGun() and
-		currentNPC.EnemiesOnMe > 2
+		currentNPC.EnemiesOnMe > 1
 	then
 		-- CreateLogLine("BatmaneDebugFlee", isFleeCallLogged, tostring(currentNPC:getName()) .. " decided to flee with gun due to close enemy");
 		currentNPC:Speak("Cover me! I need space to use my gun!");
@@ -93,19 +94,52 @@ function AIEssentialTasks(TaskMangerIn)
 		currentNPC:NPC_EnforceWalkNearMainPlayer();
 		return false
 	end
-    -- end
+	if checkAiTaskIs(TaskMangerIn, "Flee") then return false end -- No further task if above task is in progress
+
+
+	-- I haven't tampered with this one, it does OK for the most part.
+	-- Bug: If you shoot the gun and it has nothing in it, the NPC will still keep their hands up
+	-- ----------------------------- --
+	-- 		Surrender Task	
+	-- ----------------------------- --
+	if getSpecificPlayer(0) and SSM:Get(0) then
+		local facingResult = getSpecificPlayer(0):getDotWithForwardDirection(
+			currentNPC.player:getX(),
+			currentNPC.player:getY()
+		);
+		if TaskMangerIn:getCurrentTask() ~= "Surender"
+				-- and TaskMangerIn:getCurrentTask() ~= "Flee"
+				and TaskMangerIn:getCurrentTask() ~= "Flee From Spot"
+				and TaskMangerIn:getCurrentTask() ~= "Clean Inventory"
+				and SSM:Get(0):usingGun()
+				and getSpecificPlayer(0):CanSee(currentNPC.player)
+				and (not currentNPC:usingGun() 
+					or (not currentNPC:RealCanSee(getSpecificPlayer(0)) and distanceBetweenMainPlayer <= 3))
+				and getSpecificPlayer(0):isAiming()
+				and IsoPlayer.getCoopPVP()
+				and not currentNPC:isInGroup(getSpecificPlayer(0))
+				and facingResult > 0.95
+				and distanceBetweenMainPlayer < startingDangerRange
+		then
+			TaskMangerIn:clear()
+			TaskMangerIn:AddToTop(SurenderTask:new(currentNPC, SSM:Get(0)))
+			return false
+		end
+	end
+	if checkAiTaskIs(TaskMangerIn, "Surender") then return false end -- No further task if above task is in progress
 
 	--- ----------------------------- --
     -- Heal self if there are no dangers nearby
     -- ----------------------------- --
     if currentNPC:HasInjury() 
-        and currentNPC.EnemiesOnMe <= 0
+        and distance_AnyEnemy > startingDangerRange
         and TaskMangerIn:getCurrentTask() ~= "First Aide"
     then
 		currentNPC:Speak("Cover me! I'm hurt and I need to heal!");
         TaskMangerIn:AddToTop(FirstAideTask:new(currentNPC));
 		return false
     end
+	if checkAiTaskIs(TaskMangerIn, "First Aide") then return false end -- No further task if above task is in progress
 
 	-- Follow Task
 	if currentNPC:needToFollow()
@@ -117,6 +151,8 @@ function AIEssentialTasks(TaskMangerIn)
 
 		return false
 	end
+	-- if checkAiTaskIs(TaskMangerIn, "Follow") then return false end -- Need to follow must not return early because we can allow other tasks while follow is the active
+	-- DO NOT RETURN AFTER NEED TO FOLLOW, ALLOW OTHER TASKS TO OCCUR
 
 	-- Reequip Gun Tasks - I dont know what this does. 
 	-- It just rerequips gun if you run out of ammo for current gun and can equip the last one you had?
@@ -136,12 +172,13 @@ function AIEssentialTasks(TaskMangerIn)
     -- Has weapon but none in hand
     if currentNPC:hasWeapon() 
         and currentNPC:Get():getPrimaryHandItem() == nil
-        and TaskMangerIn:getCurrentTask() ~= "Equip Weapon" 
+		and TaskMangerIn:getCurrentTask() ~= "Equip Weapon"
     then
 		currentNPC:Speak('Wheres my weapon?!')
-        TaskMangerIn:AddToTop(EquipWeaponTask:new(currentNPC))
+		TaskMangerIn:AddToTop(EquipWeaponTask:new(currentNPC))
 		return false -- Should I return here?
     end
+	if checkAiTaskIs(TaskMangerIn, "Equip Weapon") then return false end -- No further task if above task is in progress
 
     -- ----------- --
     -- Attack
@@ -153,78 +190,40 @@ function AIEssentialTasks(TaskMangerIn)
 
 
     -- Do I need to attack the enemy?
-    if checkAiTaskIsNot(TaskMangerIn, "Attack")
-        and checkAiTaskIsNot(TaskMangerIn, "Threaten")
-        and (currentNPC:isInSameRoom(currentNPC.LastEnemySeen) and currentNPC:getDangerSeenCount() > 0) -- Cows: npcs can only attack seen danger. 
+    if 
+		checkAiTaskIsNot(TaskMangerIn, "Attack")
+		and checkAiTaskIsNot(TaskMangerIn, "Threaten")
+		and (currentNPC:isInSameRoom(currentNPC.LastEnemySeen) and currentNPC:getDangerSeenCount() > 0) -- Cows: npcs can only attack seen danger. 
     then
-        if currentNPC.player:getModData().isRobber
-            and not currentNPC.player:getModData().hitByCharacter
-            and isEnemySurvivor
-            and not enemySurvivor.player:getModData().dealBreaker
-        then
+		if currentNPC.player:getModData().isRobber
+			and not currentNPC.player:getModData().hitByCharacter
+			and isEnemySurvivor
+			and not enemySurvivor.player:getModData().dealBreaker
+		then
 			currentNPC:Speak("Hey You!");
-            TaskMangerIn:AddToTop(ThreatenTask:new(currentNPC, enemySurvivor, "Scram!"));
+			TaskMangerIn:AddToTop(ThreatenTask:new(currentNPC, enemySurvivor, "Scram!"));
 			return false
-        else
+		else
 			currentNPC:Speak("Attacking!");
-            TaskMangerIn:AddToTop(AttackTask:new(currentNPC));
+			TaskMangerIn:AddToTop(AttackTask:new(currentNPC));
 			return false
-        end
+		end
     end
-
+	if checkAiTaskIs(TaskMangerIn, "Attack") or checkAiTaskIs(TaskMangerIn, "Threaten") then return false end -- No further task if above task is in progress
 
 	-- ------------ --
     -- Pursue
     -- ------------ --
 	if 
-		checkAiTaskIsNot(TaskMangerIn, "Pursue")
-		and currentNPC.LastEnemySeen
+		currentNPC.LastEnemySeen
 		and distance_AnyEnemy < currentNPC:NPC_CheckPursueScore()
+		and checkAiTaskIsNot(TaskMangerIn, "Pursue")
 	then
-
-		-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " Running pursuing target ");
-
 		currentNPC:Speak("Pursuing the target!");
 		TaskMangerIn:AddToTop(PursueTask:new(currentNPC, currentNPC.LastEnemySeen));
 		return false
-		-- end
 	end
-
-
-	-- ------------ --
-    -- Wander
-    -- ------------ --
-	-- Batmane - Guys are standing around and doing nothing. Need to spam this as a fix for now - Runs every 2s when FPS = 60
-	-- Cows: Have the npcs wander if there are no tasks, otherwise they are stuck in place...
-	--  We do not return anything here for now but eventually return false if it is code safe to do so
-	if currentNPC:getCurrentTask() == "None" or not currentNPC:getCurrentTask()
-	then
-		-- Continue follow and do not perform other jobs
-		if currentNPC:getGroupRole() == "Companion" and currentNPC:getCurrentTask() ~= "Follow" then 
-			TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
-		-- Wander if not companion
-		else
-			if SurvivorRoles[currentNPC:getGroupRole()] == nil then 
-				currentNPC:NPCTask_DoWander();
-			end
-		end
-	end
-	-- 
-
-
-    -- ----------------------------- --
-    -- 	Handle Guns                 --
-    -- ----------------------------- --
-	-- Batmane - ReadyGun needs to be a task that only fires if the tasks has not yet been added otherwise the ready routine overwrites each other
-	-- Having disabled this, it doesnt see to affect guns because the ai can still reload their gun when attacking. Problem is just when they are not attacking
-    -- if currentNPC:NPC_CheckIfCanReadyGun()
-    -- then
-	-- 	-- currentNPC:Speak('Need to ready my weapon!')
-    --     currentNPC:ReadyGun(npcWeapon);
-	-- 	return false -- Should I return here?
-    -- end
-	-- 
-
+	if checkAiTaskIs(TaskMangerIn, "Pursue") then return false end -- No further task if above task is in progress
 
 	-- Not sure what priority this task takes
 	-- ----------------------------- --
@@ -252,6 +251,77 @@ function AIEssentialTasks(TaskMangerIn)
 end
 
 
+
+function AIMediumPriorityTasks(TaskMangerIn) 
+	local currentNPC = TaskMangerIn.parent;
+
+    -- ----------------------------- --
+    -- 	Ready gun in spare time      --
+    -- ----------------------------- --
+	-- -- Batmane - Initialize reload but dont return because next task is to wander or follow
+	-- Disable this because if attack doesnt fire, this conflicts with the reload weapon task
+    -- if 
+	-- 	currentNPC:hasGun() and
+	-- 	currentNPC:NPC_CheckIfCanReadyGun()
+    -- then
+	-- 	currentNPC:Speak('I got a chance to reload')
+	-- 	local npcWeapon = currentNPC.player:getPrimaryHandItem();
+    --     currentNPC:ReadyGun(npcWeapon);
+    -- end
+
+	-- ------------ --
+    -- Wander
+    -- ------------ --
+	-- Batmane - Guys are standing around and doing nothing. Need to spam this as a fix for now - Runs every 2s when FPS = 60
+	-- Cows: Have the npcs wander if there are no tasks, otherwise they are stuck in place...
+	--  We do not return anything here for now but eventually return false if it is code safe to do so
+	if currentNPC:getCurrentTask() == "None" or not currentNPC:getCurrentTask()
+	then
+		-- Continue follow and do not perform other jobs
+		if currentNPC:getGroupRole() == "Companion" and currentNPC:getCurrentTask() ~= "Follow" then 
+			TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
+		-- Wander if not companion
+		else
+			if SurvivorRoles[currentNPC:getGroupRole()] == nil then 
+				currentNPC:NPCTask_DoWander();
+			end
+		end
+	end
+	-- 
+	return true
+end
+
+
+function AILowPriorityTasks(TaskMangerIn) 
+	-- ----------------------------- --
+	-- Find food / drink - like task --
+	-- ----------------------------- --
+	-- Manages AI getting water
+	if SurvivorNeedsFoodWater -- Sandbox Setting
+		and npcIsInAction == false
+		and TaskMangerIn:getCurrentTask() ~= "Enter New Building"
+		and TaskMangerIn:getCurrentTask() ~= "Eat Food"
+		and TaskMangerIn:getCurrentTask() ~= "Find This"
+		and ((currentNPC:isThirsty() 
+				and npcIsInBase)
+			or currentNPC:isVThirsty())
+		and currentNPC:getDangerSeenCount() == 0
+		and currentNPC:getNoWaterNearBy() == false
+	then
+		if npcGroup then
+			local area = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
+			if area then currentNPC:walkTo(area) end
+			currentNPC:Speak("I'm going to get some water before I die of thirst.")
+		end
+		TaskMangerIn:AddToTop(FindThisTask:new(currentNPC, "Water", "Category", 1))
+		return false
+	end
+
+
+	return true
+end
+
+
 ---@param TaskMangerIn any
 ---@return any
 function AIManager(TaskMangerIn)
@@ -273,9 +343,26 @@ function AIManager(TaskMangerIn)
 
 	local hasFinishEssentialTasks = AIEssentialTasks(TaskMangerIn)
 
+	if not hasFinishEssentialTasks then return false end
+
+	-- Every 4 seconds do medium essential tasks
+	local hasFinishMediumPriorityTasks
+	if currentNPC.Reducer % (4 * globalBaseUpdateDelayTicks) == 0 then 
+		hasFinishMediumPriorityTasks = AIMediumPriorityTasks(TaskMangerIn)
+	
+	end
+	if not hasFinishMediumPriorityTasks then return false end
+
+	-- Every 6 Seconds do Low priority tasks
+	local hasFinishLowPriorityTasks
+	if currentNPC.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then
+		hasFinishLowPriorityTasks = AILowPriorityTasks(TaskMangerIn)
+	end
+	if not hasFinishLowPriorityTasks then return false end
+
 	-- Test Early Return
-	-- Only run very 3 ish seconds and finished essential tasks
-	if hasFinishEssentialTasks and currentNPC.Reducer % (3 * globalBaseUpdateDelayTicks) == 0 then 
+	-- Only run very 6 ish seconds and finished essential tasks
+	if currentNPC.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then 
 		-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " running other block since essential tasks are handled ");
 
 		-- Skip Task Management if Survivor needs to follow you rn or is in a vehicle
@@ -306,37 +393,15 @@ function AIManager(TaskMangerIn)
 		-- 	AI_NonCompanion(TaskMangerIn);
 		-- end
 
-		-- ----------------------------- --
-		-- Find food / drink - like task --
-		-- ----------------------------- --
-		-- Manages AI getting water
-		if SurvivorNeedsFoodWater -- Sandbox Setting
-			and npcIsInAction == false
-			and TaskMangerIn:getCurrentTask() ~= "Enter New Building"
-			and TaskMangerIn:getCurrentTask() ~= "Eat Food"
-			and TaskMangerIn:getCurrentTask() ~= "Find This"
-			and TaskMangerIn:getCurrentTask() ~= "First Aide"
-			and ((currentNPC:isThirsty() 
-					and npcIsInBase)
-				or currentNPC:isVThirsty())
-			and currentNPC:getDangerSeenCount() == 0
-			and currentNPC:getNoWaterNearBy() == false
-		then
-			if npcGroup then
-				local area = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
-				if area then currentNPC:walkTo(area) end
-				currentNPC:Speak("I'm going to get some water before I die of thirst.")
-			end
-			TaskMangerIn:AddToTop(FindThisTask:new(currentNPC, "Water", "Category", 1))
-		end
 
 		-- ---------------------------------------------------------- --
 		-- ------------------- Basic Tasks---------------------------- --
 		-- ---------------------------------------------------------- --
 
-		if (getSpecificPlayer(0) == nil 
-				or not getSpecificPlayer(0):isAsleep()) 
-			and currentNPC:getAIMode() ~= "Stand Ground" 
+		-- Runs in player is dead?
+		if (getSpecificPlayer(0) == nil  -- This means they only do it if player 0 is nil? WHY?
+				or not getSpecificPlayer(0):isAsleep())  -- or Only when player is awake
+			and currentNPC:getAIMode() ~= "Stand Ground"  -- Not on stand ground
 		then
 			local SafeToGoOutAndWork = true
 			local AutoWorkTaskTimeLimit = 300
@@ -347,17 +412,16 @@ function AIManager(TaskMangerIn)
 			-- Batmane - Duplicate Code?
 			if AiNPC_Job_Is(currentNPC, "Guard") then
 				-- if getGroupArea 'getGroupArea = does this area exist'
-
 				if 
 					npcIsInAction == false
-					and not checkAiTaskIs(TaskMangerIn, "Attack")
-					and not checkAiTaskIs(TaskMangerIn, "Threaten")
-					and not checkAiTaskIs(TaskMangerIn, "Pursue")
-					and not checkAiTaskIs(TaskMangerIn, "Flee")
-					and not checkAiTaskIs(TaskMangerIn, "First Aide")
+					-- and not checkAiTaskIs(TaskMangerIn, "Attack")
+					-- and not checkAiTaskIs(TaskMangerIn, "Threaten")
+					-- and not checkAiTaskIs(TaskMangerIn, "Pursue")
+					-- and not checkAiTaskIs(TaskMangerIn, "Flee")
+					-- and not checkAiTaskIs(TaskMangerIn, "First Aide")
 					and not checkAiTaskIs(TaskMangerIn, "Find This")
 					and not checkAiTaskIs(TaskMangerIn, "Eat Food")
-					and not checkAiTaskIs(TaskMangerIn, "Follow")
+					-- and not checkAiTaskIs(TaskMangerIn, "Follow")
 				then
 					if npcGroup:getGroupAreaCenterSquare("GuardArea") ~= nil and npcGroup:getGroupArea("GuardArea") then
 						if GetXYDistanceBetween(npcGroup:getGroupAreaCenterSquare("GuardArea"), currentNPC:Get():getCurrentSquare()) > 10 then
@@ -388,10 +452,15 @@ function AIManager(TaskMangerIn)
 				end
 			end
 
-			if (currentNPC:getCurrentTask() == "None") and (npcIsInBase) and (not npcIsInAction) and (ZombRand(4) == 0) then
-				if (AiNPC_Job_Is(currentNPC, "Companion")) then
-					TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
-				elseif (not SurvivorCanFindWork) and (AiNPC_Job_Is(currentNPC, "Doctor")) then
+			if currentNPC:getCurrentTask() == "None" and 
+				npcIsInBase and 
+				not npcIsInAction and 
+				ZombRand(4) == 0 
+			then
+				-- if AiNPC_Job_Is(currentNPC, "Companion") then
+				-- 	TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
+				-- else
+				if not SurvivorCanFindWork and AiNPC_Job_Is(currentNPC, "Doctor") then
 					local randresult = ZombRand(10) + 1;
 					--
 					if (randresult == 1) then
@@ -637,8 +706,13 @@ function AIManager(TaskMangerIn)
 				end
 			end
 
+			-- Return to base task
 			-- Oop, found this. I could use this for followers to get back to main player
-			if (currentNPC:getCurrentTask() == "None") and (npcIsInBase == false) and (not npcIsInAction) and (npcGroup ~= nil) then
+			if currentNPC:getCurrentTask() == "None" and 
+				npcIsInBase == false and 
+				not npcIsInAction and 
+				npcGroup ~= nil 
+			then
 				local baseSq = centerBaseSquare;
 				--
 				if (baseSq ~= nil) then
@@ -820,37 +894,6 @@ function AIManager(TaskMangerIn)
 			currentNPC:Speak(Get_SS_Dialogue("HeyYou"))
 			currentNPC:SpokeTo(currentNPC.LastSurvivorSeen:getModData().ID)
 			TaskMangerIn:AddToTop(ListenTask:new(currentNPC, currentNPC.LastSurvivorSeen, true))
-		end
-
-		-- I haven't tampered with this one, it does OK for the most part.
-		-- Bug: If you shoot the gun and it has nothing in it, the NPC will still keep their hands up
-		-- ----------------------------- --
-		-- 		Surrender Task	
-		-- ----------------------------- --
-		if getSpecificPlayer(0) ~= nil then
-			local facingResult = getSpecificPlayer(0):getDotWithForwardDirection(
-				currentNPC.player:getX(),
-				currentNPC.player:getY()
-			);
-			if TaskMangerIn:getCurrentTask() ~= "Surender"
-					and TaskMangerIn:getCurrentTask() ~= "Flee"
-					and TaskMangerIn:getCurrentTask() ~= "Flee From Spot"
-					and TaskMangerIn:getCurrentTask() ~= "Clean Inventory"
-					and SSM:Get(0) ~= nil and SSM:Get(0):usingGun()
-					and getSpecificPlayer(0)
-					and getSpecificPlayer(0):CanSee(currentNPC.player)
-					and (not currentNPC:usingGun() 
-						or (not currentNPC:RealCanSee(getSpecificPlayer(0)) and distanceBetweenMainPlayer <= 3))
-					and getSpecificPlayer(0):isAiming()
-					and IsoPlayer.getCoopPVP()
-					and not currentNPC:isInGroup(getSpecificPlayer(0))
-					and facingResult > 0.95
-					and distanceBetweenMainPlayer < startingDangerRange
-			then
-				TaskMangerIn:clear()
-				TaskMangerIn:AddToTop(SurenderTask:new(currentNPC, SSM:Get(0)))
-				return TaskMangerIn
-			end
 		end
 
 	end

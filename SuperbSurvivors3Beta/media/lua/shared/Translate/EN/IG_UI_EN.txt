@@ -93,7 +93,7 @@ IGUI_EN = {
 		IGUI_SS_CallName_After = "! Come here!",
 		IGUI_SS_CanIJoin = "Can I Join your group?",
 		IGUI_SS_YouWantToJoin = "Want to join my group?",
-		IGUI_SS_WeBackToBase = "Goot to be back",
+		IGUI_SS_WeBackToBase = "Good to be back",
 		IGUI_SS_DoctorDone = "Good as new! Take it easy now!",
 	--[[END interactions]]--
 

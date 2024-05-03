@@ -276,12 +276,14 @@ local function survivorMenu(context, o)
 
 		if (SS.player:getModData().surender) then submenu:addOption("Scram!", nil, AskToLeave, SS, nil) end
 		if (SS.player:getModData().surender) then submenu:addOption("Drop Your loot!", nil, AskToDrop, SS, nil) end
-		if (o:getModData().isHostile ~= true) then
-			local medicalOption = submenu:addOption(getText("ContextMenu_Medical_Check"), nil, MedicalCheckSurvivor, o,
-				nil);
-			local toolTip = MakeToolTip(medicalOption, Get_SS_ContextMenuText("AidCheck"),
-				Get_SS_ContextMenuText("AidCheckDesc"));
-		end
+		-- Add Medical Check (Redudant)
+		-- if (o:getModData().isHostile ~= true) then
+		-- 	local medicalOption = submenu:addOption(getText("ContextMenu_Medical_Check"), nil, MedicalCheckSurvivor, o,
+		-- 		nil);
+		-- 	local toolTip = MakeToolTip(medicalOption, Get_SS_ContextMenuText("AidCheck"),
+		-- 		Get_SS_ContextMenuText("AidCheckDesc"));
+		-- end
+
 		if (o:getModData().isHostile ~= true)
 			and ((SS:getTaskManager():getCurrentTask() == "Listen")
 				or (SS:getTaskManager():getCurrentTask() == "Take Gift")

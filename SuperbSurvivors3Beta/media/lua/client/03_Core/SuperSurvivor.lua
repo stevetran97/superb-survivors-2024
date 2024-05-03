@@ -449,7 +449,7 @@ function SuperSurvivor:renderName() -- To do: Make an in game option to hide ren
 	if self.JustSpoke == true 
 		and self.TicksSinceSpoke == 0 
 	then
-		self.TicksSinceSpoke = 250
+		self.TicksSinceSpoke = 2 * globalBaseUpdateDelayTicks
 
 		if (not IsDisplayingNpcName) then
 			self.userName:ReadString(tostring(self.SayLine1))
@@ -629,10 +629,11 @@ function SuperSurvivor:setSneaking(toValue)
 	end
 end
 
-function SuperSurvivor:getSneaking()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getSneaking() called");
-	return self.player:getModData().Sneaking;
-end
+-- Not Used?
+-- function SuperSurvivor:getSneaking()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getSneaking() called");
+-- 	return self.player:getModData().Sneaking;
+-- end
 
 function SuperSurvivor:getGroup()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getGroup() called");
@@ -1460,6 +1461,7 @@ end
 -- Batmane note - These params are tuned according to using 'cheap distance'. The actual threshold is slightly greater than this
 startingDangerRange = 8 -- dangerRange is typically used as the range at which NPC will engage targets
 surveyRange = 18; -- Range in which the npc will start surveying the object(s) in its vision. - -- Cut off range where objects arent even processed by ai
+maxProcessingRange = 25
 criticalDangerRange = 3 -- dangerRange where NPC typically needs to run so 2 here is actually more like a distance of 3
 local minSightDistance = 3 -- Range in which NPC will detect regardless of vision cone
 
@@ -1484,9 +1486,10 @@ function SuperSurvivor:DoVisionV3()
 
 
 	self.LastEnemySeen = nil
-	-- 
-
 	self.LastEnemySeenDistance = math.huge -- Number or nil
+	self.LastEnemySeenSquare = nil
+
+
 	self.TriggerHeldDown = false
 
 	self.escapeVector = {x = 0, y = 0}
@@ -1504,22 +1507,25 @@ function SuperSurvivor:DoVisionV3()
 	local closestZombieIdx = nil
 	
 	-- local spottedList = self.player:getCell():getObjectList(); -- Old List for processing -- Better for multiplayer if we ever get there because its absolute
+	
 	-- Batmane try smaller spotted list built in function -- Take advantage of sight already handled by game
+	-- Problem is that this causes issues if AI loses sight of player, they forget them
 	local spottedList = self.player:getLastSpotted()  -- This function doesnt include the main player -- Not ideal...
+	local distanceToPlayer = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
+	if distanceToPlayer <= maxProcessingRange then 
+		-- table.insert(spottedList, getSpecificPlayer(0)) -- Doesnt work
+		spottedList:push(getSpecificPlayer(0)) -- Works 
+	end
+	-- 
 
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " getSpecificPlayer(0): " ..tostring(getSpecificPlayer(0)));
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " self.player: " ..tostring(self.player));
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " spottedList: " ..tostring(spottedList));
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " has spottedList BEFORE: " ..tostring(spottedList:size()));
-	local distanceToPlayer = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
-	if distanceToPlayer <= surveyRange then 
-		-- table.insert(spottedList, getSpecificPlayer(0)) -- Doesnt work
-		spottedList:push(getSpecificPlayer(0)) -- Works 
-	end
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " has spottedList AFTER: " ..tostring(spottedList:size()));
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " has spottedList: " ..tostring(spottedList));
 	
-	if spottedList ~= nil then
+	if spottedList then
 		CreateLogLine("SuperSurvivor", isFunctionLoggingEnabled,
 			"Character - " .. tostring(self:getName()) .. " spotted: " .. tostring(spottedList:size()) .. " objects..."
 		);
@@ -1542,7 +1548,7 @@ function SuperSurvivor:DoVisionV3()
 					-- end
 					
 
-					-- -- This causes issues on stairs
+					-- This causes issues on stairs
 					-- if character:getZ() ~= self.player:getZ() and instanceof(character, "IsoZombie") then 
 					-- 	break 
 					-- end
@@ -1554,13 +1560,13 @@ function SuperSurvivor:DoVisionV3()
 					then
 						--
 						if currentDistance < criticalDangerRange
-							-- and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
+							and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
 						then
 							self.EnemiesOnMe = self.EnemiesOnMe + 1;
 						end
 						--
 						if currentDistance < dangerRange
-							-- and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
+							and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
 						then
 							self.dangerSeenCount = self.dangerSeenCount + 1;
 						end
@@ -1627,12 +1633,29 @@ function SuperSurvivor:DoVisionV3()
 		if not self.LastEnemySeen or self.LastEnemySeen:getID() ~= spottedList:get(closestCharIdx):getID() then
 			self.LastEnemySeen = spottedList:get(closestCharIdx);
 			self.LastEnemySeenDistance = closestDistanceSoFar
+			self.LastEnemySeenSquare = self.LastEnemySeen:getCurrentSquare()
+			
 
 			-- Only update escape vector once per second
 			-- if self.Reducer % globalBaseUpdateDelayTicks == 0 then 
 			-- if not self.escapeVector
 			-- then 
 			self.escapeVector = getXYUnitVector(self.LastEnemySeen, self.player)
+
+			if self.LastEnemySeen == getSpecificPlayer(0) then
+				CreateLogLine("VISION PLAYER", true,
+					"Character - " .. tostring(self:getName()) .. " targetting player! "
+				);
+			else
+				CreateLogLine("VISION PLAYER", true,
+					"Character - " .. tostring(self:getName()) .. " NOT"
+				);
+			end
+			if self.player:getModData().isHostile then
+				CreateLogLine("VISION PLAYER", true,
+					"Character - " .. tostring(self:getName()) .. " is hostile: " .. tostring(self.player:getModData().isHostile)
+				);
+			end
 
 			-- Experimental Multi vector evasion system
 			-- else
@@ -1657,10 +1680,10 @@ function SuperSurvivor:DoVisionV3()
 			-- 	self.TriggerHeldDown = true 
 			-- end
 
-			-- CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeen = " .. tostring(self.LastEnemySeen));
-			-- CreateLogLine("Vision", isLocalLoggingEnabled, "self.escapeVector = " .. tostring(self.escapeVector));
-			-- CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeenDistance = " .. tostring(self.LastEnemySeenDistance));
-
+			CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeen = " .. tostring(self.LastEnemySeen));
+			CreateLogLine("Vision", isLocalLoggingEnabled, "self.escapeVector = " .. tostring(self.escapeVector));
+			CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeenDistance = " .. tostring(self.LastEnemySeenDistance));
+			CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeenSquare = " .. tostring(self.LastEnemySeenSquare));
 		end
 		CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:Do VisionV3() END ---");
 		return self.LastEnemySeen;
@@ -1938,6 +1961,8 @@ function SuperSurvivor:NPC_CheckIfCanReadyGun()
 	-- Handle has and is using gun
 	if not self:hasGun() then return false end
 	if not self:usingGun() then return false end
+
+	local npcWeapon = self.player:getPrimaryHandItem();
 
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _FleeWhileReadyingGun() END ---");
 
@@ -2238,14 +2263,6 @@ end
 -- 	return false;
 -- end
 
---- Cows: This is probably useless... as the AI-Manager attempts to handle everything...
--- Batmane: Never Used
--- function SuperSurvivor:NPCTask_DoAttack()
--- 	if (self:getTaskManager():getCurrentTask() ~= "Attack") then
--- 		self:getTaskManager():AddToTop(AttackTask:new(self))
--- 	end
--- end
-
 function SuperSurvivor:NPCTask_DoWander()
 	if (self:getTaskManager():getCurrentTask() ~= "Wander") then
 		self:getTaskManager():AddToTop(WanderTask:new(self))
@@ -2268,8 +2285,10 @@ end
 -- Config
 -- BE CAREFUL Each of these delay tick confis were carefully picked and all execute at the same time after a certain amount of ticks. Keep the base at multiples of 60
 globalBaseUpdateDelayTicks = 60 -- Runs once per s at 60 fps
+-- globalFightingUpdateDelayTicks = math.ceil(globalBaseUpdateDelayTicks * 1/2)  -- Runs twice per s at 60 fps
 globalFightingUpdateDelayTicks = math.ceil(globalBaseUpdateDelayTicks * 1/2)  -- Runs twice per s at 60 fps
-globalPanicUpdateDelayTicks = math.ceil(globalBaseUpdateDelayTicks * 1/3) -- Runs 3 times per s at 60 fps
+-- globalPanicUpdateDelayTicks = math.ceil(globalBaseUpdateDelayTicks * 1/3) -- Runs 3 times per s at 60 fps
+globalPanicUpdateDelayTicks = math.ceil(globalBaseUpdateDelayTicks * 1/2) -- Runs 3 times per s at 60 fps
 
 globalSecondsFactor60FPSBase = 60 / globalBaseUpdateDelayTicks  -- Fraction to convert wait into seconds delay
 globalSecondsFactor60FPSFighting = 60 / globalFightingUpdateDelayTicks  -- Fraction to convert wait into seconds delay
@@ -2635,7 +2654,7 @@ function SuperSurvivor:updateSurvivorStatus()
 		if self.TargetSquare ~= nil and self.TargetSquare:getZ() ~= self.player:getZ() and getGameSpeed() > 2 then
 			self.TargetSquare = nil
 			self:StopWalk()
-			self:Wait(4) -- from 10 wait at most 4 seconds
+			self:Wait(2) -- from 10 wait at most 4 seconds
 		end
 
 		-- Batmane - This can just be run like every 10 minutes or so 
@@ -2905,7 +2924,8 @@ end
 function SuperSurvivor:PlayerUpdate()
 	-- CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, tostring(self:getName()) .. " SuperSurvivor:PlayerUpdate() called at self.Reducer = " .. tostring(self.Reducer));
 	if not self.player:isLocalPlayer() then
-		-- Seems to handle opening door when player is walking
+		-- Seems to handle opening door when player is walking -- Move this to the Main func, have this run like once per second. Why need to update 15 times per second?
+		-- Doesnt seem to work when moved to routine
 		if (self.player:getLastSquare() ~= nil) then
 			local cs = self.player:getCurrentSquare()
 			local ls = self.player:getLastSquare()
@@ -3719,8 +3739,10 @@ end
 function SuperSurvivor:NPC_ShouldRunOrWalk()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_Should RunOrWalk() called");
 	if self.LastEnemySeen ~= nil then
-		-- local distance = GetDistanceBetween(self.player, self.LastEnemySeen)
 		local distance = self.LastEnemySeenDistance
+		if not distance then 
+			distance = GetXYDistanceBetween(self.parent.LastEnemySeen, self.parent.player)
+		end
 		local distanceToPlayer = GetCheap3DDistanceBetween(self.player, getSpecificPlayer(0)) -- To prevent running into the player
 		if not distance or not distanceToPlayer then return end
 
@@ -3772,113 +3794,148 @@ end
 -- Manages movement and movement speed
 function SuperSurvivor:NPC_MovementManagement_Guns()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC _MovementManagement_Guns() called");
-	if (self:isWalkingPermitted()) and (self:hasGun()) then
-		local cs = self.LastEnemySeen:getCurrentSquare()
-		local zNPC_AttackRange = self:isEnemyInRange(self.LastEnemySeen)
 
-		if not zNPC_AttackRange then
-			-- The actual walking itself
-			if instanceof(self.LastEnemySeen, "IsoPlayer") then
-				self:walkToDirect(cs)
+	if not self:isWalkingPermitted() then return end
+
+	local cs = self.LastEnemySeenSquare
+	if not cs then 
+		cs = self.LastEnemySeen:getCurrentSquare()
+	end
+	if not cs then return end
+
+	local zNPC_AttackRange = self:isEnemyInRange(self.LastEnemySeen)
+
+	-- if zNPC_AttackRange then self:StopWalk() end -- Not sure if this needs to be handled here
+	if not zNPC_AttackRange then
+		-- The actual walking itself
+		if instanceof(self.LastEnemySeen, "IsoPlayer") then
+			self:walkToDirect(cs)
+		else
+			local fs = cs:getTileInDirection(self.LastEnemySeen:getDir())
+			if (fs) and (fs:isFree(true)) then
+				self:walkToDirect(fs)
 			else
-				local fs = cs:getTileInDirection(self.LastEnemySeen:getDir())
-				if (fs) and (fs:isFree(true)) then
-					self:walkToDirect(fs)
-				else
-					self:walkToDirect(cs)
-				end
+				self:walkToDirect(cs)
 			end
 		end
 	end
+
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _MovementManagement_Guns() end ---");
 end
 
+
+
 -- Manages movement and movement for AttackTask.
-function SuperSurvivor:NPC_MovementManagement()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC _MovementManagement() called");
-	if self:isWalkingPermitted() and not self:hasGun() then
-		local cs = self.LastEnemySeen:getCurrentSquare()
-		CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
-		local distance = GetDistanceBetween(self.player, self.LastEnemySeen)
-		local minrange = self:getMinWeaponRange()
+function SuperSurvivor:NPC_MovementManagement_Melee()
+	CreateLogLine("Batmane NPC_MovementManagement_Melee", isLocalLoggingEnabled, "Ran NPC_MovementManagement _Melee");
 
-		-- Add Kiting Function here
-		-- Use the Flee function as a base
-		-- if distance is within 0.65 (too close) (kite) walk towards square away from LastEnemySeen
-		-- Use in order to prevent task queing
-		-- self:walkToDirect(cs)
-		-- self:setRunning(false)
+	if not self:isWalkingPermitted() then return end -- Not permitted to move
+	if not self.LastEnemySeen then return end -- No Enemy to walk to
 
+	local cs = self.LastEnemySeenSquare
+	if not cs then 
+		cs = self.LastEnemySeen:getCurrentSquare()
+	end
+	if not cs then return end
 
-		if distance > (minrange + 0.1) then
-			-- The actual walking itself
-			if instanceof(self.LastEnemySeen, "IsoPlayer") then
-				self:walkToDirect(cs)
-				self:setRunning(true)
-			else
-				local fs = cs:getTileInDirection(self.LastEnemySeen:getDir())
-				if fs and fs:isFree(true) then
-					self:walkToDirect(fs)
-					self:setRunning(true)
-				else
-					self:walkToDirect(cs)
-					self:setRunning(true)
-				end
-			end
+	local distance = self.LastEnemySeenDistance
+	if not distance then 
+		distance = GetCheap3DDistanceBetween(self.player, self.LastEnemySeen)
+	end
+	if not distance then return end
+
+	local walkRange = self:getMaxWeaponRange() - 0.1
+	local minRange = self:getMinWeaponRange() + 0.1
+
+	-- CreateLogLine("Batmane NPC_MovementManagement_Melee", true, tostring(self:getName()) .. " has walk range of " .. tostring(walkRange));
+	-- CreateLogLine("Batmane NPC_MovementManagement_Melee", true, tostring(self:getName()) .. " has minRange of " .. tostring(minRange));
+
+	local fs = cs:getTileInDirection(self.LastEnemySeen:getDir())
+	if distance < walkRange then 
+		-- if distance < minRange then 
+		-- 	-- CreateLogLine("Batmane NPC_MovementManagement_Melee", true, tostring(self:getName()) .. " needs to back up");
+		-- 	-- Kiting Function doesnt work
+		-- 	-- if fs and fs:isFree(true) then
+		-- 	-- 	CreateLogLine("Batmane NPC_MovementManagement_Melee", true, tostring(self:getName()) .. " is kiting to fs of  " .. tostring(fs));
+		-- 	-- 	self:walkToDirect(fs)
+		-- 	-- 	self.player:faceThisObject(self.LastEnemySeen)
+		-- 	-- 	-- self:setRunning(true)
+		-- 	-- end
+		-- 	-- self:StopWalk() -- Not sure if this needs to be handled here
+		-- -- else
+		-- -- 	CreateLogLine("Batmane NPC_MovementManagement_Melee", true, tostring(self:getName()) .. " reached target and is just right distance");
+		-- -- 	-- self:StopWalk() -- Not sure if this needs to be handled here
+		-- end
+		return 
+	end
+
+	if instanceof(self.LastEnemySeen, "IsoPlayer") then
+		self:walkToDirect(cs)
+		self:setRunning(true)
+	else
+		if fs and fs:isFree(true) then
+			self:walkToDirect(fs)
+		else
+			self:walkToDirect(cs)
 		end
 	end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _MovementManagement() end ---");
 end
 
+-- Batmane Never Used
 -- Used in 'if the npc has swiped their weapon'.
-function SuperSurvivor:HasSwipedState()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:HasSwipedState() called");
-	if self.player:getCurrentState() == SwipeStatePlayer.instance() then
-		return true
-	else
-		return false
-	end
-end
+-- function SuperSurvivor:HasSwipedState()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:HasSwipedState() called");
+-- 	if self.player:getCurrentState() == SwipeStatePlayer.instance() then
+-- 		return true
+-- 	else
+-- 		return false
+-- 	end
+-- end
 
-function SuperSurvivor:HasFellDown()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:HasFellDown() called");
-	if self.player:getModData().felldown then
-		return true
-	else
-		return false
-	end
-end
+-- Never Used
+-- function SuperSurvivor:HasFellDown()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:HasFellDown() called");
+-- 	if self.player:getModData().felldown then
+-- 		return true
+-- 	else
+-- 		return false
+-- 	end
+-- end
 
-function SuperSurvivor:CanAttack()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:CanAttack() called");
-	if
-		self.player:getCurrentState() == SwipeStatePlayer.instance() -- Is in the middle of an attack | WAS AN 'or' statement
-		or self.player:getModData().felldown                   -- Has fallen on the ground
-	then
-		return false                                             -- Because NPC shouldn't be able to attack when already hitting, has fallen, or hit by something
-	else
-		return true
-	end
-end
 
+-- Never Used
+-- function SuperSurvivor:CanAttack()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:CanAttack() called");
+-- 	if
+-- 		self.player:getCurrentState() == SwipeStatePlayer.instance() -- Is in the middle of an attack | WAS AN 'or' statement
+-- 		or self.player:getModData().felldown                   -- Has fallen on the ground
+-- 	then
+-- 		return false                                             -- Because NPC shouldn't be able to attack when already hitting, has fallen, or hit by something
+-- 	else
+-- 		return true
+-- 	end
+-- end
+
+-- Never Used
 --- gets the weapon damager based on a rng and distance from the target
 ---@param weapon any
 ---@param distance number
 ---@return number represents the damage that the weapon will give if hits
-function SuperSurvivor:getWeaponDamage(weapon, distance)
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getWeaponDamage() called");
+-- function SuperSurvivor:getWeaponDamage(weapon, distance)
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getWeaponDamage() called");
 
-	if weapon == nil then
-		CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "no weapon found...");
-		return 0
-	end
+-- 	if weapon == nil then
+-- 		CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "no weapon found...");
+-- 		return 0
+-- 	end
 
-	local damage = 0
-	damage = (weapon:getMaxDamage() * ZombRand(10))
-	damage = damage - (damage * (distance * 0.1))
+-- 	local damage = 0
+-- 	damage = (weapon:getMaxDamage() * ZombRand(10))
+-- 	damage = damage - (damage * (distance * 0.1))
 
-	return damage
-end
+-- 	return damage
+-- end
 
 --- Gets the change of a shoot based on aiming skill, weapon, victim's distance
 --- Cows: I've updated it with all the weird cover-based and distance modifier removed.
@@ -3940,7 +3997,7 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
 		SurvivorTogglePVP();
 	end
 
-	-- if self.player:getModData().felldown then return false end -- cant attack if stunned by an attack -- From other function
+	if self.player:getModData().felldown then return false end -- cant attack if stunned by an attack -- From other function
 
 	self.SwipeStateTicks = 0; -- this value is tracked to see if player stuck in attack state/animation. so reset to 0 if we are TRYING/WANTING to attack
 
@@ -3977,6 +4034,10 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
 		and self.player:NPCGetRunning() == false 
 	then
 		victim:Hit(weapon, self.player, damage, false, 1.0, false)
+
+		if victim == getSpecificPlayer(0) then 
+			self:Wait(1)
+		end
 	end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _Attack() end ---");
 end
@@ -3989,12 +4050,18 @@ function SuperSurvivor:AttackWithGun(victim)
 
 	--if(self.player:getCurrentState() == SwipeStatePlayer.instance()) then return false end -- already attacking wait
 
-	-- if self.player:getModData().felldown then return false end -- cant attack if stunned by an attack -- Batmane I dont like this
+	if self.player:getModData().felldown then return false end -- cant attack if stunned by an attack -- Batmane I dont like this
 
 	self.SwipeStateTicks = 0;  -- this value is tracked to see if player stuck in attack state/animation. so reset to 0 if we are TRYING/WANTING to attack
 
 	if not (instanceof(victim, "IsoPlayer") or instanceof(victim, "IsoZombie")) then
 		return false;
+	end
+
+	local weapon = self.player:getPrimaryHandItem();
+	if self:needToReadyGun(weapon) then		
+		self:ReadyGun(weapon);
+		return
 	end
 
 	if self:WeaponReady() then
@@ -4022,7 +4089,6 @@ function SuperSurvivor:AttackWithGun(victim)
 			-- end
 
 			local minrange = self:getMinWeaponRange() + 0.1
-			local weapon = self.player:getPrimaryHandItem();
 			local damage = weapon:getMaxDamage();
 
 			-- Animations
@@ -4032,9 +4098,15 @@ function SuperSurvivor:AttackWithGun(victim)
 
 			-- Hit registration
 			-- Shove attack
-			if distance < minrange or self.player:getPrimaryHandItem() == nil then
+			if distance < minrange 
+				-- or self.player:getPrimaryHandItem() == nil 
+			then
 				self:Speak("Get off of me!")
 				victim:Hit(weapon, self.player, damage, true, 1.0, false)
+
+				if victim == getSpecificPlayer(0) then 
+					self:Wait(1)
+				end
 			-- Actual attack
 			else
 				local hitChance = self:getGunHitChance(weapon, victim);
@@ -4043,6 +4115,10 @@ function SuperSurvivor:AttackWithGun(victim)
 				-- Added RealCanSee to see if it works | and (damage > 0)
 				if hitChance >= dice and damage > 0 and self:RealCanSee(victim) then
 					victim:Hit(weapon, self.player, damage, false, 1.0, false);
+
+					if victim == getSpecificPlayer(0) then 
+						self:Wait(1)
+					end
 				end
 			end
 		end

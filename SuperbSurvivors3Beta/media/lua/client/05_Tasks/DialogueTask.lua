@@ -70,7 +70,7 @@ function DialogueTask:update()
 				self.parent:Speak(self.Dialogue[self.Current])
 				self.parent.player:getModData().lastThingIsaid = self.Dialogue[self.Current]
 				self.Current = self.Current + 1
-				self.parent:Wait(4)
+				self.parent:Wait(1) -- from 4
 			else
 				self.Current = 99999
 				self.parent:Wait(1)

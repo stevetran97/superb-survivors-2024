@@ -49,6 +49,7 @@ local function getGunShotWoundBP(player)
 	return outBP
 end
 
+-- Whenever character is hit, recalculate stuff
 function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	local SSW = SSM:Get(wielder:getModData().ID);
 	local SSV = SSM:Get(victim:getModData().ID);
