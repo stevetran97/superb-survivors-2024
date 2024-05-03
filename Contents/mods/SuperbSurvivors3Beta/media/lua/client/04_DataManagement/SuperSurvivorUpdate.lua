@@ -54,17 +54,19 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	local SSW = SSM:Get(wielder:getModData().ID);
 	local SSV = SSM:Get(victim:getModData().ID);
 
-	local fakehit = false
+	local fakehit = false -- means no hit when registered
 
 	if (SSV == nil) or (SSW == nil) then return false end
 
-	if (victim.setAvoidDamage ~= nil) then
-		if (SSW:isInGroup(victim)) then
+	-- Handle Avoid Damage when victim is in the same group as the attacker
+	if victim.setAvoidDamage ~= nil then
+		if SSW:isInGroup(victim) then
 			fakehit = true;
 			victim:setAvoidDamage(true);
 		end
-	elseif (victim.setNoDamage ~= nil) then
-		if (SSW:isInGroup(victim)) then
+	-- Handle Avoid Damage when victim is in the same group as the attacker
+	elseif victim.setNoDamage ~= nil then
+		if SSW:isInGroup(victim) then
 			fakehit = true;
 			victim:setNoDamage(true);
 		else
@@ -72,12 +74,13 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 		end
 	end
 
+	-- Early return if not allowed to hit
 	if fakehit then return false end
 
 	local extraDamage;
 	local shotPartshotPart = getGunShotWoundBP(victim);
 
-	if (shotPartshotPart ~= nil) and (SSV:getID() ~= 0) then
+	if shotPartshotPart ~= nil and SSV:getID() ~= 0 then
 		extraDamage = 100; --(damage*24)
 
 		shotPartshotPart:AddDamage(extraDamage);

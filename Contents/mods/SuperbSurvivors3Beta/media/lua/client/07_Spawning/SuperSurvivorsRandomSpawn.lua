@@ -131,20 +131,28 @@ end
 ---@return any
 function SuperSurvivorsRandomSpawn()
     local isLocalFunctionLoggingEnabled = false;
-    CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "function: SuperSurvivorsRandomSpawn() called");
+    -- CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "function: SuperSurvivorsRandomSpawn() called");
+    CreateLogLine("SuperSurvivorsRandomSpawn", true, "Start Spawning Survivors");
+
     local mySS = SSM:Get(0);
     if not mySS then return end -- inhibit spawn while the main player is dead.
     local hisGroup = mySS:getGroup();
 
+    if not hisGroup then
+        hisGroup = SSGM:newGroupWithID(0);
+        hisGroup:addMember(SSM:Get(0), "Leader");
+    end
+
     if (getSpecificPlayer(0) == nil or hisGroup == nil) then
         return false;
     end
+
     -- Cows: ... this might be problematic... I'm guessing this means if the bounds exist due to a group's base area, it won't spawn npcs near the player...
     local center = Get_SS_PlayerGroupBoundsCenter(hisGroup);
     local spawnSquare = Set_SS_SpawnSquare(hisGroup, center);
 
     local activeNpcs = Get_SS_Alive_Count();
-    CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "activeNpcs = " .. tostring(activeNpcs));
+    -- CreateLogLine("SuperSurvivorsRandomSpawn", true, "activeNpcs = " .. tostring(activeNpcs));
 
     local spawnChanceVal = NpcSpawnChance;
 
@@ -160,8 +168,10 @@ function SuperSurvivorsRandomSpawn()
 
         if (isSpawning) then
             if (isSpawningRaiders) then
+                CreateLogLine("SuperSurvivorsRandomSpawn", true, "spawn raiders");
                 spawnRaiders(mySS, spawnSquare);
             else
+                CreateLogLine("SuperSurvivorsRandomSpawn", true, "spawn Survivor");
                 spawnNpcs(mySS, spawnSquare);
             end
         end

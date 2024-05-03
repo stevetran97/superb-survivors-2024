@@ -449,7 +449,7 @@ function SuperSurvivor:renderName() -- To do: Make an in game option to hide ren
 	if self.JustSpoke == true 
 		and self.TicksSinceSpoke == 0 
 	then
-		self.TicksSinceSpoke = 2 * globalBaseUpdateDelayTicks
+		self.TicksSinceSpoke = 4 * globalBaseUpdateDelayTicks
 
 		if (not IsDisplayingNpcName) then
 			self.userName:ReadString(tostring(self.SayLine1))
@@ -1642,20 +1642,23 @@ function SuperSurvivor:DoVisionV3()
 			-- then 
 			self.escapeVector = getXYUnitVector(self.LastEnemySeen, self.player)
 
-			if self.LastEnemySeen == getSpecificPlayer(0) then
-				CreateLogLine("VISION PLAYER", true,
-					"Character - " .. tostring(self:getName()) .. " targetting player! "
-				);
-			else
-				CreateLogLine("VISION PLAYER", true,
-					"Character - " .. tostring(self:getName()) .. " NOT"
-				);
-			end
-			if self.player:getModData().isHostile then
-				CreateLogLine("VISION PLAYER", true,
-					"Character - " .. tostring(self:getName()) .. " is hostile: " .. tostring(self.player:getModData().isHostile)
-				);
-			end
+			-- -----------------------------
+			-- Debug Player Targetting
+			-- if self.LastEnemySeen == getSpecificPlayer(0) then
+			-- 	CreateLogLine("VISION PLAYER", true,
+			-- 		"Character - " .. tostring(self:getName()) .. " targetting player! "
+			-- 	);
+			-- else
+			-- 	CreateLogLine("VISION PLAYER", true,
+			-- 		"Character - " .. tostring(self:getName()) .. " NOT"
+			-- 	);
+			-- end
+			-- if self.player:getModData().isHostile then
+			-- 	CreateLogLine("VISION PLAYER", true,
+			-- 		"Character - " .. tostring(self:getName()) .. " is hostile: " .. tostring(self.player:getModData().isHostile)
+			-- 	);
+			-- end
+			-- -----------------------------
 
 			-- Experimental Multi vector evasion system
 			-- else

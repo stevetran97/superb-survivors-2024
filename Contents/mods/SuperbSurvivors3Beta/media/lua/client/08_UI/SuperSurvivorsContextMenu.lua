@@ -127,14 +127,9 @@ function InviteToParty(test, player) -- When the player offers an NPC to join th
 	if (result) then
 		SS:Speak(Get_SS_DialogueSpeech("Roger"))
 		local GID, Group
-		if (SSM:Get(0):getGroupID() == nil) then
+		if SSM:Get(0):getGroupID() == nil then
 			-- Group = SSGM:newGroup() -- Batmane - This is potentially bugged. Player group should be 0 and never a brand new group
-			Group = SSGM:GetGroupById(0)
-			if not Group then 
-				-- Create Group 0
-				-- TODO
-			end
-
+			Group = SSGM:newGroupWithID(0)
 			Group:addMember(SSM:Get(0), Get_SS_JobText("Leader")) -- This breaks the group system because it creates a new group for player 0 which is not group 0. We need to reserve a group just for the player
 		else
 			GID = SSM:Get(0):getGroupID()

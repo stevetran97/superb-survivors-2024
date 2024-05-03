@@ -1,6 +1,8 @@
 SuperSurvivorGroupManager = {}
 SuperSurvivorGroupManager.__index = SuperSurvivorGroupManager
 
+local isLocalLoggingEnabled = true
+
 function SuperSurvivorGroupManager:new()
 	local o = {}
 	setmetatable(o, self)
@@ -80,15 +82,23 @@ function SuperSurvivorGroupManager:newGroup()
 	for i = 0, (Limit_Npc_Groups + 1 + 5) do
 		if not self.Groups[i] then 
 			self.Groups[i] = SuperSurvivorGroup:new(i)
-			self.GroupCount = self.GroupCount + 1
+			-- self.GroupCount = self.GroupCount + 1
+			self.GroupCount = self:countGroups()
 
 			-- CreateLogLine("Create Group ", true, "Batmane create group of  = " .. tostring(self.Groups[i]) .. " at idx " .. tostring(i));
 			return self.Groups[i]
 		end
 	end
-
-
 end
+
+function SuperSurvivorGroupManager:countGroups() 
+	local newCount = 0
+	for i, group in pairs(self.Groups) do
+		newCount = newCount + 1 -- Exclude player group
+	end
+	return newCount
+end
+
 
 -- This function doesnt seem to work well -- Batmane
 function SuperSurvivorGroupManager:newGroupWithID(ID)
@@ -99,7 +109,7 @@ function SuperSurvivorGroupManager:newGroupWithID(ID)
 
 	local groupID = ID
 	self.Groups[groupID] = SuperSurvivorGroup:new(groupID)
-	self.GroupCount = groupID + 1
+	self.GroupCount = self:countGroups()
 	return self.Groups[groupID]
 end
 
@@ -119,13 +129,21 @@ end
 
 function SuperSurvivorGroupManager:Load()
 	if DoesFileExist("SurvivorGroup0.lua") then -- only load if any groups detected at all -- Batmane Why only load if this file exists?
+		local timeoutCounter = 0
 
 		self.GroupCount = 0 -- This relies on GroupCount because each time, you do new group, it increments by 1
-
+		
 		while DoesFileExist("SurvivorGroup" .. tostring(self.GroupCount) .. ".lua") do -- While this file exists, create new group?
 		-- while DoesFileExist("SurvivorGroup" .. tostring(#self.Groups) .. ".lua") do
 			local newGroup = self:newGroup()
 			newGroup:Load()
+
+			-- Timeout Bailout for error in loading
+			timeoutCounter = timeoutCounter + 1
+			if timeoutCounter > 1000 then 
+				CreateLogLine("Errors", true, "Error loading group because it timed out loading " .. tostring(self.GroupCount));
+				return 
+			end
 		end
 
 	end
