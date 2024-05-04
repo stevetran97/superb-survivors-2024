@@ -58,7 +58,7 @@ function FirstAideTask:update()
 			self.parent:StopWalk()
 			self.myTimedAction = ISApplyBandage:new(self.parent.player, self.parent.player, item, bp, true)
 			ISTimedActionQueue.add(self.myTimedAction)
-			self.parent:Wait(2) -- batmane - Heal faster  -- from 3
+			-- self.parent:Wait(2) -- batmane - Heal faster  -- from 3
 			break
 		end
 	end

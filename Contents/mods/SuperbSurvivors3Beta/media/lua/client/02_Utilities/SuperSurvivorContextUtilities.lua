@@ -418,6 +418,19 @@ function GetCheap3DDistanceBetween(z1, z2)
 end
 
 
+function getVector(sq1, sq2) 
+	if not sq1 or not sq2 or not sq1:getX() or not sq2:getX() or not sq1:getY() or not sq2:getY() then
+		CreateLogLine('BatmaneErrors', enableLogErrors, 'getXYUnitVector: Cannot get vector due to not being able to getX or getY')
+	end
+
+	local newVector = {
+		x = sq2:getX() - sq1:getX(),
+		y = sq2:getY() - sq1:getY()
+	}
+	
+	return newVector
+end
+
 function addVectors(v1, v2) 
 	if not v1 or not v2 or not v1.x or not v1.y or not v2.x or not v2.y then
 		CreateLogLine('BatmaneErrors', enableLogErrors, 'addVectors: Cannot add vector due to not being able to dimensions')
@@ -452,13 +465,11 @@ end
 function getXYUnitVector(sq1, sq2) 
 	CreateLogLine("SuperSurvivorContextUtilities", isLocalLoggingEnabled, "function: getXYUnitVector() called");
 
-	if (not sq1) or (not sq2) or (not sq1:getX()) or (not sq2:getX()) or (not sq1:getY()) or (not sq2:getY()) then
+	if not sq1 or not sq2 or not sq1:getX() or not sq2:getX() or not sq1:getY() or not sq2:getY() then
 		CreateLogLine('BatmaneErrors', enableLogErrors, 'getXYUnitVector: Cannot get vector due to not being able to getX or getY')
 	end
-	local newVector = {
-		x = sq2:getX() - sq1:getX(),
-		y = sq2:getY() - sq1:getY()
-	}
+
+	local newVector = getVector(sq1, sq2)
 
 	local length = math.sqrt(newVector.x * newVector.x + newVector.y * newVector.y)
 
@@ -481,6 +492,17 @@ function getXYSq2FromSq1ToVector(sq1, vector, distanceToGo)
 	if (not vector.x) or (not vector.y) then
 		CreateLogLine('Errors', enableLogErrors, 'getSq2FromSq1ToVector: Cannot get sq2 due to invalid vector')
 	end
+
+	-- Debug
+	-- local testLength = math.sqrt(vector.x * vector.x + vector.y * vector.y)
+	-- CreateLogLine('GraceErrors', true, 'vector length = ' .. tostring(testLength))
+	-- 
+
+	if testLength > 1 then
+		CreateLogLine('GraceErrors', true, 'Vector is not a unit vector. Length = ' .. tostring(testLength))
+	end
+	-- 
+
 
 	if (not distanceToGo) then
 		distanceToGo = 7

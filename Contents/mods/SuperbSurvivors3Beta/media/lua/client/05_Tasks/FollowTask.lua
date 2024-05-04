@@ -23,8 +23,7 @@ function FollowTask:new(superSurvivor, FollowMeplayer)
 		end
 	else
 		o.FollowChar = FollowMeplayer
-		superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData()
-			.ID -- save last follow obj id to mod data so can be reused on load
+		superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
 	end
 
 	o.followSS = SSM:Get(o.FollowChar:getModData().ID)

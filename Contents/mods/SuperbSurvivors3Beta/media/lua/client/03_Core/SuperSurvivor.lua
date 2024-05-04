@@ -47,6 +47,11 @@ function SuperSurvivor:CreateBaseSurvivorObject()
 	survivorObject.seenCount = 0;
 	survivorObject.dangerSeenCount = 0;
 	survivorObject.LastEnemySeen = false;
+	survivorObject.LastEnemySeenDistance = math.huge -- Number or nil
+	survivorObject.LastEnemySeenSquare = nil
+
+	survivorObject.distanceToPlayer0 = math.huge
+
 	survivorObject.escapeVector = {x = 0, y = 0}
 	survivorObject.Reducer = ZombRand(1, 100); -- Reducer is a counter which is used to prevent update functions from being called too often to save performance 
 	survivorObject.Container = false;
@@ -611,9 +616,21 @@ function SuperSurvivor:setRunning(toValue)
 		return false;
 	end
 
-	if (self.player:NPCGetRunning() ~= toValue) then
-		self.player:NPCSetRunning(toValue);
-		self.player:NPCSetJustMoved(toValue);
+	if self.player:NPCGetRunning() ~= toValue then
+		if toValue == false then
+			self.player:NPCSetRunning(false);
+			self.player:NPCSetJustMoved(false);
+		else
+			local distanceToPlayer0 = self.distanceToPlayer0
+			if not distanceToPlayer0 then 
+				distanceToPlayer0 = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
+			end
+			if distanceToPlayer0 <= tooCloseToPlayerToRun and getSpecificPlayer(0):getZ() == self.player:getZ()  then 
+				return
+			end
+			self.player:NPCSetRunning(true);
+			self.player:NPCSetJustMoved(true);
+		end
 	end
 end
 
@@ -1489,14 +1506,18 @@ function SuperSurvivor:DoVisionV3()
 	self.LastEnemySeenDistance = math.huge -- Number or nil
 	self.LastEnemySeenSquare = nil
 
+	self.distanceToPlayer0 = math.huge
 
 	self.TriggerHeldDown = false
 
-	self.escapeVector = {x = 0, y = 0}
+	self.escapeVector = { x = 0, y = 0 }
+	local newEscapeVector = { x = 0, y = 0 }
+
 
 	self.LastSurvivorSeen = nil;
 	-- 
 	local dangerRange = startingDangerRange;
+	-- Batmane: I dont like this its too variable
 	if self.AttackRange > dangerRange then
 		dangerRange = self.AttackRange;
 	end
@@ -1515,6 +1536,9 @@ function SuperSurvivor:DoVisionV3()
 	if distanceToPlayer <= maxProcessingRange then 
 		-- table.insert(spottedList, getSpecificPlayer(0)) -- Doesnt work
 		spottedList:push(getSpecificPlayer(0)) -- Works 
+
+
+		self.distanceToPlayer0 = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
 	end
 	-- 
 
@@ -1524,78 +1548,92 @@ function SuperSurvivor:DoVisionV3()
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " has spottedList BEFORE: " ..tostring(spottedList:size()));
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " has spottedList AFTER: " ..tostring(spottedList:size()));
 	-- CreateLogLine("Last Seen", true, tostring(self:getName()) .. " has spottedList: " ..tostring(spottedList));
-	
-	if spottedList then
-		CreateLogLine("SuperSurvivor", isFunctionLoggingEnabled,
-			"Character - " .. tostring(self:getName()) .. " spotted: " .. tostring(spottedList:size()) .. " objects..."
-		);
 
-		for i = 0, spottedList:size() - 1 do
-			local character = spottedList:get(i);
+	if not spottedList or spottedList:size() == 0 then return end
 
-			repeat
-				if self:isAThreat(character, self.player) then
-					-- Testing Distance - This function can see pretty far - up to 65m or more but it only processes minimal items
-					-- local testDistance = GetCheapXYDistanceBetween(character, self.player);
-					-- CreateLogLine("Distance Log", true,
-					-- 	"Character - " .. tostring(self:getName()) .. " is this far  " .. tostring(testDistance) .. " from this thing"
-					-- );
-					-- 
+	CreateLogLine("SuperSurvivor", isFunctionLoggingEnabled,
+		"Character - " .. tostring(self:getName()) .. " spotted: " .. tostring(spottedList:size()) .. " objects..."
+	);
+
+	for i = 0, spottedList:size() - 1 do
+		local character = spottedList:get(i);
+
+		repeat
+			if self:isAThreat(character, self.player) then
+				-- Testing Distance - This function can see pretty far - up to 65m or more but it only processes minimal items
+				-- local testDistance = GetCheapXYDistanceBetween(character, self.player);
+				-- CreateLogLine("Distance Log", true,
+				-- 	"Character - " .. tostring(self:getName()) .. " is this far  " .. tostring(testDistance) .. " from this thing"
+				-- );
+				-- 
+			
+				-- Batmane - Distance Capping Function to eliminate excessive calculation - No Longer needed with built in spotting
+				if isBeyondMaxDistance(character, self.player, surveyRange) then
+					break 
+				end
 				
-					-- Batmane - Distance Capping Function to eliminate excessive calculation - No Longer needed with built in spotting
-					-- if isBeyondMaxDistance(character, self.player, surveyRange) then
-					-- 	break 
-					-- end
-					
 
-					-- This causes issues on stairs
-					-- if character:getZ() ~= self.player:getZ() and instanceof(character, "IsoZombie") then 
-					-- 	break 
-					-- end
+				-- This causes issues on stairs
+				-- if character:getZ() ~= self.player:getZ() and instanceof(character, "IsoZombie") then 
+				-- 	break 
+				-- end
 
-					-- local currentDistance = GetXYDistanceBetween(character, self.player); -- We no longer calc actualy distance
-					local currentDistance = GetCheapXYDistanceBetween(character, self.player);
+				-- local currentDistance = GetXYDistanceBetween(character, self.player); -- We no longer calc actualy distance
+				local currentDistance = GetCheapXYDistanceBetween(character, self.player);
 
-					if self:isEnemy(character)
+				if self:isEnemy(character)
+				then
+					-- Handle Number of zombies in critical range - for running
+					if currentDistance < criticalDangerRange
+						and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
 					then
-						--
-						if currentDistance < criticalDangerRange
-							and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
-						then
-							self.EnemiesOnMe = self.EnemiesOnMe + 1;
+						self.EnemiesOnMe = self.EnemiesOnMe + 1;
+					end
+					--
+					-- Handle Number of zombies in danger range (like initiator for attack range)
+					if currentDistance < dangerRange
+						and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
+					then
+						-- Get escape vector from all enemies in danger zone
+						local tempVector = getVector(character, self.player)
+						if not newEscapeVector then 
+							newEscapeVector = tempVector
+						else
+							local combinedVector = addVectors(newEscapeVector, tempVector)
+							newEscapeVector = {
+								x = combinedVector.x / currentDistance,
+								y = combinedVector.y / currentDistance
+							}
 						end
-						--
-						if currentDistance < dangerRange
-							and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
-						then
-							self.dangerSeenCount = self.dangerSeenCount + 1;
-						end
-						--
-						local CanSee = self:RealCanSee(character);
-						if CanSee then
-							self.seenCount = self.seenCount + 1;
-						end
-						--
-						if (CanSee or currentDistance < minSightDistance) 
-							and currentDistance < closestDistanceSoFar 
-						then
-							closestDistanceSoFar = currentDistance;
-							-- self.player:getModData().seenZombie = true; -- Batmane: Completely useless param
-							closestCharIdx = i;
-							if instanceof(character, "IsoPlayer") then 
-								closestSurvivorIdx = i
-							elseif instanceof(character, "IsoZombie") then
-								closestZombieIdx = i
-							end
+						
+						self.dangerSeenCount = self.dangerSeenCount + 1;
+					end
+					--
+					-- Handle identify closest threat
+					local CanSee = self:RealCanSee(character);
+					if CanSee then
+						self.seenCount = self.seenCount + 1;
+					end
+					--
+					if (CanSee or currentDistance < minSightDistance) 
+						and currentDistance < closestDistanceSoFar 
+					then
+						closestDistanceSoFar = currentDistance;
+						-- self.player:getModData().seenZombie = true; -- Batmane: Completely useless param
+						closestCharIdx = i;
+						if instanceof(character, "IsoPlayer") then 
+							closestSurvivorIdx = i
+						elseif instanceof(character, "IsoZombie") then
+							closestZombieIdx = i
 						end
 					end
 				end
-				break
-			until true
-		end
-
-		CreateLogLine("SuperSurvivor", isFunctionLoggingEnabled, "spottedList end...");
+			end
+			break
+		until true
 	end
+
+	CreateLogLine("SuperSurvivor", isFunctionLoggingEnabled, "spottedList end...");
 
 	-- if enemies are near, increase the player update function refresh time for better fighting.
 	-- Lower = more frequent processing
@@ -1627,6 +1665,13 @@ function SuperSurvivor:DoVisionV3()
 	-- CreateLogLine("Vision", isLocalLoggingEnabled, tostring(self:getName()) .. " has closestCharIdx: " ..tostring(closestCharIdx));
 	-- 
 
+	if self.dangerSeenCount > 0 then
+		self.escapeVector = newEscapeVector
+	end
+
+	-- Need something here to keep track of main player. Adjust the escape vector if player is in the path
+	-- Perhaps we need to store the escape square here at all times so we dont have to recalculate it up to 2 or 3 times per second
+
 	-- When all characters have been considered, pick the closest one and save information about it
 	if closestCharIdx ~= nil and spottedList ~= nil 
 	then
@@ -1634,13 +1679,7 @@ function SuperSurvivor:DoVisionV3()
 			self.LastEnemySeen = spottedList:get(closestCharIdx);
 			self.LastEnemySeenDistance = closestDistanceSoFar
 			self.LastEnemySeenSquare = self.LastEnemySeen:getCurrentSquare()
-			
-
-			-- Only update escape vector once per second
-			-- if self.Reducer % globalBaseUpdateDelayTicks == 0 then 
-			-- if not self.escapeVector
-			-- then 
-			self.escapeVector = getXYUnitVector(self.LastEnemySeen, self.player)
+			-- self.escapeVector = getXYUnitVector(self.LastEnemySeen, self.player) -- Old vector based on one enemy
 
 			-- -----------------------------
 			-- Debug Player Targetting
@@ -1660,28 +1699,6 @@ function SuperSurvivor:DoVisionV3()
 			-- end
 			-- -----------------------------
 
-			-- Experimental Multi vector evasion system
-			-- else
-			-- 	local newVector = getXYUnitVector(self.LastEnemySeen, self.player)
-
-			-- 	-- CreateLogLine("Test", true, tostring(self:getName()) .. " newVector x " .. tostring(newVector.x));
-			-- 	-- CreateLogLine("Test", true, tostring(self:getName()) .. " newVector y " .. tostring(newVector.y));
-
-			-- 	local combinedVector = addVectors(self.escapeVector, newVector)
-
-			-- 	-- CreateLogLine("Test", true, tostring(self:getName()) .. " combinedVector x " .. tostring(combinedVector.x));
-			-- 	-- CreateLogLine("Test", true, tostring(self:getName()) .. " combinedVector y " .. tostring(combinedVector.y));
-
-			-- 	local combinedUnitVector = convertToUnitVector(combinedVector)
-			-- 	self.escapeVector = combinedUnitVector
-			-- end
-			-- end
-
-			-- This is too op to have the ai just light up the enemy
-			-- if self:isEnemyInRange(self.LastEnemySeen)
-			-- then
-			-- 	self.TriggerHeldDown = true 
-			-- end
 
 			CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeen = " .. tostring(self.LastEnemySeen));
 			CreateLogLine("Vision", isLocalLoggingEnabled, "self.escapeVector = " .. tostring(self.escapeVector));
@@ -2607,8 +2624,8 @@ function SuperSurvivor:updateSurvivorStatus()
 		return false;
 	end
 
-	-- Everything in here runs 2 per second if FPS is 60 no matter if UpdateTicksDelay has been intensified
-	if self.Reducer % (globalBaseUpdateDelayTicks / 2) 
+	-- Everything in here runs 1 per second if FPS is 60 no matter if UpdateTicksDelay has been intensified
+	if self.Reducer % (globalBaseUpdateDelayTicks) 
 	then 
 		-- Handle Vision, Enemy Counting, Remembering Enemy Target, etc.
 		self:DoVisionV3() -- Only allow Vision to run once per second at 60 fps
@@ -3766,14 +3783,19 @@ function SuperSurvivor:NPC_ShouldRunOrWalk()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_Should RunOrWalk() end ---");
 end
 
+tooCloseToPlayerToRun = 2
 function SuperSurvivor:NPC_EnforceWalkNearMainPlayer()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_EnforceWalkNearMainPlayer() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_ EnforceWalkNearMainPlayer() called");
 	-- Emergency failsafe to prevent NPCs from running into player
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
-	if (GetDistanceBetween(self.player, getSpecificPlayer(0)) < 1) then
+
+	local distanceToPlayer0 = self.distanceToPlayer0
+	if not distanceToPlayer0 then 
+		distanceToPlayer0 = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
+	end
+	if distanceToPlayer0 <= tooCloseToPlayerToRun and getSpecificPlayer(0):getZ() == self.player:getZ() then
 		self:setRunning(false)
 	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_EnforceWalkNearMainPlayer() end ---");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_ EnforceWalkNearMainPlayer() end ---");
 end
 
 -- ERW stands for 'EnforceRunWalk'

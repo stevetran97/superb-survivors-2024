@@ -55,6 +55,8 @@ function AIEssentialTasks(TaskMangerIn)
 	end
 	-- 
 	
+	-- Force NPC to slowdown near player - Need this to run every time task tick runs
+	currentNPC:NPC_EnforceWalkNearMainPlayer();
 
 	-- Flee Task
 	-- Injured and need to Heal
@@ -62,36 +64,40 @@ function AIEssentialTasks(TaskMangerIn)
 		-- currentNPC:getDangerSeenCount() > 0
 		currentNPC.EnemiesOnMe > 0
 	then
-		currentNPC:Speak("Cover me! I'm hurt and I need to get away!");
 		if TaskMangerIn:getCurrentTask() ~= "Flee" then 
+			currentNPC:Speak("Cover me! I'm hurt and I need to get away!");
 			TaskMangerIn:AddToTop(FleeTask:new(currentNPC, true, startingDangerRange + 4));
 		end
+		currentNPC:setRunning(true)
 		return false
-	-- Cowardice
+	-- Cowardice - Bravery
 	elseif
-		currentNPC:getDangerSeenCount() > npcBravery -- more the npcBravery # of zombies in fight radius
-		-- and currentNPC:hasWeapon() - Batmane - Doesnt matter if they have weapon or not - for cowardice
-		-- and not currentNPC:usingGun() -- Melee - Doesnt matter if they are using melee
-		and currentNPC.EnemiesOnMe > 4 -- 2 enemies in grabbing distance
+		(currentNPC:getDangerSeenCount() > npcBravery and currentNPC.EnemiesOnMe >= 2) -- 2 enemies in grabbing distance -- more the npcBravery # of zombies in fight radius 
+		-- or currentNPC.EnemiesOnMe >= 3
 	then
 		CreateLogLine("SuperSurvivor", isFleeCallLogged, tostring(currentNPC:getName()) .. " needs to flee because they are afraid");
 		currentNPC:Speak("This is too much! Let's get out of here!");
 		if TaskMangerIn:getCurrentTask() ~= "Flee" 
 			then TaskMangerIn:AddToTop(FleeTask:new(currentNPC, true, startingDangerRange));
 		end
+		currentNPC:setRunning(true)
 		return false
 	-- Has Gun and Needs to Kite
 	elseif
 		currentNPC:hasGun() and
 		currentNPC:usingGun() and
-		currentNPC.EnemiesOnMe > 1
+		currentNPC.EnemiesOnMe >= 2
 	then
-		-- CreateLogLine("BatmaneDebugFlee", isFleeCallLogged, tostring(currentNPC:getName()) .. " decided to flee with gun due to close enemy");
-		currentNPC:Speak("Cover me! I need space to use my gun!");
 		if TaskMangerIn:getCurrentTask() ~= "Flee" then 
-			TaskMangerIn:AddToTop(FleeTask:new(currentNPC, true, startingDangerRange));
+			currentNPC:Speak("Cover me! I need space to use my gun!");
+			if currentNPC.EnemiesOnMe > 2 then -- This is not ideal, Ideally they should run if theres a tonne of enemies mildly close
+				-- Run away
+				TaskMangerIn:AddToTop(FleeTask:new(currentNPC, true, startingDangerRange));
+			else
+				-- Walk away
+				TaskMangerIn:AddToTop(FleeTask:new(currentNPC, false, criticalDangerRange + 1));
+			end
 		end
-		currentNPC:NPC_EnforceWalkNearMainPlayer();
 		return false
 	end
 	if checkAiTaskIs(TaskMangerIn, "Flee") then return false end -- No further task if above task is in progress
@@ -132,7 +138,6 @@ function AIEssentialTasks(TaskMangerIn)
     -- Heal self if there are no dangers nearby
     -- ----------------------------- --
     if currentNPC:HasInjury() 
-        and distance_AnyEnemy > startingDangerRange
         and TaskMangerIn:getCurrentTask() ~= "First Aide"
     then
 		currentNPC:Speak("Cover me! I'm hurt and I need to heal!");
@@ -296,6 +301,10 @@ function AILowPriorityTasks(TaskMangerIn)
 	-- ----------------------------- --
 	-- Find food / drink - like task --
 	-- ----------------------------- --
+	local currentNPC = TaskMangerIn.parent;
+	local npcIsInAction = currentNPC:isInAction();
+	local npcIsInBase = currentNPC:isInBase();
+	local npcGroup = currentNPC:getGroup();
 	-- Manages AI getting water
 	if SurvivorNeedsFoodWater -- Sandbox Setting
 		and npcIsInAction == false
@@ -399,9 +408,7 @@ function AIManager(TaskMangerIn)
 		-- ---------------------------------------------------------- --
 
 		-- Runs in player is dead?
-		if (getSpecificPlayer(0) == nil  -- This means they only do it if player 0 is nil? WHY?
-				or not getSpecificPlayer(0):isAsleep())  -- or Only when player is awake
-			and currentNPC:getAIMode() ~= "Stand Ground"  -- Not on stand ground
+		if currentNPC:getAIMode() ~= "Stand Ground"  -- Not on stand ground
 		then
 			local SafeToGoOutAndWork = true
 			local AutoWorkTaskTimeLimit = 300
