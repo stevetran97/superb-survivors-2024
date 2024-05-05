@@ -496,13 +496,10 @@ function getXYSq2FromSq1ToVector(sq1, vector, distanceToGo)
 	-- Debug
 	-- local testLength = math.sqrt(vector.x * vector.x + vector.y * vector.y)
 	-- CreateLogLine('GraceErrors', true, 'vector length = ' .. tostring(testLength))
+	-- if testLength > 1 then
+	-- 	CreateLogLine('GraceErrors', true, 'Vector is not a unit vector. Length = ' .. tostring(testLength))
+	-- end
 	-- 
-
-	if testLength > 1 then
-		CreateLogLine('GraceErrors', true, 'Vector is not a unit vector. Length = ' .. tostring(testLength))
-	end
-	-- 
-
 
 	if (not distanceToGo) then
 		distanceToGo = 7
