@@ -744,8 +744,8 @@ function SuperSurvivor:getFollowChar()
 	return SSM:Get(self.player:getModData().FollowCharID);
 end
 
--- If there is a Follow Task in your list of tasks, this returns true
--- If task doesnt exist or is complete return false
+-- If there is no follow task in the list at all, then you dont need to follow
+-- Otherwise, if there is one in the list, is it complete and are the passive conditions to trigger it met? Then yeah, you do need to follow.
 function SuperSurvivor:needToFollow()
 	local Task = self:getTaskManager():getTaskFromName("Follow")
 	-- CreateLogLine('NPC Follow', true, tostring(self:getName()) .. " getting task from list = " .. tostring(Task))
@@ -3817,6 +3817,8 @@ function SuperSurvivor:NPC_ERW_AroundMainPlayer(VarDist)
 end
 
 -- Manages movement and movement speed
+-- Walks to target
+-- Does not handle kiting
 function SuperSurvivor:NPC_MovementManagement_Guns()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC _MovementManagement_Guns() called");
 
