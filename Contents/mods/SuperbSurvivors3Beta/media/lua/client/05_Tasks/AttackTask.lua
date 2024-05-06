@@ -2,6 +2,7 @@
 -- Definition of an attack
 -- Completed - Means NPC is within a certain distance 
 
+isAttackCallLogged = false
 
 AttackTask = {}
 AttackTask.__index = AttackTask
@@ -25,44 +26,27 @@ function AttackTask:new(superSurvivor)
 end
 
 function AttackTask:isComplete()
-	if 
-		-- not self.parent:needToFollow() and  -- Cant continue task if need ToFollow
-		(
-			self.parent:getDangerSeenCount() > 0 or -- Number of killable enemies in range is greater than 0
-			(self.parent:isEnemyInRange(self.parent.LastEnemySeen) -- In attack range of my weapon
-				and self.parent:hasWeapon()) -- In attack range of my weapon
-		)
-		and self.parent.LastEnemySeen
-		and not self.parent.LastEnemySeen:isDead()
-		-- and self.parent:HasInjury() == false -- No longer need to handle this because first aid already prioritized
-	then
-		return false;
-	else
-		local theDistance = GetXYDistanceBetween(self.Target, self.parent.player)
-		if theDistance < 1 and self.Target:getZ() == self.parent.player:getZ() then
-			self.parent:StopWalk()
-		end
+	if self.parent:getDangerSeenCount() <= 0 then return true end
+	if not self.parent:hasWeapon() then return true end
+	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " has attack NOT COMPLETE ");
 
-		-- CreateLogLine("AttackTask", true, tostring(self.parent:getName()) .. " has completed attack ");
-		return true;
-	end
+	return false
 end
 
 function AttackTask:isValid()
-	if not self.parent
-		or not self.parent.LastEnemySeen
-		or not self.parent:isInSameRoom(self.parent.LastEnemySeen)
-		or self.parent.LastEnemySeen:isDead()
-	then
-		return false;
-	else
-		return true;
-	end
+	if not self.parent:isInSameRoom(self.parent.LastEnemySeen) then return false end
+	if not self.parent.LastEnemySeen then return false end
+	if self.parent.LastEnemySeen:isDead() then return false end
+	if not self.parent:RealCanSee(self.parent.LastEnemySeen) then return false end
+
+	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " has valid attack ");
+
+	return true;
 end
 
 function AttackTask:update()
 	CreateLogLine("AttackTask", isLocalLoggingEnabled, "function: AttackTask:update() called");
-	-- CreateLogLine("AttackTask", true, tostring(self.parent:getName()) .. " has attack task");
+	CreateLogLine("AttackTask", isAttackCallLogged, tostring(self.parent:getName()) .. " has attack task");
 
 	if not self:isValid() or self:isComplete() then return false end
 
@@ -73,6 +57,9 @@ function AttackTask:update()
 	-- Handle Movement and Readying Weapon
 	-- Walk to Walk away etc.
 	-- New
+	-- This needs to be moved inside of the movement management functions
+	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " is running attack ");
+
 	if self.parent:hasGun() then
 		self.parent:NPC_MovementManagement_Guns() -- To move around, it checks for in attack range too
 

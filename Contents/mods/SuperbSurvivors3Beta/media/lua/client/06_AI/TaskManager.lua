@@ -188,10 +188,9 @@ end
 function TaskManager:update()
 	CreateLogLine("TaskManager", isLocalLoggingEnabled, "function: TaskManager:update() called");
 
-	if self == nil
-	then
-		return
-	end
+	if self == nil then return end
+	if not self.parent.player then return end
+	if not self.parent then return end
 
 	-- Manages what tasks need to be prioritzie and added to the front
 	AIManager(self)

@@ -3893,6 +3893,7 @@ function SuperSurvivor:NPC_MovementManagement_Melee()
 		-- -- 	CreateLogLine("Batmane NPC_MovementManagement_Melee", true, tostring(self:getName()) .. " reached target and is just right distance");
 		-- -- 	-- self:StopWalk() -- Not sure if this needs to be handled here
 		-- end
+		self:StopWalk()
 		return 
 	end
 

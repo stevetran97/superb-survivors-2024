@@ -24,19 +24,21 @@ function AIEssentialTasks(TaskMangerIn)
 	local currentNPC = TaskMangerIn.parent;
 
 	-- -- Logging Block
-	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has current task: " .. tostring(TaskMangerIn:getCurrentTask()));
-	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has wait ticks: " .. tostring(currentNPC.WaitTicks));
-	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has group role: " .. tostring(currentNPC:getGroupRole()));
-	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list start -------- ");
-	-- for i, Task in pairs(TaskMangerIn.Tasks) do
-	-- 	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has queued task: " .. tostring(Task.Name));
-	-- end
-	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list end -------- ");
+	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has current task: " .. tostring(TaskMangerIn:getCurrentTask()));
+	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has wait ticks: " .. tostring(currentNPC.WaitTicks));
+	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has group role: " .. tostring(currentNPC:getGroupRole()));
+	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list start -------- ");
+	for i, Task in pairs(TaskMangerIn.Tasks) do
+		CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has queued task: " .. tostring(Task.Name));
+	end
+	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list end -------- ");
+	local actionQueue = ISTimedActionQueue.getTimedActionQueue(npc)
+	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has this action queue -------- " .. tostring(actionQueue));
 	-- -- Logging Block
 
 	-- Variable Block
 	local npcBravery = currentNPC:getBravePoints();
-	local distanceAnyEnemy = currentNPC.LastEnemySeenDistance -- local distance_AnyEnemy = surveyRange;
+	local distance_AnyEnemy = currentNPC.LastEnemySeenDistance -- local distance_AnyEnemy = surveyRange;
 	if not currentNPC.LastEnemySeenDistance and currentNPC.LastEnemySeen then
 		distance_AnyEnemy = GetCheap3DDistanceBetween(currentNPC.LastEnemySeen, currentNPC:Get());
 	end
@@ -78,7 +80,7 @@ function AIEssentialTasks(TaskMangerIn)
 	elseif
 		currentNPC:hasGun() and
 		currentNPC:usingGun() and
-		currentNPC.EnemiesOnMe >= 1 -- Let see how walking away from 2 to 1 zombie works - Batmane
+		currentNPC.EnemiesOnMe >= 2 -- Let see how walking away from 2 to 1 zombie works - Batmane
 	then
 		if TaskMangerIn:getCurrentTask() ~= "Flee" then 
 			currentNPC:Speak("Cover me! I need space to use my gun!");
@@ -402,22 +404,10 @@ function AIManager(TaskMangerIn)
 		local isEnemySurvivor = instanceof(currentNPC.LastEnemySeen, "IsoPlayer");
 		--
 
-		-- Batmane Disable old routines that are replaced with essential task checking system
-		-- -- 
-		-- if AiNPC_Job_Is(currentNPC, "Companion") then
-		-- 	-- Execute Companion Only Protocols
-		-- 	AI_Companion(TaskMangerIn);
-		-- else
-		-- 	-- Execute Base Protocols
-		-- 	AI_NonCompanion(TaskMangerIn);
-		-- end
-
-
 		-- ---------------------------------------------------------- --
 		-- ------------------- Basic Tasks---------------------------- --
 		-- ---------------------------------------------------------- --
 
-		-- Runs in player is dead?
 		if currentNPC:getAIMode() ~= "Stand Ground"  -- Not on stand ground
 		then
 			local SafeToGoOutAndWork = true
@@ -431,11 +421,6 @@ function AIManager(TaskMangerIn)
 				-- if getGroupArea 'getGroupArea = does this area exist'
 				if 
 					npcIsInAction == false
-					-- and not checkAiTaskIs(TaskMangerIn, "Attack")
-					-- and not checkAiTaskIs(TaskMangerIn, "Threaten")
-					-- and not checkAiTaskIs(TaskMangerIn, "Pursue")
-					-- and not checkAiTaskIs(TaskMangerIn, "Flee")
-					-- and not checkAiTaskIs(TaskMangerIn, "First Aide")
 					and not checkAiTaskIs(TaskMangerIn, "Find This")
 					and not checkAiTaskIs(TaskMangerIn, "Eat Food")
 					-- and not checkAiTaskIs(TaskMangerIn, "Follow")
