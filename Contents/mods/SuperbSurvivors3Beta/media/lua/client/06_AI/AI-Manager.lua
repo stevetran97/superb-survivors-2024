@@ -24,16 +24,17 @@ function AIEssentialTasks(TaskMangerIn)
 	local currentNPC = TaskMangerIn.parent;
 
 	-- -- Logging Block
-	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has current task: " .. tostring(TaskMangerIn:getCurrentTask()));
-	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has wait ticks: " .. tostring(currentNPC.WaitTicks));
-	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has group role: " .. tostring(currentNPC:getGroupRole()));
-	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list start -------- ");
-	for i, Task in pairs(TaskMangerIn.Tasks) do
-		CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has queued task: " .. tostring(Task.Name));
-	end
-	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list end -------- ");
-	local actionQueue = ISTimedActionQueue.getTimedActionQueue(npc)
-	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has this action queue -------- " .. tostring(actionQueue));
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has current task: " .. tostring(TaskMangerIn:getCurrentTask()));
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has wait ticks: " .. tostring(currentNPC.WaitTicks));
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has group role: " .. tostring(currentNPC:getGroupRole()));
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list start -------- ");
+	-- for i, Task in pairs(TaskMangerIn.Tasks) do
+	-- 	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has queued task: " .. tostring(Task.Name));
+	-- end
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list end -------- ");
+	-- local actionQueue = ISTimedActionQueue.getTimedActionQueue(npc)
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has this action queue -------- " .. tostring(actionQueue));
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has this AI MODE -------- " .. tostring(currentNPC:getAIMode()));
 	-- -- Logging Block
 
 	-- Variable Block
@@ -380,11 +381,11 @@ function AIManager(TaskMangerIn)
 		hasFinishLowPriorityTasks = AILowPriorityTasks(TaskMangerIn)
 	end
 	if not hasFinishLowPriorityTasks then return false end
-
+	
 	-- Test Early Return
 	-- Only run very 6 ish seconds and finished essential tasks
 	if currentNPC.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then 
-		-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " running other block since essential tasks are handled ");
+		CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " is now processing old routines.... ");
 
 		-- Skip Task Management if Survivor needs to follow you rn or is in a vehicle
 		-- if currentNPC:needToFollow()

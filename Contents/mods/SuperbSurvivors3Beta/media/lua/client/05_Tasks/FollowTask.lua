@@ -161,7 +161,6 @@ function FollowTask:update()
 
 
 	if distance > GFollowDistance + self.FollowDistanceOffset + 5 
-		-- or self.FollowChar:getVehicle() ~= self.parent:Get():getVehicle() -- Not needed, this clause can generally be true
 	then
 		self.parent:setRunning(true)
 	else
@@ -215,7 +214,6 @@ function FollowTask:update()
 	-- General Path finding start
 	if not ropeSquare then
 		if distance > (GFollowDistance + self.FollowDistanceOffset) 
-			-- and not self.parent:Get():getVehicle() -- Already handled above -- Means ai is not in a vehicle
 		then
 			local gotosquare = self.FollowChar:getCurrentSquare()
 			if gotosquare then
@@ -282,7 +280,8 @@ function FollowTask:update()
 			end
 			--elseif (self.FollowChar:getVehicle() ~= nil) and (self.parent:Get():getVehicle() ~= nil) then
 			--ISTimedActionQueue.add(ISSwitchVehicleSeat:new(self.parent:Get(), self.MySeat))
-		elseif (self.FollowChar:getVehicle() == nil) and (self.parent:Get():getVehicle() ~= nil) then
+		-- Handle getting out of car when player is not in car
+		elseif not self.FollowChar:getVehicle() and self.parent:Get():getVehicle() then
 			self.MySeat = -1
 			ISTimedActionQueue.add(ISExitVehicle:new(self.parent:Get()))
 			self.parent:Wait(1)

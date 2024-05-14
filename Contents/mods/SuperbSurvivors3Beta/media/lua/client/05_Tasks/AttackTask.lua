@@ -63,7 +63,7 @@ function AttackTask:update()
 	if self.parent:hasGun() then
 		self.parent:NPC_MovementManagement_Guns() -- To move around, it checks for in attack range too
 
-		if self.parent:needToReadyGun(weapon) then -- Despite the name, it means 'has gun in the npc's hand'
+		if self.parent:needToReadyGun(weapon) and self.parent.EnemiesOnMe <= 0 then -- Despite the name, it means 'has gun in the npc's hand'
 			local ableToReadyGun = self.parent:ReadyGun(weapon);
 			if not ableToReadyGun then self.parent:reEquipMelee() end
 			return -- Batmane - Maybe this should return here if the NPC needs to ready their gun, Its not like they can actually attack
@@ -71,22 +71,6 @@ function AttackTask:update()
 	else
 		self.parent:NPC_MovementManagement_Melee() -- For melee movement management
 	end
-
-	-- Old
-	-- if self.parent:isWalkingPermitted() then
-	-- 	self.parent:NPC_MovementManagement_Melee() -- For melee movement management
-
-	-- 	-- Controls the Range of how far / close the NPC should be
-	-- 	if self.parent:hasGun() then 			
-	-- 		-- WIP - When and where was "weapon" assigned a value? This is still unassigned...
-	-- 		if self.parent:needToReadyGun(weapon) then -- Despite the name, it means 'has gun in the npc's hand'
-	-- 			self.parent:ReadyGun(weapon);
-	-- 			return -- Batmane - Maybe this should return here if the NPC needs to ready their gun, Its not like they can actually attack
-	-- 		else
-	-- 			self.parent:NPC_MovementManagement_Guns() -- To move around, it checks for in attack range too
-	-- 		end
-	-- 	end
-	-- end
 
 	-- Controls if the NPC is litreally running or walking state.
 	self.parent:NPC_ShouldRunOrWalk();

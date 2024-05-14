@@ -270,7 +270,7 @@ end
 -- Initializes Player as a Super Survivor object
 ---@param player any
 function SuperSurvivorPlayerInit(player)
-	CreateLogLine("SuperSurvivorUpdate", isLocalLoggingEnabled, "function: SuperSurvivorPlayerInit() called");
+	CreateLogLine("Init Player", isLocalLoggingEnabled, "Play4er Init");
 	player:getModData().isHostile = false
 	player:getModData().semiHostile = false
 	player:getModData().hitByCharacter = false

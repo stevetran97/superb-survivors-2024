@@ -142,8 +142,17 @@ function SuperSurvivorsRandomSpawn()
         hisGroup = SSGM:newGroupWithID(0);
         hisGroup:addMember(SSM:Get(0), "Leader");
     end
+    if hisGroup:getID() ~= 0 then 
+        hisGroup = SSGM:GetGroupById(0);
+        if hisGroup then 
+            hisGroup = SSGM:newGroupWithID(0);
+        end
+        hisGroup:addMember(SSM:Get(0), "Leader");
+    end
 
-    if (getSpecificPlayer(0) == nil or hisGroup == nil) then
+    if getSpecificPlayer(0) == nil 
+        or hisGroup == nil 
+    then
         return false;
     end
 

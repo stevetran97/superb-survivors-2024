@@ -1452,8 +1452,8 @@ function SuperSurvivor:RealCanSee(character)
 	end
 
 	if character:isZombie() then
-		-- return (self.player:CanSee(character)) -- normal vision for zombies (they are not quiet or sneaky)
-		return true -- Survivor always sees the zombie
+		return (self.player:CanSee(character)) -- normal vision for zombies (they are not quiet or sneaky)
+		-- return true -- Survivor always sees the zombie
 	end 
 
 	local visioncone = 0.90;
@@ -1699,6 +1699,16 @@ function SuperSurvivor:DoVisionV3()
 			-- end
 			-- -----------------------------
 
+			-- Debug New Functions
+			-- local testdir = self.LastEnemySeen:getDir()
+			-- local testcs = self.LastEnemySeen:getCurrentSquare()
+			-- local testfs = testcs:getTileInDirection(self.LastEnemySeen:getDir())
+
+			-- CreateLogLine("Test new funct", true, "testdir = " .. tostring(testdir)); // Iso Grid Square
+			-- CreateLogLine("Test new funct", true, "testcs = " .. tostring(testcs)); // NW, NE, N, etc
+			-- CreateLogLine("Test new funct", true, "testfs = " .. tostring(testfs)); // Iso Grid Square
+			-- 
+
 
 			CreateLogLine("Vision", isLocalLoggingEnabled, "self.LastEnemySeen = " .. tostring(self.LastEnemySeen));
 			CreateLogLine("Vision", isLocalLoggingEnabled, "self.escapeVector = " .. tostring(self.escapeVector));
@@ -1778,8 +1788,7 @@ function SuperSurvivor:walkTo(square)
 
 	self.TargetSquare = square
 	if (square:getRoom() ~= nil) and (square:getRoom():getBuilding() ~= nil) then
-		self.TargetBuilding = square:getRoom()
-			:getBuilding()
+		self.TargetBuilding = square:getRoom():getBuilding()
 	end
 
 	local adjacent = AdjacentFreeTileFinder.Find(parent, self.player);
@@ -3763,11 +3772,17 @@ function SuperSurvivor:NPC_ShouldRunOrWalk()
 		if not distance then 
 			distance = GetXYDistanceBetween(self.parent.LastEnemySeen, self.parent.player)
 		end
-		local distanceToPlayer = GetCheap3DDistanceBetween(self.player, getSpecificPlayer(0)) -- To prevent running into the player
+
+		local distanceToPlayer = self.distanceToPlayer0 -- To prevent running into the player
+		if not distanceToPlayer then 
+			distanceToPlayer = GetCheap3DDistanceBetween(self.player, getSpecificPlayer(0)) 
+		end
+
 		if not distance or not distanceToPlayer then return end
 
-		if (self:Task_IsNotFlee() and self:Task_IsNotFleeFromSpot())
-			or distanceToPlayer <= 2 
+		if 
+			-- (self:Task_IsNotFlee() and self:Task_IsNotFleeFromSpot())
+			distanceToPlayer <= 2 
 			or distance <= 15 -- Lets just say they should walk if enemy exists and distance is less than 15 otherwise run
 			-- or self:Task_IsAttack() 
 			-- or self:Task_IsThreaten() 
@@ -3830,6 +3845,13 @@ function SuperSurvivor:NPC_MovementManagement_Guns()
 	end
 	if not cs then return end
 
+	local distance = self.LastEnemySeenDistance
+	if not distance then 
+		distance = GetCheap3DDistanceBetween(self.player, self.LastEnemySeen)
+	end
+	if not distance then return end
+	local minrange = self:getMinWeaponRange() + 0.1
+
 	local zNPC_AttackRange = self:isEnemyInRange(self.LastEnemySeen)
 
 	-- if zNPC_AttackRange then self:StopWalk() end -- Not sure if this needs to be handled here
@@ -3845,6 +3867,23 @@ function SuperSurvivor:NPC_MovementManagement_Guns()
 				self:walkToDirect(cs)
 			end
 		end
+	elseif self.EnemiesOnMe >= 2 and distance < minrange + 2 then
+		CreateLogLine("Kiting with gun", true, tostring(self:getName()) .. " is kiting");
+
+		-- WIP
+		local targetSquareToTravelTo = getXYSq2FromSq1ToVector(self.player, convertToUnitVector(self.escapeVector), 3)
+		if not targetSquareToTravelTo or
+			not targetSquareToTravelTo.x or
+			not targetSquareToTravelTo.y
+		then
+			CreateLogLine('Flee Errors', enableLogErrors, 'FleeTask:update(): Cannot calculate a target to travel to')
+			self.Complete = true
+			return
+		end
+		local targetSquareObj = self.player:getCell():getGridSquare(targetSquareToTravelTo.x, targetSquareToTravelTo.y, self.player:getZ())
+		self:walkTo(targetSquareObj)
+		-- WIP
+
 	end
 
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _MovementManagement_Guns() end ---");
@@ -4013,6 +4052,8 @@ end
 function SuperSurvivor:AttackWithMelee(victim) -- New Function
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC _Attack() called");
 
+	if self.player:getModData().felldown then return false end -- cant attack if they have fallen down
+
 	-- Make sure the entity the NPC is hitting exists
 	if not (instanceof(victim, "IsoPlayer") or instanceof(victim, "IsoZombie")) then
 		return false;
@@ -4078,7 +4119,7 @@ function SuperSurvivor:AttackWithGun(victim)
 
 	--if(self.player:getCurrentState() == SwipeStatePlayer.instance()) then return false end -- already attacking wait
 
-	if self.player:getModData().felldown then return false end -- cant attack if stunned by an attack -- Batmane I dont like this
+	if self.player:getModData().felldown then return false end -- cant attack if they have fallen down
 
 	self.SwipeStateTicks = 0;  -- this value is tracked to see if player stuck in attack state/animation. so reset to 0 if we are TRYING/WANTING to attack
 

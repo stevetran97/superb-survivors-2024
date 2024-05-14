@@ -30,15 +30,14 @@ end
 
 function WanderTask:update()
 	CreateLogLine("WanderTask", isLocalLoggingEnabled, "function: WanderTask:update() called");
-	if (not self:isValid()) then return false end
+	if not self:isValid() then return false end
+	if self.parent:isInAction() then return false end
 
-	if (self.parent:isInAction() == false) then
-		local sq = getCell():getGridSquare(self.parent.player:getX() + ZombRand(-10, 10),
-			self.parent.player:getY() + ZombRand(-10, 10), self.parent.player:getZ());
-		if (sq ~= nil) then
-			self.parent:walkTo(sq);
-		else
-			CreateLogLine("WanderTask", isLocalLoggingEnabled, "error getting walk sq");
-		end
+	local sq = getCell():getGridSquare(self.parent.player:getX() + ZombRand(-10, 10),
+		self.parent.player:getY() + ZombRand(-10, 10), self.parent.player:getZ());
+	if (sq ~= nil) then
+		self.parent:walkTo(sq);
+	else
+		CreateLogLine("WanderTask", isLocalLoggingEnabled, "error getting walk sq");
 	end
 end
