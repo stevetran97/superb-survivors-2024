@@ -26,8 +26,13 @@ function AttackTask:new(superSurvivor)
 end
 
 function AttackTask:isComplete()
-	if self.parent:getDangerSeenCount() <= 0 then return true end
-	if not self.parent:hasWeapon() then return true end
+	if 
+		self.parent:getDangerSeenCount() <= 0 or
+		not self.parent:hasWeapon()
+	then 
+		self.parent:StopWalk()
+		return true 
+	end
 	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " has attack NOT COMPLETE ");
 
 	return false

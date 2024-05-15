@@ -5,7 +5,7 @@ require "04_DataManagementt.SuperSurvivorGroupManager"; -- Cows: TODO: Remove al
 -- Cows: TODO: A ton of the "NPC_<action>" is... actually also like a task... basically needs an overhaul.
 
 local isLocalLoggingEnabled = false;
-survivorStuckCheck = false
+survivorStuckCheck = true
 
 SuperSurvivor = {}
 SuperSurvivor.__index = SuperSurvivor
@@ -1578,7 +1578,6 @@ function SuperSurvivor:DoVisionV3()
 				-- 	break 
 				-- end
 
-				-- local currentDistance = GetXYDistanceBetween(character, self.player); -- We no longer calc actualy distance
 				local currentDistance = GetCheapXYDistanceBetween(character, self.player);
 
 				if self:isEnemy(character)
@@ -2748,11 +2747,6 @@ function SuperSurvivor:updateSurvivorDailyStatus()
 	end
 
 
-	if (not SurvivorNeedsFoodWater) then
-		self.player:getStats():setThirst(0.0);
-		self.player:getStats():setHunger(0.0);
-	end
-
 	--control of unmanaged stats
 	self.player:getNutrition():setWeight(85);
 	self.player:getBodyDamage():setSneezeCoughActive(0);
@@ -2769,6 +2763,13 @@ function SuperSurvivor:updateSurvivorHourlyStatus()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:updateSurvivorHourlyStatus() called");
 	if self:isDead() then
 		return false;
+	end
+
+	if not SurvivorNeedsFoodWater then
+		CreateLogLine("Food and Hunger", true, tostring(self:getName()) .. " setting hunger/thirst to zero");
+		
+		self.player:getStats():setThirst(0.0);
+		self.player:getStats():setHunger(0.0);
 	end
 
 	--control of unmanaged stats
@@ -2965,7 +2966,7 @@ function SuperSurvivor:PlayerUpdate()
 			end
 		end
 
-		self:WalkToUpdate();
+		self:WalkToUpdate(); -- This is needed otherwise AI cant path at all. They just run off whichever way they face
 	end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:PlayerUpdate() end ---");
 end
@@ -3221,14 +3222,56 @@ function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)
 	return thisBuildingSquare
 end
 
+
+-- Easy Spare Magazie Reload
+-- Copied from ISUI/ISFirearmRadialMenu
+local function predicateNotFullMagazine(item, magazineType)
+	return (item:getType() == magazineType or item:getFullType() == magazineType) and item:getCurrentAmmoCount() < item:getMaxAmmo()
+end
+
+-- Copied from ISUI/ISFirearmRadialMenu
+local function predicateFullestMagazine(item1, item2)
+	return item1:getCurrentAmmoCount() - item2:getCurrentAmmoCount()
+end
+
+-- Copied from ESMR
+function SuperSurvivor:LoadBulletsSpareMag()
+	-- CreateLogLine("LoadBulletsSpareMag", true, tostring(self:getName()) .. " is reloading best spare mag");
+
+	local player = self.player;
+	if player == nil then return end
+
+	local weapon = player:getPrimaryHandItem()
+	if not weapon then return end
+	if not instanceof(weapon, "HandWeapon") then return end
+	if not weapon:isRanged() then return end
+	
+	if not weapon:getMagazineType() then return end
+	
+	local inventory = player:getInventory()
+	local magazine = inventory:getBestEvalArgRecurse(predicateNotFullMagazine, predicateFullestMagazine, weapon:getMagazineType())
+	if not magazine then return end
+	
+	ISInventoryPaneContextMenu.transferIfNeeded(player, magazine)
+
+	if not (inventory:getCountTypeRecurse(magazine:getAmmoType()) > 0) then return end
+
+	local ammoCount = ISInventoryPaneContextMenu.transferBullets(player, magazine:getAmmoType(), magazine:getCurrentAmmoCount(), magazine:getMaxAmmo())
+	if ammoCount == 0 then return end
+	
+	-- CreateLogLine("LoadBulletsSpareMag", true, tostring(self:getName()) .. " is loading bullets into spare mag");
+	ISTimedActionQueue.add(ISLoadBulletsInMagazine:new(player, magazine, ammoCount))
+end
+-- 
+
+local numAddMagsInfAmmo = 3
+
 --- Cows: Need to rewrite this function...
 -- Batmane This is still used as a boolean in Attack Task to switch them to melee when this returns false
 -- Returns true if failed to ready gun but can still proceed to ready it
 -- Returns filse if cannot continue to ready gun
 function SuperSurvivor:ReadyGun(weapon)
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:Ready Gun() called");
-
-	-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is readying their gun");
+	CreateLogLine("Ready Weapon", isLocalLoggingEnabled, tostring(self:getName()) .. " is readying their gun");
 
 	if weapon:isJammed() then
 		CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " has a gun jam");
@@ -3241,130 +3284,102 @@ function SuperSurvivor:ReadyGun(weapon)
 
 	if weapon:haveChamber() and not weapon:isRoundChambered() then
 		if ISReloadWeaponAction.canRack(weapon) then
-			-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is racking weapon");
+			CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is racking weapon");
 			ISReloadWeaponAction.OnPressRackButton(self.player, weapon)
 			return true
 		end
 	end
 
+	local inventoryAmmoCount = self:gunAmmoInInvCount(weapon)
+	local weaponAmmoCount = weapon:getCurrentAmmoCount()
+
 	-- Handle All Guns WITH Magazine
 	if weapon:getMagazineType() then
-		-- Handle Ammo Searching in inventory, management and magazine insertion
-		-- Weapon does NOT contain clip
-		if weapon:isContainsClip() == false then
-			-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is loading magazine");
-			local magazine = weapon:getBestMagazine(self.player)
+		-- Search for a magazine
+		local magazine = weapon:getBestMagazine(self.player)
+		if not magazine then magazine = self.player:getInventory():getFirstTypeRecurse(weapon:getMagazineType()) end
 
-			if magazine == nil then magazine = self.player:getInventory():getFirstTypeRecurse(weapon:getMagazineType()) end
-
-			if magazine == nil and IsInfiniteAmmoEnabled then
+		-- Inf Ammo: Handle Adding Magazine
+		if IsInfiniteAmmoEnabled and not magazine then
+			for i = 1, numAddMagsInfAmmo do
 				magazine = self.player:getInventory():AddItem(weapon:getMagazineType());
 			end
-
-			if magazine then
-				local ammotype = magazine:getAmmoType();
-
-				-- Fill the magazine with ammo if you have inf ammo enabled
-				if not self.player:getInventory():containsWithModule(ammotype) and 
-					magazine:getCurrentAmmoCount() == 0 and
-					IsInfiniteAmmoEnabled 
-				then
-					magazine:setCurrentAmmoCount(magazine:getMaxAmmo())
-				end
-				-- 
-
-				ISTimedActionQueue.add(ISInsertMagazine:new(self.player, weapon, magazine))
-				ISReloadWeaponAction.ReloadBestMagazine(self.player, weapon)
-
-				return true
-			end
-			-- No return case fallback here. What do you do if weapon has no clip and magazine could not be found?
-			-- return false -- Batmane recommended option if you canot find magazine
 		end
-		-- Handle Ammo Searching in inventory, management and magazine insertion
-		-- Weapon DOES contain clip
-		if weapon:isContainsClip() then
-			-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is loading clip");
-			local magazine = weapon:getBestMagazine(self.player)
 
-			if magazine == nil then magazine = self.player:getInventory():getFirstTypeRecurse(weapon:getMagazineType()) end
+		-- Weapon DOES NOT contains loaded magazine/clip inside the gun
+		if weapon:isContainsClip() == false then
+			CreateLogLine("Ready Weapon", isLocalLoggingEnabled, tostring(self:getName()) .. " is handling gun WITHOUT clip");
+			if not magazine then return false end -- Case: No Clip inserted but no magazine found
 
-			if magazine == nil and IsInfiniteAmmoEnabled then
-				magazine = self.player:getInventory():AddItem(weapon:getMagazineType());
+			-- Inf Ammo: Fill the magazine -- This doesnt ever fire and I never felt we needed it. -- Todo Delete this
+			-- local ammotype = magazine:getAmmoType();
+			-- if 
+			-- 	IsInfiniteAmmoEnabled and 
+			-- 	not self.player:getInventory():containsWithModule(ammotype) and 
+			-- 	magazine:getCurrentAmmoCount() == 0
+			-- then
+			-- 	CreateLogLine("Inf Ammo", true, tostring(self:getName()) .. " is setting ammo to max");
+			-- 	magazine:setCurrentAmmoCount(magazine:getMaxAmmo())
+			-- end
+			-- 
+
+			-- Load Magazine if you Can
+			ISInventoryPaneContextMenu.transferIfNeeded(self.player, magazine) -- Transfer magazine from bag?
+			ISTimedActionQueue.add(ISInsertMagazine:new(self.player, weapon, magazine))
+			ISReloadWeaponAction.ReloadBestMagazine(self.player, weapon)
+
+			return true
+		-- Weapon DOES contains loaded magazine/clip inside the gun
+		else
+			CreateLogLine("Ready Weapon", isLocalLoggingEnabled, tostring(self:getName()) .. " is handling gun with clip");
+			if inventoryAmmoCount <= 0 then
+				if IsInfiniteAmmoEnabled then 
+					CreateLogLine("Inf Ammo", isLocalLoggingEnabled, tostring(self:getName()) .. " is adding loose bullets");
+
+					local maxammo = magazine:getMaxAmmo() * numAddMagsInfAmmo
+					local amtype = magazine:getAmmoType()
+	
+					-- Add Ammo
+					for i = 0, maxammo do
+						local am = instanceItem(amtype)
+						self.player:getInventory():AddItem(am)
+					end
+				else
+					-- Open a box for ammo
+					local ammo = self:openBoxForGun()
+
+					-- If no boxes, ammo in gun, ammo in mags, cannot ready gun
+					-- Batmane - Testing logic to check best magazine has no ammo
+					if not ammo and weaponAmmoCount <= 0 and magazine:getCurrentAmmoCount() <= 0 then return false end
+				end
+				-- Batmane - Why can you only open a box if you have weapon contains clip and not when it doesnt contain clip
 			end
 
-			-- Case: Gun has no ammo in inventory but you have infinite ammo
-			if self:gunAmmoInInvCount(weapon) <= 0 and IsInfiniteAmmoEnabled then
-				local maxammo = magazine:getMaxAmmo()
-				local amtype = magazine:getAmmoType()
-
-				-- Loops over need ammo count and adds that ammo count - Surely there is a better way to add x number of items
-				for i = 0, maxammo do
-					local am = instanceItem(amtype)
-					self.player:getInventory():AddItem(am)
-				end
-			-- Case Gun has no ammo in inventory but do NOT have infinite ammo
-			-- Batmane - Why can you only open a box if you have weapon contains clip and not when it doesnt contain clip
-			elseif self:gunAmmoInInvCount(weapon) <= 0 and 
-				not ISReloadWeaponAction.canShoot(weapon) and 
-				not IsInfiniteAmmoEnabled 
+			-- Eject Magazine and reload next
+			if 
+				(self.EnemiesOnMe <= 0 
+				and weaponAmmoCount < weapon:getMaxAmmo()) -- no more enemies around to fight 
+				or weaponAmmoCount == 0 -- Ran out of ammo
 			then
-				-- Open a box for ammo
-				local ammo = self:openBoxForGun()
-
-				-- If no boxes, cannot ready gun
-				if ammo == nil then
-					return false
-				end
-			end
-
-			-- If no more ammo in inventory but have ammo in weapon, gun is basically ready
-			if self:gunAmmoInInvCount(weapon) <= 0 and weapon:getCurrentAmmoCount() > 0 then
-				return true
-			-- Eject magazine and fill magazine to max count if no more enemies around to fight
-			-- Or when you have to fill it do to no ammo
-			elseif (
-					self.EnemiesOnMe == 0 
-					and weapon:getCurrentAmmoCount() < weapon:getMaxAmmo()) 
-				or weapon:getCurrentAmmoCount() == 0
-			then
+				CreateLogLine("Eject Mag", isLocalLoggingEnabled, tostring(self:getName()) .. " is ejecting magazine");
 				-- Eject magazine
 				ISTimedActionQueue.add(ISEjectMagazine:new(self.player, weapon))
 
-				-- Add bullets to best magazine
+				-- Reload best magazine into gun immediately after ejecting magazine
 				ISTimedActionQueue.queueActions(self.player, ISReloadWeaponAction.ReloadBestMagazine, weapon)
 				return true
-			else
-				return true -- Why return true in else case? It prevents the bottom part from running
-				-- The else case should only basically be that you have no ammo in gun or inventory. Cant ready the gun...
 			end
-		end
 
-
-		-- CreateLogLine("Ready Weapon Test Redundancy", true, tostring(self:getName()) .. " has reached seemingly redundant part of reloading");
-
-		-- Inserts Magazine into gun -- This part seems so redundant - espically when the above parts should handle all cases basically returns at the end
-		local magazine = weapon:getBestMagazine(self.player)
-		if magazine then
-			-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is loading magazine into gun");
-			ISInventoryPaneContextMenu.transferIfNeeded(self.player, magazine) -- Transfer magazine from bag?
-			ISTimedActionQueue.add(ISInsertMagazine:new(self.player, weapon, magazine)) -- Insert magazine
 			return true
 		end
-		-- 
-
-		-- check if we have an empty magazine for the current gun. Adds rounds into best magazine?
-		ISReloadWeaponAction.ReloadBestMagazine(self.player, weapon)
-	-- Magazined Gun Handling Ends
-
 	-- Handle All Guns with No Magazine
 	else
-		-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is reloading gun with no magazine");
-		if self:gunAmmoInInvCount(weapon) < 1 and IsInfiniteAmmoEnabled then
-			local maxammo = weapon:getMaxAmmo();
-			local ammotype = weapon:getAmmoType();
-			CreateLogLine("SuperSurvivor", isLocalLoggingEnabled,
-				self:getName() .. " needs to spawn ammo type:" .. tostring(ammotype));
+		CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is reloading gun with no magazine");
+		local maxammo = weapon:getMaxAmmo();
+		local ammotype = weapon:getAmmoType();
+
+		if IsInfiniteAmmoEnabled and self:gunAmmoInInvCount(weapon) <= 0 then
+			CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, self:getName() .. " needs to spawn ammo type:" .. tostring(ammotype));
 			for i = 0, maxammo do
 				local am = instanceItem(ammotype)
 				self.player:getInventory():AddItem(am)
@@ -3372,46 +3387,38 @@ function SuperSurvivor:ReadyGun(weapon)
 		end
 
 		-- if can't have more bullets, we don't do anything, this doesn't apply for magazine-type guns (you'll still remove the current clip)
-		if weapon:getCurrentAmmoCount() >= weapon:getMaxAmmo() then
-			return true
-		end
-
-		-- if there's bullets in the gun and we're in danger, just keep shooting
-		if weapon:getCurrentAmmoCount() > 0 and self.EnemiesOnMe > 0 then
-			return true
-		elseif weapon:getCurrentAmmoCount() > 0 and self.seenCount > 0 and not self:isReloading() then
+		if weaponAmmoCount >= maxammo then
 			return true
 		end
 
 		--  Open box to get more bullets for your gun 
-		-- Batmane - This block at the end seems kind of redundant? - This gets handled above
-		local ammoCount = ISInventoryPaneContextMenu.transferBullets(self.player, weapon:getAmmoType(),
-			weapon:getCurrentAmmoCount(), weapon:getMaxAmmo())
-		if ammoCount == 0 then
+		local ammoCount = ISInventoryPaneContextMenu.transferBullets(self.player, weapon:getAmmoType(), weapon:getCurrentAmmoCount(), weapon:getMaxAmmo())
+		if ammoCount <= 0 then
 			local ammo = self:openBoxForGun()
-			if ammo == nil then
-				if (not ISReloadWeaponAction.canShoot(weapon)) then
-					return false
-				else
-					return true
-				end
+			if not ammo and weaponAmmoCount <= 0 then
+				return false
 			end
+		end
 			
-		-- Reload magazine when all enemies dead even if half full
-		elseif (
-				self.EnemiesOnMe == 0 
-				-- and self.seenCount == 0 -- Why does seenCount affect reloading? It should only matter if zombies are very close. This definitely breaks the ai because they sometimes just stand there when they should be reloading
-				and weapon:getCurrentAmmoCount() < weapon:getMaxAmmo()
-			)
-			or weapon:getCurrentAmmoCount() == 0
-			and not self:isReloading() 
+		-- Reload Rounds if no enemies on you and ammo less than max or ammo is 0
+		if 
+			(self.EnemiesOnMe <= 0 
+			and weapon:getCurrentAmmoCount() < weapon:getMaxAmmo()
+			and not self:isReloading() )
+			or weaponAmmoCount == 0
 		then
 			ISTimedActionQueue.add(ISReloadWeaponAction:new(self.player, weapon))
 		end
-		-- 
+
+		-- if there's bullets in the gun and we're in danger, just keep shooting
+		if weaponAmmoCount > 0 and self.EnemiesOnMe > 0 then
+			return true
+		end
+
 		return true
 	end
 
+	-- Final Determination - Can you shoot?
 	if not ISReloadWeaponAction.canShoot(weapon) then
 		return false
 	else
@@ -3422,9 +3429,9 @@ end
 -- Batmane - This function doesnt seem to account for bolt action weapons as those weapons can be fired automatically
 function SuperSurvivor:needToReadyGun(weapon)
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:needToReadyGun() called");
+	if not weapon then return false end
 	if not self:usingGun() then return false end
-	if weapon 
-		and not ISReloadWeaponAction.canShoot(weapon) 
+	if not ISReloadWeaponAction.canShoot(weapon) 
 	then
 		return true
 	end

@@ -43,7 +43,12 @@ function AIEssentialTasks(TaskMangerIn)
 	if not currentNPC.LastEnemySeenDistance and currentNPC.LastEnemySeen then
 		distance_AnyEnemy = GetCheap3DDistanceBetween(currentNPC.LastEnemySeen, currentNPC:Get());
 	end
-	local distanceBetweenMainPlayer = GetXYDistanceBetween(getSpecificPlayer(0), currentNPC:Get());
+
+	local distanceBetweenMainPlayer = currentNPC.distanceToPlayer0;
+	if not currentNPC.distanceToPlayer0 then 
+		distanceBetweenMainPlayer = GetXYDistanceBetween(getSpecificPlayer(0), currentNPC:Get());
+	end
+
 	local isEnemySurvivor = instanceof(currentNPC.LastEnemySeen, "IsoPlayer");
 	local enemySurvivor = nil;
 	if isEnemySurvivor then
@@ -267,20 +272,12 @@ function AIMediumPriorityTasks(TaskMangerIn)
 	local currentNPC = TaskMangerIn.parent;
 
     -- ----------------------------- --
-    -- 	Ready gun in spare time      --
+    -- 	Ready magazines in spare time      --
     -- ----------------------------- --
-	-- -- Batmane - Initialize reload but dont return because next task is to wander or follow
-	-- -- Disable this because if attack doesnt fire, this conflicts with the reload weapon task
-	-- local npcWeapon = currentNPC.player:getPrimaryHandItem();
-    -- if 
-	-- 	currentNPC:hasGun() and
-	-- 	currentNPC:NPC_CheckIfCanReadyGun()
-    -- then
-	-- 	currentNPC:Speak('I got a chance to reload')
-	-- 	local npcWeapon = currentNPC.player:getPrimaryHandItem();
-    --     currentNPC:ReadyGun(npcWeapon);
-    -- end
-	-- --
+	-- Test new magazine loading
+	if currentNPC:hasGun() then
+		currentNPC:LoadBulletsSpareMag()
+	end
 
 	-- ------------ --
     -- Wander -- Passive Task
@@ -351,7 +348,6 @@ function AIManager(TaskMangerIn)
 	-- CreateLogLine('Task Manager ', true, tostring(TaskMangerIn.parent:getName()) .. ' has current task of ' .. tostring(TaskMangerIn:getCurrentTask()))
 	-- CreateLogLine('Task Manager ', true, tostring(TaskMangerIn.parent:getName()) .. ' has current task of ' .. tostring(#TaskMangerIn.Tasks))
 
-
 	if TaskMangerIn == nil or currentNPC == nil or not currentNPC.player then
 		return false;
 	end
@@ -401,7 +397,13 @@ function AIManager(TaskMangerIn)
 			centerBaseSquare = npcGroup:getBaseCenter();
 		end
 		local npcIsInBase = currentNPC:isInBase();
-		local distanceBetweenMainPlayer = GetXYDistanceBetween(getSpecificPlayer(0), currentNPC:Get());
+
+		local distanceBetweenMainPlayer = currentNPC.distanceToPlayer0
+		if not currentNPC.distanceToPlayer0 then 
+			distanceBetweenMainPlayer = GetXYDistanceBetween(getSpecificPlayer(0), currentNPC:Get());
+		end
+
+
 		local isEnemySurvivor = instanceof(currentNPC.LastEnemySeen, "IsoPlayer");
 		--
 

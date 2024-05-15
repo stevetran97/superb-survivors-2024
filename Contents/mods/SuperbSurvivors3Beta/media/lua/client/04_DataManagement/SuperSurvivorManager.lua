@@ -231,8 +231,9 @@ end
 function SuperSurvivorManager:UpdateSurvivorsDailyRoutine()
 	for i, SuperSurvivorObj in pairs(self.SuperSurvivors) do
 		if i ~= 0 and SuperSurvivorObj ~= nil and self.MainPlayer ~= i then
-			if not SuperSurvivorObj.player:isAsleep()
-				and SuperSurvivorObj:isInCell()
+			if 
+				-- not SuperSurvivorObj.player:isAsleep() and -- Do not block routine update in sleep to allow maintenance of survivors
+				SuperSurvivorObj:isInCell()
 			then
 				SuperSurvivorObj:updateSurvivorDailyStatus();
 			end
@@ -243,8 +244,9 @@ end
 function SuperSurvivorManager:UpdateSurvivorsHourlyRoutine()
 	for i, SuperSurvivorObj in pairs(self.SuperSurvivors) do
 		if i ~= 0 and SuperSurvivorObj ~= nil and self.MainPlayer ~= i then
-			if not SuperSurvivorObj.player:isAsleep()
-				and SuperSurvivorObj:isInCell()
+			if 
+				-- not SuperSurvivorObj.player:isAsleep() and 
+				SuperSurvivorObj:isInCell()
 			then
 				SuperSurvivorObj:updateSurvivorHourlyStatus();
 			end
@@ -255,8 +257,9 @@ end
 function SuperSurvivorManager:UpdateSurvivors10MinRoutine()
 	for i, SuperSurvivorObj in pairs(self.SuperSurvivors) do
 		if i ~= 0 and SuperSurvivorObj ~= nil and self.MainPlayer ~= i then
-			if not SuperSurvivorObj.player:isAsleep()
-				and SuperSurvivorObj:isInCell()
+			if 
+				-- not SuperSurvivorObj.player:isAsleep() and 
+				SuperSurvivorObj:isInCell()
 			then
 				SuperSurvivorObj:updateSurvivor10MinStatus();
 			end
