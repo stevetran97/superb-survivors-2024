@@ -1661,7 +1661,7 @@ function SuperSurvivor:DoVisionV3()
 
 	if self.dangerSeenCount > 0 then
 		local currentCharGroup = self:getGroup()
-		if currentCharGroup.AverageLocation then 
+		if currentCharGroup and currentCharGroup.AverageLocation then 
 			local tempVector = getVector(self.player, currentCharGroup.AverageLocation)
 			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center: " ..tostring(tempVector.x));
 			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center: " ..tostring(tempVector.y));
