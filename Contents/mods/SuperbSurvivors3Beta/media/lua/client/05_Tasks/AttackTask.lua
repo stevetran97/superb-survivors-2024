@@ -39,7 +39,6 @@ function AttackTask:isComplete()
 end
 
 function AttackTask:isValid()
-	if not self.parent:isInSameRoom(self.parent.LastEnemySeen) then return false end
 	if not self.parent.LastEnemySeen then return false end
 	if self.parent.LastEnemySeen:isDead() then return false end
 	if not self.parent:RealCanSee(self.parent.LastEnemySeen) then return false end

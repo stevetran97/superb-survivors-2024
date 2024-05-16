@@ -1452,7 +1452,7 @@ function SuperSurvivor:RealCanSee(character)
 	end
 
 	if character:isZombie() then
-		return (self.player:CanSee(character)) -- normal vision for zombies (they are not quiet or sneaky)
+		return self.player:CanSee(character) -- normal vision for zombies (they are not quiet or sneaky)
 		-- return true -- Survivor always sees the zombie
 	end 
 
@@ -1510,12 +1510,7 @@ function SuperSurvivor:DoVisionV3()
 
 
 	self.LastSurvivorSeen = nil;
-	-- 
-	local dangerRange = startingDangerRange;
-	-- Batmane: I dont like this its too variable
-	if self.AttackRange > dangerRange then
-		dangerRange = self.AttackRange;
-	end
+	local dangerRange = math.max(self.AttackRange, startingDangerRange)
 	
 	local closestDistanceSoFar = math.huge;
 	local closestCharIdx = nil;
@@ -1573,20 +1568,20 @@ function SuperSurvivor:DoVisionV3()
 				-- 	break 
 				-- end
 
-				local currentDistance = GetCheapXYDistanceBetween(character, self.player);
+				local currentDistance = GetCheap3DDistanceBetween(character, self.player);
 
 				if self:isEnemy(character)
 				then
 					-- Handle Number of zombies in critical range - for running
 					if currentDistance < criticalDangerRange
-						and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
+						-- and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
 					then
 						self.EnemiesOnMe = self.EnemiesOnMe + 1;
 					end
 					--
 					-- Handle Number of zombies in danger range (like initiator for attack range)
 					if currentDistance < dangerRange
-						and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
+						-- and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
 					then
 						-- Get escape vector from all enemies in danger zone
 						local tempVector = getVector(character, self.player)

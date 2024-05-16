@@ -129,8 +129,7 @@ function SuperSurvivorsOnSwing(player, weapon)
 				local range = weapon:getSoundRadius()
 				local volume = weapon:getSoundVolume()
 				addSound(player, player:getX(), player:getY(), player:getZ(), range, volume)
-				getSoundManager():PlayWorldSound(weapon:getSwingSound(), player:getCurrentSquare(), 0.5, range, 1.0,
-					false)
+				getSoundManager():PlayWorldSound(weapon:getSwingSound(), player:getCurrentSquare(), 0.5, range, 1.0, false)
 			end
 
 			player:NPCSetAttack(false)

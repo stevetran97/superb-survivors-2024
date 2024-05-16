@@ -203,7 +203,9 @@ function AIEssentialTasks(TaskMangerIn)
 	-- CreateLogLine('NPC Attack', true, tostring(currentNPC:getName()) .. " currentNPC:isInSameRoom(currentNPC.LastEnemySeen) = " .. tostring(currentNPC:isInSameRoom(currentNPC.LastEnemySeen)))
 	-- CreateLogLine('NPC Attack', true, tostring(currentNPC:getName()) .. " currentNPC.dangerSeenCount = " .. tostring(currentNPC.dangerSeenCount))
     -- Do I need to attack the enemy?
-    if currentNPC:isInSameRoom(currentNPC.LastEnemySeen) and 
+    if 
+		currentNPC.LastEnemySeen and
+		currentNPC:RealCanSee(currentNPC.LastEnemySeen) and
 		currentNPC:getDangerSeenCount() > 0 -- Cows: npcs can only attack seen danger. 
     then
 		if currentNPC.player:getModData().isRobber
@@ -231,8 +233,10 @@ function AIEssentialTasks(TaskMangerIn)
     -- Pursue
     -- ------------ --
 	if 
-		currentNPC.LastEnemySeen
-		and distance_AnyEnemy < currentNPC:NPC_CheckPursueScore()
+		currentNPC.LastEnemySeen and
+		currentNPC:RealCanSee(currentNPC.LastEnemySeen) and
+		distance_AnyEnemy > math.max(currentNPC.AttackRange, startingDangerRange) and 
+		distance_AnyEnemy < currentNPC:NPC_CheckPursueScore()
 	then
 		if checkAiTaskIsNot(TaskMangerIn, "Pursue") then 
 			currentNPC:Speak("Pursuing the target!");
