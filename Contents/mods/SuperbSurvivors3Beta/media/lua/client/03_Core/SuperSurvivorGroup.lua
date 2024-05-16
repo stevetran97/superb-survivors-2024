@@ -17,6 +17,8 @@ function SuperSurvivorGroup:new(GID)
 	o.Members = {};
 	o.Bounds = { 0, 0, 0, 0, 0 };
 
+	o.AverageLocation = nil -- nil or IsoGridSquare
+
 	o.GroupAreas = {}
 	o.GroupAreas["ChopTreeArea"] = { 0, 0, 0, 0, 0 };
 	o.GroupAreas["TakeCorpseArea"] = { 0, 0, 0, 0, 0 };
@@ -286,11 +288,10 @@ function SuperSurvivorGroup:getClosestIdleMember(ofThisRole, referencePoint)
 	local closestSoFar = 999;
 	local closestID = -1;
 	local distance = 0;
-	--
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
 
-		if (workingID ~= nil) then
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
+		if i ~= 0 and workingID then
 			distance = GetDistanceBetween(SSM:Get(workingID):Get(), referencePoint);
 
 			if (SSM:Get(workingID):isInAction() == false)
@@ -322,10 +323,9 @@ function SuperSurvivorGroup:getClosestMember(ofThisRole, referencePoint)
 	local closestID = -1;
 	local distance = 0;
 
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
-
-		if (workingID ~= nil) then
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
+		if i ~= 0 and workingID then
 			local workingSS = SSM:Get(workingID);
 			--
 			if (workingSS ~= nil) then
@@ -354,14 +354,13 @@ function SuperSurvivorGroup:getClosestMember(ofThisRole, referencePoint)
 end
 
 function SuperSurvivorGroup:getMember(ofThisRole, closest)
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
-		--
-		if ((workingID ~= nil)
-				and (SSM:Get(workingID):getGroupRole() == ofThisRole)
-				or (ofThisRole == "Any")
-				or (ofThisRole == nil)
-			)
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
+		if i ~= 0 and 
+			workingID and 
+			(SSM:Get(workingID):getGroupRole() == ofThisRole
+				or ofThisRole == "Any"
+				or ofThisRole == nil)
 		then
 			return SSM:Get(workingID);
 		end
@@ -372,14 +371,14 @@ end
 
 function SuperSurvivorGroup:getMembers()
 	local TableOut = {};
-	--
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
-		--
-		if ((workingID ~= nil)) and (SSM:Get(workingID) ~= nil) then
-			table.insert(TableOut, SSM:Get(workingID));
-		elseif ((workingID ~= nil)) then
-			table.insert(TableOut, tonumber(workingID));
+	for i, MemberId in pairs(self.Members) do 
+		if i ~= 0 then 
+			local workingID = MemberId;
+			if workingID and SSM:Get(workingID) then
+				table.insert(TableOut, SSM:Get(workingID));
+			elseif workingID then
+				table.insert(TableOut, tonumber(workingID));
+			end
 		end
 	end
 	return TableOut;
@@ -388,11 +387,10 @@ end
 function SuperSurvivorGroup:getMembersInRange(referencePoint, range, isListening)
 	CreateLogLine("SuperSurvivorGroup", isLocalLoggingEnabled, "function: SuperSurvivorGroup:getMembersInRange() called");
 	local TableOut = {};
-	--
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
 
-		if ((workingID ~= nil)) and (SSM:Get(workingID) ~= nil) then
+		if i ~= 0 and workingID and SSM:Get(workingID) then
 			local distance = GetDistanceBetween(SSM:Get(workingID):Get(), referencePoint);
 
 			if (distance <= range)
@@ -423,13 +421,12 @@ function SuperSurvivorGroup:AllSpokeTo()
 end
 
 function SuperSurvivorGroup:getIdleMember(ofThisRole, closest)
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
-		--
-		if (workingID ~= nil)
-			and (SSM:Get(workingID):isInAction() == false)
-			and ((SSM:Get(workingID):getGroupRole() == ofThisRole)
-				or (ofThisRole == "Any") or (ofThisRole == nil))
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
+		if i ~= 0 and 
+			workingID and 
+			SSM:Get(workingID):isInAction() == false and 
+			(SSM:Get(workingID):getGroupRole() == ofThisRole or ofThisRole == "Any" or ofThisRole == nil)
 		then
 			return SSM:Get(workingID);
 		end
@@ -444,10 +441,11 @@ function SuperSurvivorGroup:getMembersThisCloseCount(range, referencePoint)
 	);
 	local count = 0;
 
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
+	-- for i = 1, #self.Members do
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
 
-		if (workingID ~= nil) and (SSM:Get(workingID)) then
+		if i ~= 0 and workingID and SSM:Get(workingID) then
 			local distance = GetDistanceBetween(referencePoint, SSM:Get(workingID):Get());
 
 			if (distance <= range) then
@@ -463,14 +461,13 @@ end
 
 function SuperSurvivorGroup:PVPAlert(attacker)
 	local count = 0;
-	--
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
+
+	-- for i = 1, #self.Members do
+	for i, MemberId in pairs(self.Members) do 
+		local workingID = MemberId;
 		local ss = SSM:Get(workingID);
-		--
-		if (ss) then
+		if i ~= 0 and ss then
 			local member = SSM:Get(workingID):Get();
-			--
 			if (workingID ~= nil) and (member) and (member:CanSee(attacker)) then
 				member:getModData().hitByCharacter = true;
 			end
@@ -480,7 +477,12 @@ function SuperSurvivorGroup:PVPAlert(attacker)
 end
 
 function SuperSurvivorGroup:getMemberCount()
-	return #self.Members;
+	local memberCount = 0
+	for i, MemberId in pairs(self.Members) do 
+		memberCount = memberCount + 1 -- Maybe we should only count living survivors
+	end
+	return memberCount
+	-- return #self.Members;
 end
 
 function SuperSurvivorGroup:isMember(survivor)
@@ -513,7 +515,9 @@ function SuperSurvivorGroup:addMember(newSurvivor, Role)
 		if (Role == Get_SS_UIActionText("Job_Leader")) then
 			self:setLeader(newSurvivor:getID());
 		end
-		return self.Members[#self.Members];
+
+		return newSurvivor:getID()
+		-- return self.Members[#self.Members];
 	elseif (newSurvivor ~= nil) then
 		newSurvivor:setGroupID(self.ID);
 		return nil;
@@ -534,9 +538,9 @@ function SuperSurvivorGroup:removeMember(ID)
 
 	if (CheckIfTableHasValue(self.Members, ID)) then
 		--#region
-		for i = 1, #self.Members do
-			--
-			if (ID == self.Members[i]) then
+		-- for i = 1, #self.Members do
+		for i, MemberId in pairs(self.Members) do 
+			if i ~= 0 and ID == MemberId then
 				table.remove(self.Members, i);
 			end
 		end
@@ -544,23 +548,26 @@ function SuperSurvivorGroup:removeMember(ID)
 end
 
 function SuperSurvivorGroup:stealingDetected(thief)
-	for i = 1, #self.Members do
-		local workingID = self.Members[i];
-		local workingSS = SSM:Get(workingID);
-		--
-		if (workingID ~= nil) and (thief ~= nil)
-			and (thief:getModData().ID ~= nil)
-			and (workingSS ~= nil)
-			and (workingSS:getGroupID() == self.ID)
-		then
+	-- for i = 1, #self.Members do
+	for i, MemberId in pairs(self.Members) do 
+		if i ~= 0 then 
+			local workingID = MemberId;
+			local workingSS = SSM:Get(workingID);
 			--
-			if (self:getWarnPlayer(thief:getModData().ID)) and SSM:Get(workingID):Get():CanSee(thief) then
-				SSM:Get(workingID):Speak(Get_SS_Dialogue("IAttackFoodThief"));
-				thief:getModData().semiHostile = true;
-				SSM:Get(workingID):Get():getModData().hitByCharacter = true;
-			elseif (not self:getWarnPlayer(thief:getModData().ID)) and SSM:Get(workingID):Get():CanSee(thief) then
-				SSM:Get(workingID):Speak(Get_SS_Dialogue("IWarnFoodThief"));
-				self:WarnPlayer(thief:getModData().ID);
+			if workingID and thief
+				and (thief:getModData().ID ~= nil)
+				and (workingSS ~= nil)
+				and (workingSS:getGroupID() == self.ID)
+			then
+				--
+				if (self:getWarnPlayer(thief:getModData().ID)) and SSM:Get(workingID):Get():CanSee(thief) then
+					SSM:Get(workingID):Speak(Get_SS_Dialogue("IAttackFoodThief"));
+					thief:getModData().semiHostile = true;
+					SSM:Get(workingID):Get():getModData().hitByCharacter = true;
+				elseif (not self:getWarnPlayer(thief:getModData().ID)) and SSM:Get(workingID):Get():CanSee(thief) then
+					SSM:Get(workingID):Speak(Get_SS_Dialogue("IWarnFoodThief"));
+					self:WarnPlayer(thief:getModData().ID);
+				end
 			end
 		end
 	end
@@ -568,11 +575,11 @@ end
 
 function SuperSurvivorGroup:getTaskCount(task)
 	local count = 0;
-	--
-	for i = 1, #self.Members do
-		local SS = SSM:Get(self.Members[i]);
-		--
-		if (SS ~= nil and SS:getCurrentTask() == task) then
+
+	-- for i = 1, #self.Members do
+	for i, MemberId in pairs(self.Members) do 
+		local SS = SSM:Get(MemberId);
+		if i ~= 0 and SS and SS:getCurrentTask() == task then
 			count = count + 1;
 		end
 	end
@@ -582,7 +589,8 @@ end
 
 function SuperSurvivorGroup:Save()
 	local tabletoSave = {};
-	tabletoSave[1] = #self.Members;
+	-- tabletoSave[1] = #self.Members;
+	tabletoSave[1] = self:getMemberCount()
 	tabletoSave[2] = self.Leader;
 	table.save(tabletoSave, "SurvivorGroup" .. tostring(self.ID) .. "metaData");
 	table.save(self.Members, "SurvivorGroup" .. tostring(self.ID));
@@ -613,8 +621,9 @@ function SuperSurvivorGroup:Load()
 	self.Members = table.load("SurvivorGroup" .. tostring(self.ID));
 	--
 	if self.Members then
-		for i = 1, #self.Members do
-			if (self.Members[i] ~= nil) then
+		-- for i = 1, #self.Members do
+		for i, MemberId in pairs(self.Members) do 
+			if i ~= 0 and MemberId then
 				self.Members[i] = tonumber(self.Members[i]);
 			end
 		end

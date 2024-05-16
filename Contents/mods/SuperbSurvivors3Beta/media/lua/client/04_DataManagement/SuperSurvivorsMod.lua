@@ -25,6 +25,12 @@ function SuperSurvivorsOnEvery10min()
 	end
 end
 
+function SuperSurvivorGroupsOnEveryMin()
+	if SSGM ~= nil and getGameSpeed() ~= 0 then
+		SSGM:UpdateSurvivorGroups1MinRoutine();
+	end
+end
+
 -- Batmane: By far this has to be the most performance consuming function because s number of survivor routines are updated every single tick (every time display is rendered) (60 fps = 60 per second)
 -- Maybe survivor routines should be updated once per second or so and not once every single frame? How would a human make so many decisions?
 	-- EveryDays
@@ -35,6 +41,9 @@ Events.OnRenderTick.Add(SuperSurvivorsOnTick);
 Events.EveryDays.Add(SuperSurvivorsOnEveryDay);
 Events.EveryHours.Add(SuperSurvivorsOnEveryHour);
 Events.EveryTenMinutes.Add(SuperSurvivorsOnEvery10min);
+
+Events.EveryOneMinute.Add(SuperSurvivorGroupsOnEveryMin);
+
 
 
 

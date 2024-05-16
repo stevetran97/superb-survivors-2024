@@ -1481,6 +1481,7 @@ surveyRange = 18; -- Range in which the npc will start surveying the object(s) i
 maxProcessingRange = 25
 criticalDangerRange = 3 -- dangerRange where NPC typically needs to run so 2 here is actually more like a distance of 3
 local minSightDistance = 3 -- Range in which NPC will detect regardless of vision cone
+groupCohesion = 1 -- Constant that determines how strongly a character is drawn towards their group when fleeing
 
 function SuperSurvivor:DoVisionV3()
 	local isFunctionLoggingEnabled = false;
@@ -1493,14 +1494,8 @@ function SuperSurvivor:DoVisionV3()
 	self.dangerSeenCount = 0;
 	self.EnemiesOnMe = 0;
 
-	-- Experimental Multi Vector evasion system
-	-- local distanceToLastEnemySeen = GetCheapXYDistanceBetween(self.LastEnemySeen, self.player);
-	-- if distanceToLastEnemySeen > startingDangerRange then self.LastEnemySeen = nil end -- Resets the LastEnemySeen
-	-- 
-
 	-- if self.LastEnemySeen then CreateLogLine("Last Seen", true, tostring(self:getName()) .. " Last Seen Target = " .. tostring(self.LastEnemySeen:getName())) end 
 	-- if self.LastEnemySeenDistance then CreateLogLine("Last Seen", true, tostring(self:getName()) .. " Last Seen Distance = " .. tostring(self.LastEnemySeenDistance)) end 
-
 
 	self.LastEnemySeen = nil
 	self.LastEnemySeenDistance = math.huge -- Number or nil
@@ -1526,9 +1521,10 @@ function SuperSurvivor:DoVisionV3()
 	local closestCharIdx = nil;
 	local closestSurvivorIdx = nil
 	local closestZombieIdx = nil
-	
+				
+
+	-- SPOTTING --
 	-- local spottedList = self.player:getCell():getObjectList(); -- Old List for processing -- Better for multiplayer if we ever get there because its absolute
-	
 	-- Batmane try smaller spotted list built in function -- Take advantage of sight already handled by game
 	-- Problem is that this causes issues if AI loses sight of player, they forget them
 	local spottedList = self.player:getLastSpotted()  -- This function doesnt include the main player -- Not ideal...
@@ -1536,7 +1532,6 @@ function SuperSurvivor:DoVisionV3()
 	if distanceToPlayer <= maxProcessingRange then 
 		-- table.insert(spottedList, getSpecificPlayer(0)) -- Doesnt work
 		spottedList:push(getSpecificPlayer(0)) -- Works 
-
 
 		self.distanceToPlayer0 = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
 	end
@@ -1604,7 +1599,7 @@ function SuperSurvivor:DoVisionV3()
 								y = combinedVector.y / currentDistance
 							}
 						end
-						
+
 						self.dangerSeenCount = self.dangerSeenCount + 1;
 					end
 					--
@@ -1665,6 +1660,25 @@ function SuperSurvivor:DoVisionV3()
 	-- 
 
 	if self.dangerSeenCount > 0 then
+		local currentCharGroup = self:getGroup()
+		if currentCharGroup.AverageLocation then 
+			local tempVector = getVector(self.player, currentCharGroup.AverageLocation)
+			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center: " ..tostring(tempVector.x));
+			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center: " ..tostring(tempVector.y));
+
+			tempVector = {
+				x = tempVector.x * groupCohesion,
+				y = tempVector.y * groupCohesion
+			}
+			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center after applied cohesion: " ..tostring(tempVector.x));
+			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center after applied cohesion: " ..tostring(tempVector.y));
+
+			newEscapeVector = addVectors(newEscapeVector, tempVector)
+			
+			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has newEscapeVector x: " ..tostring(newEscapeVector.x));
+			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has newEscapeVector y: " ..tostring(newEscapeVector.y));
+		end
+		-- 
 		self.escapeVector = newEscapeVector
 	end
 
@@ -2766,8 +2780,7 @@ function SuperSurvivor:updateSurvivorHourlyStatus()
 	end
 
 	if not SurvivorNeedsFoodWater then
-		CreateLogLine("Food and Hunger", true, tostring(self:getName()) .. " setting hunger/thirst to zero");
-		
+		-- CreateLogLine("Food and Hunger", true, tostring(self:getName()) .. " setting hunger/thirst to zero");
 		self.player:getStats():setThirst(0.0);
 		self.player:getStats():setHunger(0.0);
 	end

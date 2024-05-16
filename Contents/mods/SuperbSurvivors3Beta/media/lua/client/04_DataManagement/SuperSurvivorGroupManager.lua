@@ -150,4 +150,37 @@ function SuperSurvivorGroupManager:Load()
 
 end
 
+function SuperSurvivorGroupManager:UpdateSurvivorGroups1MinRoutine()
+	-- CreateLogLine("Group Manager Routine", true, " Tracking Groups Function");
+
+	-- Keep Track of Group Locations
+	for i, Group in pairs(self.Groups) do
+		if Group.Members then 
+			local GroupMemberCount = 0
+			local totalX = 0
+			local totalY = 0
+			local totalZ = 0
+			-- Loop over group members
+			for i, MemberId in pairs(Group.Members) do 
+				if MemberId then 
+					local Member = SSM:Get(MemberId)
+					if Member and Member:isInCell() then
+						totalX = totalX + Member:getX()
+						totalY = totalY + Member:getY()
+						totalZ = totalZ + Member:getZ()
+						GroupMemberCount = GroupMemberCount + 1
+					end
+					-- Rough Clean up members object memory leak
+					if not Member then 
+						table.remove(Group.Members, i)
+					end
+				end
+			end
+			Group.AverageLocation = getCell():getGridSquare(totalX / GroupMemberCount, totalY / GroupMemberCount, totalZ / GroupMemberCount);
+			-- CreateLogLine("Group Manager Routine", true, " final Group.AverageLocation " .. tostring(Group.AverageLocation));
+		end
+	end
+end
+
+
 SSGM = SuperSurvivorGroupManager:new()
