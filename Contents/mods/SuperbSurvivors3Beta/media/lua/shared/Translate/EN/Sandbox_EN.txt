@@ -48,6 +48,9 @@ Sandbox_EN = {
 
 	Sandbox_SuperbSurvivorsContinued_IsInfiniteAmmoEnabled = "NPCs have Infinite Ammo",
 	Sandbox_SuperbSurvivorsContinued_IsInfiniteAmmoEnabled_tooltip = "On to have NPCs have infinite ammo.",
+
+	Sandbox_SuperbSurvivorsContinued_ConfigMaxAIAttackRange = "Max NPC Attack Range",
+	Sandbox_SuperbSurvivorsContinued_ConfigMaxAIAttackRange_tooltip = "Max squares an NPC is allowed to shoot their weapon to. Ie. 20 = 20 squares",
 	
 	Sandbox_SuperbSurvivorsContinued_IsRoleplayEnabled = "Roleplay Enabled",
 	Sandbox_SuperbSurvivorsContinued_IsRoleplayEnabled_tooltip = "On to enable Role Base Speech. WIP - Seems to overlap with idleChat and Speech and generally broken...",

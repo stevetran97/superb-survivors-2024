@@ -1,6 +1,6 @@
 Challenge_CH = {
-	Challenge_PrisonEscape_name = "¶Vº»¬D¾Ô",
-    Challenge_PrisonEscape_desc = "¨aÃøÃzµo«á¤£¤[, ¥Ñ©ó¤H¤âµu¯Ê, Ã¹´µ¥î¼wºÊº»³Qºò«æ²¨´²¡C ¤£©¯ªº¬O, §A³Q©Ò¦³¤H¿ò§Ñ¤F, ¿ù¹L¤F²¨´²ªº³Ì¨Î®É¶¡¡C ¤@Ä±¿ô¨Ó, ºÊº»ªº¥D¤H¤w¸gÅÜ¦¨¤F¥¦­Ì¡C ¦pªG§A²{¦b¤£§ìºò®É¶¡°k¥X³o¸Ì, ¥i¯à´N¦A¤]¨Ó¤£¤Î¤F¡C ",
-    Challenge_PrisonEscapeInfoBox = "§Ö¶], ¤£µM´N¨Ó¤£¤Î¤F¡I ",
-	Challenge_PrisonKeyRing = "ªºÆ_°Í°é"
+	Challenge_PrisonEscape_name = "ï¿½Vï¿½ï¿½ï¿½Dï¿½ï¿½",
+    Challenge_PrisonEscape_desc = "ï¿½aï¿½ï¿½ï¿½zï¿½oï¿½á¤£ï¿½[, ï¿½Ñ©ï¿½Hï¿½ï¿½uï¿½ï¿½, Ã¹ï¿½ï¿½ï¿½ï¿½wï¿½Êºï¿½ï¿½Qï¿½ï¿½æ²¨ï¿½ï¿½ï¿½C ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½O, ï¿½Aï¿½Qï¿½Ò¦ï¿½ï¿½Hï¿½ï¿½Ñ¤F, ï¿½ï¿½ï¿½Lï¿½Fï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ì¨Î®É¶ï¿½ï¿½C ï¿½@Ä±ï¿½ï¿½ï¿½ï¿½, ï¿½Êºï¿½ï¿½ï¿½ï¿½Dï¿½Hï¿½wï¿½gï¿½Ü¦ï¿½ï¿½Fï¿½ï¿½ï¿½Ì¡C ï¿½pï¿½Gï¿½Aï¿½{ï¿½bï¿½ï¿½ï¿½ï¿½ï¿½É¶ï¿½ï¿½kï¿½Xï¿½oï¿½ï¿½, ï¿½iï¿½ï¿½Nï¿½Aï¿½]ï¿½Ó¤ï¿½ï¿½Î¤Fï¿½C ",
+    Challenge_PrisonEscapeInfoBox = "ï¿½Ö¶], ï¿½ï¿½ï¿½Mï¿½Nï¿½Ó¤ï¿½ï¿½Î¤Fï¿½I ",
+	Challenge_PrisonKeyRing = "ï¿½ï¿½ï¿½_ï¿½Í°ï¿½"
 }

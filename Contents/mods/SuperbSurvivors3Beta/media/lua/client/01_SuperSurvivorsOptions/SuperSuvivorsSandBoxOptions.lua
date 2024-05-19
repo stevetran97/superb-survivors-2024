@@ -28,6 +28,7 @@ function Get_SS_SandboxOptions()
     CanIdleChat = ss_options.CanIdleChat;
     CanNpcsCreateBase = ss_options.CanNpcsCreateBase;
     IsInfiniteAmmoEnabled = ss_options.IsInfiniteAmmoEnabled;
+    ConfigMaxAIAttackRange = ss_options.ConfigMaxAIAttackRange
     IsRoleplayEnabled = ss_options.IsRoleplayEnabled;
     IsSpeakEnabled = ss_options.IsSpeakEnabled;
     SurvivorCanFindWork = ss_options.SurvivorCanFindWork;

@@ -82,7 +82,6 @@ function SuperSurvivorGroupManager:newGroup()
 	for i = 0, (Limit_Npc_Groups + 1 + 5) do
 		if not self.Groups[i] then 
 			self.Groups[i] = SuperSurvivorGroup:new(i)
-			-- self.GroupCount = self.GroupCount + 1
 			self.GroupCount = self:countGroups()
 
 			-- CreateLogLine("Create Group ", true, "Batmane create group of  = " .. tostring(self.Groups[i]) .. " at idx " .. tostring(i));
@@ -134,7 +133,6 @@ function SuperSurvivorGroupManager:Load()
 		self.GroupCount = 0 -- This relies on GroupCount because each time, you do new group, it increments by 1
 		
 		while DoesFileExist("SurvivorGroup" .. tostring(self.GroupCount) .. ".lua") do -- While this file exists, create new group?
-		-- while DoesFileExist("SurvivorGroup" .. tostring(#self.Groups) .. ".lua") do
 			local newGroup = self:newGroup()
 			newGroup:Load()
 
@@ -176,7 +174,13 @@ function SuperSurvivorGroupManager:UpdateSurvivorGroups1MinRoutine()
 					end
 				end
 			end
-			Group.AverageLocation = getCell():getGridSquare(totalX / GroupMemberCount, totalY / GroupMemberCount, totalZ / GroupMemberCount);
+
+			local newX = totalX / GroupMemberCount + ZombRand(1, 5);
+			local newY = totalY / GroupMemberCount + ZombRand(1, 5);
+			local newZ = totalZ / GroupMemberCount
+
+
+			Group.AverageLocation = getCell():getGridSquare(newX, newY, newZ);
 			-- CreateLogLine("Group Manager Routine", true, " final Group.AverageLocation " .. tostring(Group.AverageLocation));
 		end
 	end

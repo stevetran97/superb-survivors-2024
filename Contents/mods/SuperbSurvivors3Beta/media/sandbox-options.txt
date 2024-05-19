@@ -163,6 +163,17 @@ option SuperbSurvivorsContinued.IsInfiniteAmmoEnabled
 	translation = SuperbSurvivorsContinued_IsInfiniteAmmoEnabled,
 }
 
+option SuperbSurvivorsContinued.ConfigMaxAIAttackRange
+{
+	type = integer,
+	min = 5,
+	max = 50,
+	default = 20,
+
+	page = SuperbSurvivorsContinued,
+	translation = SuperbSurvivorsContinued_ConfigMaxAIAttackRange,
+}
+
 option SuperbSurvivorsContinued.IsRoleplayEnabled
 {
 	type = boolean,

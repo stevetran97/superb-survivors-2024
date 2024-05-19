@@ -391,11 +391,11 @@ function SuperSurvivorGroup:getMembersInRange(referencePoint, range, isListening
 		local workingID = MemberId;
 
 		if i ~= 0 and workingID and SSM:Get(workingID) then
-			local distance = GetDistanceBetween(SSM:Get(workingID):Get(), referencePoint);
+			local distance = GetXYDistanceBetween(SSM:Get(workingID):Get(), referencePoint);
 
 			if (distance <= range)
-				and ((not isListening)
-					or (SSM:Get(workingID):getCurrentTask() == "Listen")
+				and (not isListening
+					or SSM:Get(workingID):getCurrentTask() == "Listen"
 				)
 			then
 				table.insert(TableOut, SSM:Get(workingID));
@@ -411,9 +411,7 @@ end
 
 function SuperSurvivorGroup:AllSpokeTo()
 	local members = self:getMembers();
-	--
 	for x = 1, #members do
-		--
 		for y = 1, #members do
 			members[x]:SpokeTo(members[y]:getID());
 		end
@@ -441,14 +439,13 @@ function SuperSurvivorGroup:getMembersThisCloseCount(range, referencePoint)
 	);
 	local count = 0;
 
-	-- for i = 1, #self.Members do
 	for i, MemberId in pairs(self.Members) do 
 		local workingID = MemberId;
 
 		if i ~= 0 and workingID and SSM:Get(workingID) then
 			local distance = GetDistanceBetween(referencePoint, SSM:Get(workingID):Get());
 
-			if (distance <= range) then
+			if distance <= range then
 				count = count + 1;
 			end
 		end
@@ -462,7 +459,6 @@ end
 function SuperSurvivorGroup:PVPAlert(attacker)
 	local count = 0;
 
-	-- for i = 1, #self.Members do
 	for i, MemberId in pairs(self.Members) do 
 		local workingID = MemberId;
 		local ss = SSM:Get(workingID);
@@ -482,7 +478,6 @@ function SuperSurvivorGroup:getMemberCount()
 		memberCount = memberCount + 1 -- Maybe we should only count living survivors
 	end
 	return memberCount
-	-- return #self.Members;
 end
 
 function SuperSurvivorGroup:isMember(survivor)

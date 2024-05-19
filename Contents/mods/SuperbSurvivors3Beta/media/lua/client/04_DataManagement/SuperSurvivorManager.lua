@@ -340,44 +340,45 @@ function SuperSurvivorManager:GunShotHandle(SSW)
 	end
 end
 
-function SuperSurvivorManager:GetClosest()
-	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:GetClosest() called");
-	local closestSoFar = 20
-	local closestID = 0
+-- Batmane - Never Used
+-- function SuperSurvivorManager:GetClosest()
+-- 	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:Get Closest() called");
+-- 	local closestSoFar = 20
+-- 	local closestID = 0
 
-	for i, SuperSurvivorObj in pairs(self.SuperSurvivors) do
-		if i ~= 0 and SuperSurvivorObj ~= nil and SuperSurvivorObj:isInCell() then
-			local distance = GetDistanceBetween(SuperSurvivorObj:Get(), getSpecificPlayer(0))
-			if (distance < closestSoFar) then
-				closestID = i
-				closestSoFar = distance
-			end
-		end
-	end
+-- 	for i, SuperSurvivorObj in pairs(self.SuperSurvivors) do
+-- 		if i ~= 0 and SuperSurvivorObj ~= nil and SuperSurvivorObj:isInCell() then
+-- 			local distance = GetDistanceBetween(SuperSurvivorObj:Get(), getSpecificPlayer(0))
+-- 			if (distance < closestSoFar) then
+-- 				closestID = i
+-- 				closestSoFar = distance
+-- 			end
+-- 		end
+-- 	end
 
-	if (closestID ~= 0) then
-		return self.SuperSurvivors[closestID]
-	else
-		return nil
-	end
-end
+-- 	if (closestID ~= 0) then
+-- 		return self.SuperSurvivors[closestID]
+-- 	else
+-- 		return nil
+-- 	end
+-- end
 
 function SuperSurvivorManager:GetClosestNonParty()
-	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:GetClosestNonParty() called");
+	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:GetClosest NonParty() called");
 	local closestSoFar = 20;
 	local closestID = 0;
 
 	for i, SuperSurvivorObj in pairs(self.SuperSurvivors) do
-		if i ~= 0 and SuperSurvivorObj ~= nil and SuperSurvivorObj:isInCell() then
-			local distance = GetDistanceBetween(SuperSurvivorObj:Get(), getSpecificPlayer(0));
-			if (distance < closestSoFar) and (SuperSurvivorObj:getGroupID() == nil) then
+		if i ~= 0 and SuperSurvivorObj and SuperSurvivorObj:isInCell() then
+			local distance = GeXYDistanceBetween(SuperSurvivorObj:Get(), getSpecificPlayer(0));
+			if distance < closestSoFar and not SuperSurvivorObj:getGroupID() then
 				closestID = i;
 				closestSoFar = distance;
 			end
 		end
 	end
 
-	if (closestID ~= 0) then
+	if closestID ~= 0 then
 		return self.SuperSurvivors[closestID];
 	else
 		return nil;
@@ -393,14 +394,6 @@ function SuperSurvivorManager:SaveAll()
 			if SuperSurvivorObj and SuperSurvivorObj:isInCell() then SuperSurvivorObj:SaveSurvivor() end
 		end
 	end
-
-	-- Batmane - the old dev followed a self counting system. The number of all survivors are kept and grow this array forever. This is another memory leak
-	-- Replace this function with above so we dont infinitely loop over larger and larger functions
-	-- for i = 0, self.SurvivorCount + 1 do
-	-- 	if SuperSurvivorObj ~= nil and SuperSurvivorObj:isInCell() then
-	-- 		SuperSurvivorObj:SaveSurvivor()
-	-- 	end
-	-- end
 end
 
 SSM = SuperSurvivorManager:new()

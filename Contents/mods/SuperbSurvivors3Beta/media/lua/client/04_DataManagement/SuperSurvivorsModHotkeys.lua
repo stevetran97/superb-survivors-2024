@@ -5,7 +5,6 @@ local function superSurvivorsHotKeyOrder(index)
     CreateLogLine('Orders', isLocalLoggingEnabled, " Giving order of index " .. tostring(index))
 
     local order, isListening;
-    --
     if (index <= #Orders) then
         order = Orders[index];
         isListening = false;
@@ -18,10 +17,8 @@ local function superSurvivorsHotKeyOrder(index)
     local myGroup = SSM:Get(0):getGroup();
     CreateLogLine('Orders', isLocalLoggingEnabled, " Player group = " .. tostring(myGroup))
 
-    --
     if (myGroup) then
         local myMembers = myGroup:getMembersInRange(SSM:Get(0):Get(), 25, isListening);
-        --
         for i = 1, #myMembers do
             SurvivorOrder(nil, myMembers[i].player, order, nil)
         end

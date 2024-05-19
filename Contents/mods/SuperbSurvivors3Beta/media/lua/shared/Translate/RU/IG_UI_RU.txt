@@ -4,37 +4,37 @@ IGUI_RU = {
 	]]--
 
 
-		IGUI_SS_Drinking = "���..",
-		IGUI_SS_EatFood_Before = "������� ",
+		IGUI_SS_Drinking = "Пьет...",
+		IGUI_SS_EatFood_Before = "Ест ",
 		IGUI_SS_EatFood_After = "",
-		IGUI_SS_Opens_Before = "*��������� ",
-		IGUI_SS_Opens_After = "*",
-		IGUI_SS_Takes_Before = "*����� ",
-		IGUI_SS_Takes_After = "*",
-		IGUI_SS_EquipsArmor = "�������� �����",
-		IGUI_SS_EquipsArmor_Before = "*�������� ",
+		IGUI_SS_Opens_Before = "Открывает ",
+		IGUI_SS_Opens_After = "",
+		IGUI_SS_Takes_Before = "Берет ",
+		IGUI_SS_Takes_After = "",
+		IGUI_SS_EquipsArmor = "Надевает броню",
+		IGUI_SS_EquipsArmor_Before = "*Надевает ",
 		IGUI_SS_EquipsArmor_After = "*",
-		IGUI_SS_TakesItemFromGround_Before = "��������� ",
-		IGUI_SS_TakesItemFromGround_After = " � ����",
-		IGUI_SS_TakesFromGround_Before = "*����� ",
-		IGUI_SS_TakesFromGround_After = " � �����*",
-		IGUI_SS_TakesFromCont_Before = "*����� ",
-		IGUI_SS_TakesFromCont_After = " �� ����������*",
-		IGUI_SS_UndressingClothes = "*����������*",
-		IGUI_SS_PickUpCorpse = "*��������� ����*",
-		IGUI_SS_Resting = "�������...",
-		IGUI_SS_BandageBP_Before = "������������ ",
+		IGUI_SS_TakesItemFromGround_Before = "Берет ",
+		IGUI_SS_TakesItemFromGround_After = " с земли",
+		IGUI_SS_TakesFromGround_Before = "*Берет ",
+		IGUI_SS_TakesFromGround_After = " с земли*",
+		IGUI_SS_TakesFromCont_Before = "*Берет ",
+		IGUI_SS_TakesFromCont_After = " из контейнера*",
+		IGUI_SS_UndressingClothes = "*Раздевается*",
+		IGUI_SS_PickUpCorpse = "*Берет труп с земли*",
+		IGUI_SS_Resting = "Отдыхает...",
+		IGUI_SS_BandageBP_Before = "Перевязывает ",
 		IGUI_SS_BandageBP_After = "",
-		IGUI_SS_DoctorSplint = "*���������� ����...*",
-		IGUI_SS_DoctorBandageRemove = "*������ ����...*",
-		IGUI_SS_DoctorStitches = "*���������� ���...*",
-		IGUI_SS_DoctorGlass = "*������ ������...*",
-		IGUI_SS_DoctorBullet = "*������ ����...*",
-		IGUI_SS_DoctorBandage = "*���������� ����...*",
-		IGUI_SS_Foraging = "*�������...*",
-		IGUI_SS_FarmingActionPlanting = "*���� ������...*",
-		IGUI_SS_FarmingActionHarvesting = "*������� ������...*",
-		IGUI_SS_FarmingActionWatering = "*�������...*",
+		IGUI_SS_DoctorSplint = "*Накладывает шину...*",
+		IGUI_SS_DoctorBandageRemove = "*Снимает повязку...*",
+		IGUI_SS_DoctorStitches = "*Накладывает швы*",
+		IGUI_SS_DoctorGlass = "*Удаляет стекло...*",
+		IGUI_SS_DoctorBullet = "*Удаляет пулю...*",
+		IGUI_SS_DoctorBandage = "*Накладывает повязку...*",
+		IGUI_SS_Foraging = "*Собирает...*",
+		IGUI_SS_FarmingActionPlanting = "*Сажает семена...*",
+		IGUI_SS_FarmingActionHarvesting = "*Собирает урожай...*",
+		IGUI_SS_FarmingActionWatering = "*Поливает...*",
 	--[[END roleplay]]--
 
 	--[[starting tasks
@@ -42,14 +42,14 @@ IGUI_RU = {
 	]]--
 
 
-		IGUI_SS_IGoRelax = "�����, ��� ����� ������� ���������.",
-		IGUI_SS_IGoGetWood = "�����, � ����� �������� ���������.",
-		IGUI_SS_IGoPileCorpse = "�����, � ����� �������� ����� � ����.",
-		IGUI_SS_IGoForage = "�����, � ����� ����� ����� ���-������ � ����.",
-		IGUI_SS_IGoChopWood = "�����, ��� ����� ����� ������ �������.",
-		IGUI_SS_IGoFarm = "�����, ������� � �������.",
-		IGUI_SS_IGoGuard = "�����, ��� ����� ��������� �������� ����������.",
-		IGUI_SS_IGoBackBase = "�����, ��� ����� ����� ������� �� ����.",
+		IGUI_SS_IGoRelax = "Думаю, я немного отдохну",
+		IGUI_SS_IGoGetWood = "Думаю, пойду соберу немного дров",
+		IGUI_SS_IGoPileCorpse = "Думаю, пойду сложу трупы",
+		IGUI_SS_IGoForage = "Думаю, пойду поищу что-нибудь",
+		IGUI_SS_IGoChopWood = "Думаю, пойду рубить дрова",
+		IGUI_SS_IGoFarm = "Думаю, займусь сельским хозяйством",
+		IGUI_SS_IGoGuard = "Думаю, вернусь к охране",
+		IGUI_SS_IGoBackBase = "Думаю, вернусь на базу",
 	--[[END starting tasks]]--
 
 	--[[loot
@@ -57,12 +57,12 @@ IGUI_RU = {
 	]]--
 
 
-		IGUI_SS_LookForItem_Before = "��������� ������ ",
+		IGUI_SS_LookForItem_Before = "Пойду искать ",
 		IGUI_SS_LookForItem_After = "",
-		IGUI_SS_NoForagingHere = "����� ������ ���!",
-		IGUI_SS_NoFindItem_Before = "������, ��� ",
-		IGUI_SS_NoFindItem_After = " ����� ���",
-		IGUI_SS_NoWoodHere = "����� ��� ������.",
+		IGUI_SS_NoForagingHere = "Здесь я ничего не найду",
+		IGUI_SS_NoFindItem_Before = "Кажется, здесь нет ",
+		IGUI_SS_NoFindItem_After = "",
+		IGUI_SS_NoWoodHere = "Здесь нет дров",
 	--[[END loot]]--
 
 	--[[giving
@@ -70,14 +70,14 @@ IGUI_RU = {
 	]]--
 
 
-		IGUI_SS_TakeArmor = "������ ��� �����.",
-		IGUI_SS_Nothing = "������",
-		IGUI_SS_EveryOneUseMelee = "��� ������� ������ �������� ���!",
-		IGUI_SS_EveryOneUseGun = "��� ������� �����!",
-		IGUI_SS_WantSomeFood = "�� ������ ���?",
-		IGUI_SS_YouWantWater = "�� ������ ����?",
-		IGUI_SS_YouWantAmmo = "�� ������ ��������?",
-		IGUI_SS_TakeMyWeapon = "������ �� ������.",
+		IGUI_SS_TakeArmor = "Возьми эту броню",
+		IGUI_SS_Nothing = "Ничего",
+		IGUI_SS_EveryOneUseMelee = "Все используйте ближнее оружие!",
+		IGUI_SS_EveryOneUseGun = "Все используйте огнестрельное оружие!",
+		IGUI_SS_WantSomeFood = "Хочешь немного еды?",
+		IGUI_SS_YouWantWater = "Хочешь воды?",
+		IGUI_SS_YouWantAmmo = "Нужны патроны?",
+		IGUI_SS_TakeMyWeapon = "Возьми мое оружие",
 	--[[END giving]]--
 
 	--[[interactions
@@ -85,16 +85,16 @@ IGUI_RU = {
 	]]--
 
 
-		IGUI_SS_OverHere = "��! ��� �����?",
-		IGUI_SS_HoldStill = "����������, ���� ��������!",
+		IGUI_SS_OverHere = "Эй! Сюда!",
+		IGUI_SS_HoldStill = "Пожалуйста, не двигайся...",
 		IGUI_SS_ComeWithMe_Before = "",
-		IGUI_SS_ComeWithMe_After = ", ��� �� ����!",
+		IGUI_SS_ComeWithMe_After = ", пойдем со мной!",
 		IGUI_SS_CallName_Before = "",
-		IGUI_SS_CallName_After = "! ��� ����!",
-		IGUI_SS_CanIJoin = "���� �� � �������������� � ���� ������?",
-		IGUI_SS_YouWantToJoin = "�� ������ �������������� � ��� ������?",
-		IGUI_SS_WeBackToBase = "�� ������������ �� ����",
-		IGUI_SS_DoctorDone = "�� �� ������ ��� ���������!",
+		IGUI_SS_CallName_After = "! Иди сюда!",
+		IGUI_SS_CanIJoin = "Можно присоединиться к вашей группе?",
+		IGUI_SS_YouWantToJoin = "Хочешь присоединиться к моей группе?",
+		IGUI_SS_WeBackToBase = "Хорошо вернуться",
+		IGUI_SS_DoctorDone = "Как новенький! Теперь не перенапрягайся!",
 	--[[END interactions]]--
 
 	--[[not able to do
@@ -102,13 +102,12 @@ IGUI_RU = {
 	]]--
 
 
-		IGUI_SS_NotInBuilding = "�� �� � ������.",
-		IGUI_SS_NoTrees = "����� ��� ��������.",
-		IGUI_SS_NoAxeNoChopWood = "������ ���, ��� ����� ������ ������.",
-		IGUI_SS_CantCarryMore = "� ������ �� ���� � ����� ������ ������.",
-		IGUI_SS_NoFarmingArea = "� ���� ����� �� ��������� ���������� �����������",
-		IGUI_SS_IDontKnowHowFarming = "� �� ���� ��� ���������� �����������"
+		IGUI_SS_NotInBuilding = "мы не в здании",
+		IGUI_SS_NoTrees = "Здесь нет деревьев",
+		IGUI_SS_NoAxeNoChopWood = "нигде нет топора, бросаю рубку дров",
+		IGUI_SS_CantCarryMore = "Я больше не могу нести",
+		IGUI_SS_NoFarmingArea = "нет обозначенной сельскохозяйственной зоны",
+		IGUI_SS_IDontKnowHowFarming = "Я не знаю, как заниматься сельским хозяйством"
 	--[[END not able to do]]--
 
 }
-

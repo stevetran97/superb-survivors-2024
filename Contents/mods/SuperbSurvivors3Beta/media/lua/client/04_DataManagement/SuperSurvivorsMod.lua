@@ -331,9 +331,11 @@ function SuperSurvivorsOnEquipPrimary(player, weapon)
 		if (SS == nil) then return false end
 		SS.UsingFullAuto = false
 
-		if (weapon ~= nil) and (instanceof(weapon, "HandWeapon")) then
-			-- WIP - Cows: Not sure why the attack range had to be nerfed by 60% here... commented out for now
-			SS.AttackRange = ((player:getPrimaryHandItem():getMaxRange() + player:getPrimaryHandItem():getMinRange())); -- * 0.60);
+		if weapon and instanceof(weapon, "HandWeapon") then
+			SS.AttackRange = player:getPrimaryHandItem():getMaxRange() + player:getPrimaryHandItem():getMinRange();
+			-- Allow Capping of Max Attack Range
+			SS.AttackRange = math.min(SS.AttackRange, ConfigMaxAIAttackRange)
+			
 
 			if (weapon:isAimedFirearm()) then
 				local ammotypes = GetAmmoBullets(weapon);

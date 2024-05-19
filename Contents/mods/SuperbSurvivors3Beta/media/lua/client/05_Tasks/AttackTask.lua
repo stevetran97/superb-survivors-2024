@@ -59,11 +59,7 @@ function AttackTask:update()
 	if not weapon then return end
 
 	-- Handle Movement and Readying Weapon
-	-- Walk to Walk away etc.
-	-- New
-	-- This needs to be moved inside of the movement management functions
-	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " is running attack ");
-
+	-- Walk to and Walk away etc.
 	if self.parent:hasGun() then
 		self.parent:NPC_MovementManagement_Guns() -- To move around, it checks for in attack range too
 

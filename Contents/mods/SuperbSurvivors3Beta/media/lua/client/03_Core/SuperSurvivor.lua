@@ -1460,7 +1460,7 @@ function SuperSurvivor:RealCanSee(character)
 	if character:isSneaking() then
 		visioncone = visioncone - 0.15
 	end
-	return (self.player:CanSee(character) and (self.player:getDotWithForwardDirection(character:getX(), character:getY()) + visioncone) >= 1.0)
+	return self.player:CanSee(character) and (self.player:getDotWithForwardDirection(character:getX(), character:getY()) + visioncone) >= 1.0
 end
 
 --This method allows other mods to adapt to Superb Survivors continued
@@ -4166,11 +4166,6 @@ function SuperSurvivor:AttackWithGun(victim)
 			CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
 
 			local distance = GetXYDistanceBetween(self.player, victim) 
-			-- local distance = victimDistance;
-			-- if not distance then 
-			-- 	distance = GetXYDistanceBetween(self.player, victim) 
-			-- 	-- CreateLogLine("Batmane NPC _Attack Error Distance", true, tostring(self:getName()) .. "has no saved distance to enemy ");
-			-- end
 
 			local minrange = self:getMinWeaponRange() + 0.1
 			local damage = weapon:getMaxDamage();
