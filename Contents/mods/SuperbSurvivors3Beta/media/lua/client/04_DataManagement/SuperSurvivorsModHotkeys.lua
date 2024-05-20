@@ -39,7 +39,7 @@ function SuperSurvivorKeyBindAction(keyNum)
     local keyActions = {
         [156] = function() -- the NumPad enter key
             local activeNpcs = Get_SS_Alive_Count()
-            if activeNpcs >= Limit_Npcs_Spawn then
+            if activeNpcs >= Limit_Npcs_Spawn + 5 then
                 playerSurvivor:Say("Active NPCs limit reached, no spawn.")
                 return
             end

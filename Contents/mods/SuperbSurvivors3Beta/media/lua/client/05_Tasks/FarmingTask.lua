@@ -65,11 +65,7 @@ function FarmingTask:isComplete()
 end
 
 function FarmingTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function FarmingTask:getPlant(sq)

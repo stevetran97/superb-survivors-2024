@@ -287,7 +287,9 @@ function AIMediumPriorityTasks(TaskMangerIn)
     -- Wander -- Passive Task
     -- ------------ --
 	-- If you got nothing to do then just wander (non-companion) or follow (companions)
-	if currentNPC:getCurrentTask() == "None" or not currentNPC:getCurrentTask()
+	if 
+		currentNPC:getCurrentTask() == "None" or 
+		not currentNPC:getCurrentTask()
 	then
 		-- Continue follow and do not perform other jobs
 		if currentNPC:getGroupRole() == "Companion" and currentNPC:getCurrentTask() ~= "Follow" then 
@@ -299,10 +301,8 @@ function AIMediumPriorityTasks(TaskMangerIn)
 		else
 			if SurvivorRoles[currentNPC:getGroupRole()] == nil then 
 				if TaskMangerIn:getCurrentTask() ~= "Wander" then
-					TaskMangerIn:AddToTop(WanderTask:new(TaskMangerIn));
+					TaskMangerIn:AddToTop(WanderTask:new(currentNPC));
 				end
-
-				-- currentNPC:NPCTask_DoWander();
 			end
 		end
 	end
@@ -338,6 +338,14 @@ function AILowPriorityTasks(TaskMangerIn)
 		end
 		TaskMangerIn:AddToTop(FindThisTask:new(currentNPC, "Water", "Category", 1))
 		return false
+	end
+
+	-- ----------------------------- --
+	-- Idle Chatter --
+	-- ----------------------------- --
+	-- they keep talking 10% chance every time low priority task runs
+	if CanIdleChat and ZombRand(10) == 1 then
+		currentNPC:Speak(Get_SS_DialogueSpeech("IdleChatter"))
 	end
 
 

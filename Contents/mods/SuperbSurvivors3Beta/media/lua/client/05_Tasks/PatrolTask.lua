@@ -47,7 +47,7 @@ function PatrolTask:isComplete()
 end
 
 function PatrolTask:isValid()
-	if (not self.parent) or (not self.Square1) or (not self.Square2) then
+	if (not self.Square1) or (not self.Square2) then
 		return false
 	else
 		return true

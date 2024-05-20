@@ -216,8 +216,13 @@ function TaskManager:update()
 	elseif self.Tasks[0]
 		and self.Tasks[0]:isComplete() == false 
 	then
-		self.Tasks[0]:update()
-		self.TaskUpdateCount = self.TaskUpdateCount + 1
+		if 
+			self.Tasks[0].parent and
+			self.Tasks[0].parent.player
+		then 
+			self.Tasks[0]:update()
+			self.TaskUpdateCount = self.TaskUpdateCount + 1
+		end
 	-- Other cases - Task Complete
 	else
 		if self.Tasks then table.remove(self.Tasks, 0) end -- Batmane lets try just removing elements from table instead of nilling it because the keys still remain and cause mem leak

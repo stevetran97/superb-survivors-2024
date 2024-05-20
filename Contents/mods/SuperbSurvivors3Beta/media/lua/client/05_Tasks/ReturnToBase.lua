@@ -33,7 +33,7 @@ function ReturnToBaseTask:isComplete()
 end
 
 function ReturnToBaseTask:isValid()
-	if (not self.parent) or (not self.parent:getGroupID()) then
+	if (not self.parent:getGroupID()) then
 		return false
 	else
 		return true

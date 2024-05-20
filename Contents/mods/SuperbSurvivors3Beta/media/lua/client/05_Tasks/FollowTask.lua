@@ -1,5 +1,10 @@
 require "04_Group.SuperSurvivorManager";
 
+-- Testing
+require "TimedActions/ISBaseTimedAction"
+ISSitOnGround = ISBaseTimedAction:derive("ISSitOnGround")
+-- Testing
+
 FollowTask = {}
 FollowTask.__index = FollowTask
 
@@ -12,17 +17,17 @@ function FollowTask:new(superSurvivor, FollowMeplayer)
 	setmetatable(o, self)
 	self.__index = self
 
-	if (FollowMeplayer == nil) then
-		if (superSurvivor.player:getModData().FollowCharID ~= nil) then
+	if not FollowMeplayer then
+		if superSurvivor.player:getModData().FollowCharID then
 			local SS = SSM:Get(superSurvivor.player:getModData().FollowCharID)
-			if (SS ~= nil) then
+			if SS then
 				o.FollowChar = SS:Get()
 			else
 				return false
 			end
 		end
 	else
-		o.FollowChar = FollowMeplayer
+		o.FollowChar = FollowMeplayer -- type IsoPlayer
 		superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
 	end
 
@@ -55,7 +60,7 @@ function FollowTask:isComplete()
 end
 
 function FollowTask:isValid()
-	if not self.parent or not self.FollowChar then
+	if not self.FollowChar then
 		return false
 	else
 		return true
@@ -105,11 +110,29 @@ end
 
 function FollowTask:update()
 	CreateLogLine("FollowTask", isLocalLoggingEnabled, "function: FollowTask:update() called");
-	if (not self:isValid()) then return false end
+	if not self:isValid() then return false end
 
 	local distance = GetXYDistanceBetween(self.parent.player, self.FollowChar)
 
 	self.parent:setSneaking(self.FollowChar:isSneaking()) -- sneaking if person you follow is
+
+	CreateLogLine("FollowTaskSit", true, "self.FollowChar = " .. tostring(self.FollowChar));
+
+	-- WIP Sitting when players sit
+	-- if self.FollowChar:isSitOnGround() then 
+	-- 	CreateLogLine("FollowTaskSit", true, "Follow Char is SITTING on ground");
+	-- 	self.parent:setSitOnGround(true) 
+
+	-- 	-- Need them to actually animate		
+	-- 	ISTimedActionQueue.add(ISSitOnGround:new(self.parent.player)) -- Cant figure this out - Batmane - Line isnt working
+
+	-- 	return
+	-- else
+	-- 	CreateLogLine("FollowTaskSit", true, "Follow Char STANDING");
+	-- 	self.parent:setSitOnGround(false)
+	-- 	-- ISTimedActionQueue.clear(self.parent.player)
+	-- end
+	-- 
 
 	-- self.parent.player:NPCSetAiming(self.FollowChar:isAiming()) -- Batmane - Aim if person you follow is - WIP not workign ATM  -- NPC cant move while aiming wtf 
 	-- self.parent.player:setIsAiming(self.FollowChar:isAiming()) -- Batmane - Aim if person you follow is - Doesnt do anything
@@ -124,12 +147,6 @@ function FollowTask:update()
 	-- 	)
 	-- end
 	-- Experimentation
-
-
-	-- they keep talking
-	if ZombRand(70) == 0 and not CanIdleChat then
-		self.parent:Speak(Get_SS_DialogueSpeech("IdleChatter"))
-	end
 
 	-- if true then -- self.parent:isInAction() == false) then -- for some reason this is true when they doing nothing sometimes...
 

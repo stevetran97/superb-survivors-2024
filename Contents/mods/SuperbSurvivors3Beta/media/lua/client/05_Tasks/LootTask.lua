@@ -183,7 +183,7 @@ function LootCategoryTask:update()
 					self.TargetBuilding = trySquare:getRoom():getBuilding()
 				end
 				self.parent:walkTo(trySquare)
-				self.parent:WalkToAttempt(trySquare)
+				self.parent:TrackWalkToAttempt(trySquare)
 				if (self.Container:getSourceGrid()) and (self.parent:getWalkToAttempt(self.Container:getSourceGrid()) > 8) then
 					self.Container = nil
 					self.Complete = true

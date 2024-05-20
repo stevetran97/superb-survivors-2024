@@ -38,11 +38,7 @@ function ThreatenTask:isComplete()
 end
 
 function ThreatenTask:isValid()
-	if (not self.parent) then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function ThreatenTask:dealBreaker()

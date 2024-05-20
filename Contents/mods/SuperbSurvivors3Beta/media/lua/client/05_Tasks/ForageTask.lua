@@ -24,11 +24,7 @@ function ForageTask:isComplete()
 end
 
 function ForageTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function ForageTask:update()

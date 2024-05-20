@@ -55,7 +55,7 @@ function FleeTask:isComplete()
 end
 
 function FleeTask:isValid()
-	if not self.parent or self:isComplete() then
+	if self:isComplete() then
 		return false
 	else
 		return true

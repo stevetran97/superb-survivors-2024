@@ -46,11 +46,7 @@ function SurenderTask:isComplete()
 end
 
 function SurenderTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function SurenderTask:update()

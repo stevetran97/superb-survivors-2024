@@ -25,7 +25,7 @@ function GoCheckItOutTask:isComplete()
 end
 
 function GoCheckItOutTask:isValid()
-	if not self.parent or self.Spot == nil then
+	if self.Spot == nil then
 		return false
 	else
 		return true

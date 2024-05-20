@@ -23,7 +23,7 @@ function WanderInAreaTask:isComplete()
 end
 
 function WanderInAreaTask:isValid()
-	if not self.parent or not self.Area then
+	if not self.Area then
 		self.Complete = true
 		return false
 	else

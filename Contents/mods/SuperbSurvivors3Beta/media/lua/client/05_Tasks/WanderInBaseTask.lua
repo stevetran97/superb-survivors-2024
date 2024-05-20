@@ -24,7 +24,7 @@ function WanderInBaseTask:isComplete()
 end
 
 function WanderInBaseTask:isValid()
-	if not self.parent or not self.Group then
+	if not self.Group then
 		self.Complete = true
 		return false
 	else

@@ -24,7 +24,7 @@ function FleeFromHereTask:new(superSurvivor, fleeFromHere)
 end
 
 function FleeFromHereTask:isComplete()
-	if GetDistanceBetween(self.parent.player, self.fleeFromHere) > PanicDistance then
+	if GetXYDistanceBetween(self.parent.player, self.fleeFromHere) > PanicDistance then
 		self.parent:StopWalk()
 		self.parent:setRunning(false)
 		return true
@@ -34,7 +34,7 @@ function FleeFromHereTask:isComplete()
 end
 
 function FleeFromHereTask:isValid()
-	if not self.parent or self:isComplete() then
+	if self:isComplete() then
 		return false
 	else
 		return true

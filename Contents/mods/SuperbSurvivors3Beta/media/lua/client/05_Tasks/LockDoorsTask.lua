@@ -26,11 +26,7 @@ function LockDoorsTask:isComplete()
 end
 
 function LockDoorsTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function LockDoorsTask:update()

@@ -41,7 +41,7 @@ function EatFoodTask:ForbiddenFoods()
 end
 
 function EatFoodTask:isValid()
-	if not self.parent or self.TheFood == nil then
+	if self.TheFood == nil then
 		return false
 	else
 		return true

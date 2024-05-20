@@ -21,23 +21,21 @@ function WanderTask:isComplete()
 end
 
 function WanderTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function WanderTask:update()
 	CreateLogLine("WanderTask", isLocalLoggingEnabled, "function: WanderTask:update() called");
+
 	if not self:isValid() then return false end
 	if self.parent:isInAction() then return false end
 
 	local sq = getCell():getGridSquare(self.parent.player:getX() + ZombRand(-10, 10),
 		self.parent.player:getY() + ZombRand(-10, 10), self.parent.player:getZ());
-	if (sq ~= nil) then
+	
+	if sq then
 		self.parent:walkTo(sq);
-	else
-		CreateLogLine("WanderTask", isLocalLoggingEnabled, "error getting walk sq");
+		return
 	end
+	CreateLogLine("WanderTask", isLocalLoggingEnabled, "error getting walk sq");
 end

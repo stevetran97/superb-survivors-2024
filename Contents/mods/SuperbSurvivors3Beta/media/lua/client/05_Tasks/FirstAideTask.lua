@@ -30,7 +30,7 @@ end
 
 function FirstAideTask:isValid()
 	CreateLogLine("FirstAideTask", isLocalLoggingEnabled, "function: FirstAideTask:isValid() called");
-	if not self.parent or not self.parent:HasInjury() then
+	if not self.parent:HasInjury() then
 		CreateLogLine("FirstAideTask", isLocalLoggingEnabled, self.parent:getName() .. ": First aide task not valid");
 		return false
 	else
@@ -58,7 +58,6 @@ function FirstAideTask:update()
 			self.parent:StopWalk()
 			self.myTimedAction = ISApplyBandage:new(self.parent.player, self.parent.player, item, bp, true)
 			ISTimedActionQueue.add(self.myTimedAction)
-			-- self.parent:Wait(2) -- batmane - Heal faster  -- from 3
 			break
 		end
 	end

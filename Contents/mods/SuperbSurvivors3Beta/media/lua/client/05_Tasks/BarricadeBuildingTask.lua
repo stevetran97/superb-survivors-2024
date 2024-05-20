@@ -18,7 +18,7 @@ function BarricadeBuildingTask:new(superSurvivor)
 	o.Complete = false
 	o.parent:setLastWeapon()
 
-	CreateLogLine("BarricadeBuildingTask", isLocalLoggingEnabled, "function: BarricadeBuildingTask:new() called");
+	CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "function: Barricade BuildingTask:new() called");
 
 	local inv = o.parent.player:getInventory()
 	local temp = inv:FindAndReturn("Hammer")
@@ -60,15 +60,11 @@ function BarricadeBuildingTask:isComplete()
 end
 
 function BarricadeBuildingTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function BarricadeBuildingTask:update()
-	CreateLogLine("BarricadeBuildingTask", isLocalLoggingEnabled, "function: BarricadeBuildingTask:update() called");
+	CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "function: Barricade BuildingTask:update() called");
 	if (not self:isValid()) then return false end
 
 	if (self.parent:isInAction() == false) then
@@ -76,7 +72,7 @@ function BarricadeBuildingTask:update()
 		if (building ~= nil) then
 			if (self.Window == nil) then self.Window = self.parent:getUnBarricadedWindow(building) end
 			if (not self.Window) then
-				CreateLogLine("BarricadeBuildingTask", isLocalLoggingEnabled, "No window found...");
+				CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "No window found...");
 				self.Complete = true
 				return false
 			end
@@ -111,6 +107,6 @@ function BarricadeBuildingTask:update()
 			self.Window = nil
 		end
 	else
-		CreateLogLine("BarricadeBuildingTask", isLocalLoggingEnabled, "waiting for non action");
+		CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "waiting for non action");
 	end
 end

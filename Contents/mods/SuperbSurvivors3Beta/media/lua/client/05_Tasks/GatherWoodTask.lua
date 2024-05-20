@@ -27,7 +27,7 @@ function GatherWoodTask:isComplete()
 end
 
 function GatherWoodTask:isValid()
-	if not self.parent or not self.BringHereSquare then
+	if not self.BringHereSquare then
 		return false
 	else
 		return true
@@ -42,8 +42,10 @@ function GatherWoodTask:update()
 	if (self.parent:isInAction() == false) then
 		local player = self.parent.player
 
-		if ((player:getInventory():FindAndReturn("Log") ~= nil) or (player:getInventory():FindAndReturn("Plank") ~= nil)) then
-			local distanceToPoint = GetDistanceBetween(self.BringHereSquare, player)
+		if player:getInventory():FindAndReturn("Log") ~= nil or
+			player:getInventory():FindAndReturn("Plank") ~= nil
+		then
+			local distanceToPoint = GetCheap3DDistanceBetween(self.BringHereSquare, player)
 
 			if (distanceToPoint > 2.0) then
 				self.parent:walkTo(self.BringHereSquare)

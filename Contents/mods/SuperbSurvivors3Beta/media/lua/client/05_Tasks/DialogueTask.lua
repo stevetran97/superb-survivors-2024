@@ -47,7 +47,7 @@ function DialogueTask:isComplete()
 end
 
 function DialogueTask:isValid()
-	if not self.parent or not self.Aite then
+	if not self.Aite then
 		return false
 	else
 		return true

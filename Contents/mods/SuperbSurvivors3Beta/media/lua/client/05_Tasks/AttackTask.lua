@@ -92,11 +92,6 @@ function AttackTask:update()
 		else
 			self.parent:AttackWithMelee(self.parent.LastEnemySeen);
 		end
-
-		-- -- Batmane this probably also breaks the ai
-		-- if instanceof(self.parent.LastEnemySeen, "IsoPlayer") then
-		-- 	self.parent:Wait(1); -- Change from 5
-		-- end
 	end
 
 

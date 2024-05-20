@@ -32,11 +32,7 @@ function PileCorpsesTask:isComplete()
 end
 
 function PileCorpsesTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 -- WIP - Cows: NEED TO REWORK THE NESTED LOOP CALLS

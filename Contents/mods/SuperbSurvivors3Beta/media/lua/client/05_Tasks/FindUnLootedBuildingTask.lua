@@ -39,11 +39,7 @@ function FindUnlootedBuildingTask:isComplete()
 end
 
 function FindUnlootedBuildingTask:isValid()
-	if not self.parent then
-		return false
-	else
-		return true
-	end
+	return true
 end
 
 function FindUnlootedBuildingTask:update()

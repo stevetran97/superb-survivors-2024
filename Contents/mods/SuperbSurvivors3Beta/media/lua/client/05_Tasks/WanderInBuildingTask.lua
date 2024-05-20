@@ -29,7 +29,7 @@ function WanderInBuildingTask:isComplete()
 end
 
 function WanderInBuildingTask:isValid()
-	if not self.parent or not self.Building then
+	if not self.Building then
 		self.Complete = true
 		return false
 	else

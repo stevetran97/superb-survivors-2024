@@ -53,7 +53,7 @@ function PursueTask:isComplete()
 end
 
 function PursueTask:isValid()
-	if (not self.parent) or (not self.Target) then
+	if (not self.Target) then
 		return false
 	else
 		return true

@@ -22,7 +22,7 @@ function GuardTask:isComplete()
 end
 
 function GuardTask:isValid()
-	if not self.parent or not self.Square then
+	if not self.Square then
 		return false
 	else
 		return true

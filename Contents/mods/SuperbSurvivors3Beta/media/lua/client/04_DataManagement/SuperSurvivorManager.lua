@@ -214,15 +214,6 @@ function SuperSurvivorManager:UpdateSurvivorsRoutine()
 				and SuperSurvivorObj:isInCell()
 			then
 				SuperSurvivorObj:updateSurvivorStatus();
-
-				-- Batmane - Guys are standing around and doing nothing. Need to spam this as a fix for now - Runs every 2s when FPS = 60
-				-- Cows: Have the npcs wander if there are no tasks, otherwise they are stuck in place...
-				if SuperSurvivorObj:getCurrentTask() == "None"
-					and SurvivorRoles[SuperSurvivorObj:getGroupRole()] == nil -- Cows: This check is to ensure actual assigned roles do not wander off to die.
-				then
-					SuperSurvivorObj:NPCTask_DoWander();
-				end
-				-- 
 			end
 		end
 	end

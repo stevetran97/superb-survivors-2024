@@ -41,7 +41,7 @@ function ListenTask:isComplete()
 end
 
 function ListenTask:isValid()
-	if not self.parent or not self.Aite or not self.SSAite then
+	if not self.Aite or not self.SSAite then
 		return false
 	else
 		return true

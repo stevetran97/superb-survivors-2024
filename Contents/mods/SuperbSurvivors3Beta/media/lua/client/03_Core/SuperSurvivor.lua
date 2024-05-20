@@ -635,14 +635,28 @@ function SuperSurvivor:setRunning(toValue)
 end
 
 function SuperSurvivor:getRunning()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getRunning() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:get Running() called");
 	return self.player:getModData().Running;
 end
 
 function SuperSurvivor:setSneaking(toValue)
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:setSneaking() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:set Sneaking() called");
 	if self.player ~= nil then
 		self.player:setSneaking(toValue);
+	end
+end
+
+-- Wip to get player to sit on ground - This doesnt make them sit FYI
+function SuperSurvivor:setSitOnGround(toValue)
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:set SitOnGround() called");
+	if self.player ~= nil then
+		CreateLogLine("FollowTaskSit", true, " NPC now sitting on ground = " .. tostring(toValue));
+		-- self.player:NPCSetAiming(toValue)
+
+		CreateLogLine("FollowTaskSit", true, " Function = " .. tostring(self.player.setSitOnGround));
+
+
+		self.player:setSitOnGround(toValue);
 	end
 end
 
@@ -1105,8 +1119,8 @@ function SuperSurvivor:getContainerSquareLooted(sq, Category)
 	return 0;
 end
 
-function SuperSurvivor:WalkToAttempt(sq)
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:WalkToAttempt() called");
+function SuperSurvivor:TrackWalkToAttempt(sq)
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:TrackWalk ToAttempt() called");
 	if (sq) then
 		local key = sq:getX() .. sq:getY()
 		if (self.SquareWalkToAttempts[key] == nil) then
@@ -1658,20 +1672,20 @@ function SuperSurvivor:DoVisionV3()
 		local currentCharGroup = self:getGroup()
 		if currentCharGroup and currentCharGroup.AverageLocation then 
 			local tempVector = getVector(self.player, currentCharGroup.AverageLocation)
-			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center: " ..tostring(tempVector.x));
-			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center: " ..tostring(tempVector.y));
+			-- CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center: " ..tostring(tempVector.x));
+			-- CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center: " ..tostring(tempVector.y));
 
 			tempVector = {
 				x = tempVector.x * groupCohesion,
 				y = tempVector.y * groupCohesion
 			}
-			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center after applied cohesion: " ..tostring(tempVector.x));
-			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center after applied cohesion: " ..tostring(tempVector.y));
+			-- CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector x to group center after applied cohesion: " ..tostring(tempVector.x));
+			-- CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has vector y to group center after applied cohesion: " ..tostring(tempVector.y));
 
 			newEscapeVector = addVectors(newEscapeVector, tempVector)
 			
-			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has newEscapeVector x: " ..tostring(newEscapeVector.x));
-			CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has newEscapeVector y: " ..tostring(newEscapeVector.y));
+			-- CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has newEscapeVector x: " ..tostring(newEscapeVector.x));
+			-- CreateLogLine("Group Manager Vision", true, tostring(self:getName()) .. " has newEscapeVector y: " ..tostring(newEscapeVector.y));
 		end
 		-- 
 		self.escapeVector = newEscapeVector
@@ -1782,21 +1796,33 @@ function SuperSurvivor:isWalking()
 	return false;
 end
 
--- WalkToDirect, try that instead
+-- This activitely manages AI walking. 
+-- Tracks AI target building, Manages ai door management (locked, barricaded, etc.)
+
 function SuperSurvivor:walkTo(square)
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:walkTo() called");
-	if (square == nil) then return false end
+
+	if not square then 
+		CreateLogLine("Walk to", true, tostring(self:getName()) .. " Error: square does not exist ...");
+		return false 
+	end
 
 	local parent
-	if (instanceof(square, "IsoObject")) then
+	if instanceof(square, "IsoObject") then
+		CreateLogLine("Walk to", true, tostring(self:getName()) .. " has target walk Square is an object ...");
+
 		parent = square:getSquare()
 	else
 		parent = square
 	end
 
 	self.TargetSquare = square
-	if (square:getRoom() ~= nil) and (square:getRoom():getBuilding() ~= nil) then
-		self.TargetBuilding = square:getRoom():getBuilding()
+
+	-- Track target building
+	local squareRoom = square:getRoom()
+	-- if squareRoom and square:getRoom():getBuilding() then -- Make efficient
+	if squareRoom then
+		self.TargetBuilding = squareRoom:getBuilding()
 	end
 
 	local adjacent = AdjacentFreeTileFinder.Find(parent, self.player);
@@ -1804,16 +1830,20 @@ function SuperSurvivor:walkTo(square)
 		adjacent = AdjacentFreeTileFinder.FindWindowOrDoor(parent, square, self.player);
 	end
 
-	if adjacent ~= nil then
+	if adjacent then
 		local door = self:inFrontOfDoor()
-		if (door ~= nil) and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and (not door:isDestroyed()) then
-			local building = door:getOppositeSquare():getBuilding()
+		if door and (door:isLocked() or door:isLockedByKey() or door:isBarricaded()) and not door:isDestroyed() then
+			CreateLogLine("Walk to", true, tostring(self:getName()) .. " is managing a locked door ...");
+
+			-- local building = door:getOppositeSquare():getBuilding() -- Never gets used
 			self:NPC_ManageLockedDoors() -- This function will be sure ^ doesn't make the npc stuck in these cases
 		end
 		if (self.StuckDoorTicks < 7) then
-			self:WalkToAttempt(square)
+			self:TrackWalkToAttempt(square)
 			self:WalkToPoint(adjacent:getX(), adjacent:getY(), adjacent:getZ())
+			return
 		end
+		CreateLogLine("Walk to", true, tostring(self:getName()) .. " Error: could not walkToPoint ...");
 	end
 	--]]
 end
@@ -1832,7 +1862,7 @@ function SuperSurvivor:walkToDirect(square)
 
 	self:NPC_ManageLockedDoors() -- If things get too weird with npc pathing at doors, remove this line
 
-	self:WalkToAttempt(square)
+	self:TrackWalkToAttempt(square)
 	self:WalkToPoint(square:getX(), square:getY(), square:getZ())
 end
 
@@ -2339,7 +2369,7 @@ function SuperSurvivor:updateTime()
 
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:updateTime() called");
 
-	-- the lower the value the more frequent survivor:update() gets called, means faster reactions but worse performance
+	-- the lower the value the more frequent survivor:update () gets called, means faster reactions but worse performance
 	-- Does not run when waiting is active
 	if self.Reducer % self.UpdateDelayTicks == 0 then 
 		-- self.Reducer = 0 ; -- Batmane - Testing if we can reset reducer back to 0 to prevent accumulating large numbers -- We cant do this because it is also how AI keeps track of time
@@ -2569,12 +2599,12 @@ local thresholdMinorStuck = 8
 local thresholdMildStuck = 100
 local thresholdVeryBadStuck = 250
 
-function SuperSurvivor:CheckForIfStuck() -- This code was taken out of update() and put into a function, to reduce how big the code looked
-	CreateLogLine("SuperSurvivorStuck", survivorStuckCheck, "SuperSurvivor:CheckForIfStuck() called");
+function SuperSurvivor:CheckForIfStuck() -- This code was taken out of update () and put into a function, to reduce how big the code looked
+	CreateLogLine("SuperSurvivorStuck", survivorStuckCheck, tostring(self:getName()) .. "SuperSurvivor:CheckFor IfStuck() called");
 	-- Counter to determine if NPC has been stuck in the same square
 	local cs = self.player:getCurrentSquare()
-	if cs ~= nil then
-		if self.LastSquare == nil or self.LastSquare ~= cs then
+	if cs then
+		if not self.LastSquare or self.LastSquare ~= cs then
 			self.TicksSinceSquareChanged = 0
 			self.LastSquare = cs
 		elseif self.LastSquare == cs then
@@ -2582,11 +2612,11 @@ function SuperSurvivor:CheckForIfStuck() -- This code was taken out of update() 
 		end
 	end
 
-	if (self:inFrontOfLockedDoor() or self:inFrontOfWindow()) -- this may need to be changed to the Xor blocked door?
+	if self:inFrontOfLockedDoor() or self:inFrontOfWindow() -- this may need to be changed to the Xor blocked door?
 		and self:getTaskManager():getCurrentTask() ~= "Enter New Building"
-		and self.TargetBuilding ~= nil
+		and self.TargetBuilding
 		and ((
-				self.TicksSinceSquareChanged > 6
+				self.TicksSinceSquareChanged > 3
 				and self:isInAction() == false
 				and (
 					self:getCurrentTask() == "None"
@@ -2609,8 +2639,9 @@ function SuperSurvivor:CheckForIfStuck() -- This code was taken out of update() 
 		self.TicksSinceSquareChanged = 0
 	end
 
-	if (self.TicksSinceSquareChanged > thresholdMinorStuck
-		and self:Get():getModData().bWalking == true) or self.TicksSinceSquareChanged > thresholdVeryBadStuck then
+	if (self.TicksSinceSquareChanged > thresholdMinorStuck and self:Get():getModData().bWalking == true) or 
+		self.TicksSinceSquareChanged > thresholdVeryBadStuck 
+	then
 		self.StuckCount = self.StuckCount + 1
 		CreateLogLine("SuperSurvivorStuck", survivorStuckCheck, tostring(self:getName()) .. " has been in same square for ticks: " ..tostring(thresholdMinorStuck));
 
@@ -2627,7 +2658,7 @@ function SuperSurvivor:CheckForIfStuck() -- This code was taken out of update() 
 			CreateLogLine("SuperSurvivorStuck", survivorStuckCheck, tostring(self:getName()) .. " has been forced (to unstack) to move around ");
 		end
 	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:CheckForIfStuck() END ---");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:CheckFor IfStuck() END ---");
 end
 
 -- Start of Survivor Routine Update Functions
@@ -2646,6 +2677,10 @@ function SuperSurvivor:updateSurvivorStatus()
 	then 
 		-- Handle Vision, Enemy Counting, Remembering Enemy Target, etc.
 		self:DoVisionV3() -- Only allow Vision to run once per second at 60 fps
+		-- 
+
+		-- Handle Pathing - Experiment moving from player update function -- Doesnt seem to work from here
+		-- self:WalkToUpdate();
 		-- 
 	end
 
@@ -2688,7 +2723,7 @@ function SuperSurvivor:updateSurvivorStatus()
 		self.player:setBlockMovement(true);
 
 		-- Seems to handle path finding but with high game speed? - Maybe run this once per few seconds
-		if self.TargetSquare ~= nil and self.TargetSquare:getZ() ~= self.player:getZ() and getGameSpeed() > 2 then
+		if self.TargetSquare and self.TargetSquare:getZ() ~= self.player:getZ() and getGameSpeed() > 2 then
 			self.TargetSquare = nil
 			self:StopWalk()
 			self:Wait(2) -- from 10 wait at most 4 seconds
@@ -2696,7 +2731,7 @@ function SuperSurvivor:updateSurvivorStatus()
 
 		-- Batmane - This can just be run like every 10 minutes or so 
 		-- Todo: Currently this checks every 20 s - lets see if the there are issues
-		self:CheckForIfStuck() -- New function to cleanup the update() function
+		self:CheckForIfStuck() -- New function to cleanup the update () function
 	end
 
 
@@ -2716,6 +2751,7 @@ function SuperSurvivor:updateSurvivorStatus()
 	-- Batmane: This runs every 8 seconds at 60 fps
 	-- This seems like its for tasks that do not need to be updated 1-3 times per second
 	if self.Reducer % (8 * globalBaseUpdateDelayTicks) == 0 then
+		-- 
 		self:setSneaking(false)
 
 		-- This whole function belongs in the task manager
@@ -2857,84 +2893,88 @@ end
 -- Don't add more tasks to this function, Wander task is the only one that turns the NPC around and walks away.
 -- If you see 'ManageOutdoorStuck' and 'ManageIndoorStuck', that was my older version attempts at the final result of this function.
 function SuperSurvivor:NPC_ManageLockedDoors()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_ManageLockedDoors() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_Manage LockedDoors() called");
 	-- Prevent your follers from listening to this rule. Temp solution for now.
-	if (self:getGroupRole() == "Companion") then self.StuckDoorTicks = 0 end
+	if self:getGroupRole() == "Companion" then 
+		self.StuckDoorTicks = 0 
+		return
+	end
 
-	if ((self:inFrontOfLockedDoorAndIsOutside() == true) or (self:NPC_IFOD_BarricadedInside() == true) or (self:inFrontOfBarricadedWindowAlt())) then
+	if self:inFrontOfLockedDoorAndIsOutside() == true or 
+		self:NPC_IFOD_BarricadedInside() == true or 
+		self:inFrontOfBarricadedWindowAlt() 
+	then
 		self.StuckDoorTicks = self.StuckDoorTicks + 1
 
-		-- Once the timer strikes 11
-		if (self.StuckDoorTicks > 5) then
-			self:getTaskManager():AddToTop(WanderTask:new(self))
-
-			-- Double failsafe - For being outside, npc should try to go inside
-			if (self:NPC_IsOutside() == true) then
-				self:NPC_ForceFindNearestBuilding()
-				self:getTaskManager():AddToTop(AttemptEntryIntoBuildingTask:new(self, self.TargetBuilding))
-			end
-
-			-- timer will continue going up within an emergency
-			if (self.StuckDoorTicks > 11) then
-				if (self:getGroupRole() == "Random Solo") then -- Not a player's base allie
-					self:getTaskManager():clear()
-					self:getTaskManager():AddToTop(WanderTask:new(self))
-					self:getTaskManager():AddToTop(FindUnlootedBuildingTask:new(self))
-					self:getTaskManager():AddToTop(WanderTask:new(self))
-				end
-				if (self.StuckDoorTicks > 15) then
-					if (self.player:getModData().isHostile == true) then -- Not a player's base allie
-						self.lastenemyseen = nil;
-						self:getTaskManager():clear();
-						self.StuckDoorTicks = 0;
-					end
-					if (self.player:getModData().isHostile == false) then -- Not a player's base allie
-						self:getTaskManager():clear()
-						self:getTaskManager():AddToTop(WanderTask:new(self))
-						self.StuckDoorTicks = 0
-					end
-				end
-			end
+		if self.StuckDoorTicks < 5 then return end
+		self:getTaskManager():clear() -- Experiment Batmane
+		self:getTaskManager():AddToTop(WanderTask:new(self))
+		-- Double failsafe - For being outside, npc should try to go inside
+		if self:NPC_IsOutside() == true then
+			self:NPC_ForceFindNearestBuilding()
+			self:getTaskManager():AddToTop(AttemptEntryIntoBuildingTask:new(self, self.TargetBuilding))
 		end
+
+		if self.StuckDoorTicks < 11 then return end
+
+		-- timer will continue going up within an emergency
+
+		if self:getGroupRole() == "Random Solo" then -- Not a player's base allie
+			self:getTaskManager():clear()
+			self:getTaskManager():AddToTop(WanderTask:new(self))
+			self:getTaskManager():AddToTop(FindUnlootedBuildingTask:new(self))
+			self:getTaskManager():AddToTop(WanderTask:new(self))
+		end
+
+		if self.StuckDoorTicks < 15 then return end
+
+		self:getTaskManager():clear();
+		if self.player:getModData().isHostile == false then -- Not a player's base allie
+			-- self.lastenemyseen = nil; -- This references nothing - Batmane
+			self:getTaskManager():AddToTop(WanderTask:new(self))
+		end
+		self.StuckDoorTicks = 0;
 	else
 		self.StuckDoorTicks = 0 -- This will set to 0 if not near the door in general
 	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_ManageLockedDoors() end ---");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_Manage LockedDoors() end ---");
 end
 
 -- Older attempts at ^. the one above does better
-function SuperSurvivor:ManageOutdoorStuck()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:ManageOutdoorStuck() called");
-	-- Todo : remove these lines to test
-	if (self:NPC_TaskCheck_EnterLeaveBuilding()) and (self:inFrontOfLockedDoor()) and (self:NPC_IsOutside() == true) and (self:getTaskManager():getCurrentTask() ~= "Wander") then
-		self.TicksSinceSquareChanged = self.TicksSinceSquareChanged + 1
+-- Unused
+-- function SuperSurvivor:ManageOutdoorStuck()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:ManageOutdoorStuck() called");
+-- 	-- Todo : remove these lines to test
+-- 	if (self:NPC_TaskCheck_EnterLeaveBuilding()) and (self:inFrontOfLockedDoor()) and (self:NPC_IsOutside() == true) and (self:getTaskManager():getCurrentTask() ~= "Wander") then
+-- 		self.TicksSinceSquareChanged = self.TicksSinceSquareChanged + 1
 
-		if (self.TicksSinceSquareChanged > 10) then
-			self:getTaskManager():AddToTop(WanderTask:new(self))
-			self.TicksSinceSquareChanged = 0
-		end
-	else
-		self.TicksSinceSquareChanged = 0
-	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:ManageOutdoorStuck() end ---");
-end
+-- 		if (self.TicksSinceSquareChanged > 10) then
+-- 			self:getTaskManager():AddToTop(WanderTask:new(self))
+-- 			self.TicksSinceSquareChanged = 0
+-- 		end
+-- 	else
+-- 		self.TicksSinceSquareChanged = 0
+-- 	end
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:ManageOutdoorStuck() end ---");
+-- end
 
-function SuperSurvivor:ManageIndoorStuck()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:ManageIndoorStuck() called");
-	if (self:inFrontOfLockedDoor()) and (self:NPC_IsOutside() == false) and (self:getTaskManager():getCurrentTask() ~= "Wander") then
-		self.TicksSinceSquareChanged = self.TicksSinceSquareChanged + 1
+-- Unused
+-- function SuperSurvivor:ManageIndoorStuck()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:ManageIndoorStuck() called");
+-- 	if (self:inFrontOfLockedDoor()) and (self:NPC_IsOutside() == false) and (self:getTaskManager():getCurrentTask() ~= "Wander") then
+-- 		self.TicksSinceSquareChanged = self.TicksSinceSquareChanged + 1
 
-		if (self.TicksSinceSquareChanged > 10) then
-			self:StopWalk();
-			self:getTaskManager():clear();
-			self:getTaskManager():AddToTop(WanderTask:new(self));
-			self.TicksSinceSquareChanged = 0;
-		end
-	else
-		self.TicksSinceSquareChanged = 0
-	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:ManageIndoorStuck() end ---");
-end
+-- 		if (self.TicksSinceSquareChanged > 10) then
+-- 			self:StopWalk();
+-- 			self:getTaskManager():clear();
+-- 			self:getTaskManager():AddToTop(WanderTask:new(self));
+-- 			self.TicksSinceSquareChanged = 0;
+-- 		end
+-- 	else
+-- 		self.TicksSinceSquareChanged = 0
+-- 	end
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:ManageIndoorStuck() end ---");
+-- end
 
 function SuperSurvivor:OnDeath()
 	CreateLogLine("OnDeath", isLocalLoggingEnabled, "SuperSurvivor:On Death() called");
@@ -2975,6 +3015,7 @@ function SuperSurvivor:PlayerUpdate()
 		end
 
 		self:WalkToUpdate(); -- This is needed otherwise AI cant path at all. They just run off whichever way they face
+		-- Why cant we do this like every second? Lets try it - May 19- Batmane -- Seems like they dont walk
 	end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:PlayerUpdate() end ---");
 end
@@ -3282,7 +3323,7 @@ function SuperSurvivor:ReadyGun(weapon)
 	CreateLogLine("Ready Weapon", isLocalLoggingEnabled, tostring(self:getName()) .. " is readying their gun");
 
 	if weapon:isJammed() then
-		CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " has a gun jam");
+		-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " has a gun jam");
 		ISReloadWeaponAction.OnPressRackButton(self.player, weapon) -- Rack weapon to clear jam - Batmane
 		weapon:setJammed(false);
 		-- self:Wait(1); -- Cows: Wait 1 ticks to clear the Jam. -- Batmane - we dont want to wait because this skips processing that might get them killed
@@ -3292,7 +3333,7 @@ function SuperSurvivor:ReadyGun(weapon)
 
 	if weapon:haveChamber() and not weapon:isRoundChambered() then
 		if ISReloadWeaponAction.canRack(weapon) then
-			CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is racking weapon");
+			-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is racking weapon");
 			ISReloadWeaponAction.OnPressRackButton(self.player, weapon)
 			return true
 		end
@@ -3382,7 +3423,7 @@ function SuperSurvivor:ReadyGun(weapon)
 		end
 	-- Handle All Guns with No Magazine
 	else
-		CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is reloading gun with no magazine");
+		-- CreateLogLine("Ready Weapon", true, tostring(self:getName()) .. " is reloading gun with no magazine");
 		local maxammo = weapon:getMaxAmmo();
 		local ammotype = weapon:getAmmoType();
 
@@ -3829,22 +3870,29 @@ function SuperSurvivor:NPC_EnforceWalkNearMainPlayer()
 end
 
 -- ERW stands for 'EnforceRunWalk'
-function SuperSurvivor:NPC_ERW_AroundMainPlayer(VarDist)
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_ERW_AroundMainPlayer() called");
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
-	if GetXYDistanceBetween(self.player, getSpecificPlayer(0)) > VarDist
-		or getSpecificPlayer(0):getZ() ~= self.player:getZ() 
-	then
-		if self:isInAction() == true then
-			self:setRunning(true)
-		end
-	else
-		if self:isInAction() == false then
-			self:setRunning(false)
-		end
-	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_ERW_AroundMainPlayer() end ---");
-end
+-- No longer used
+-- function SuperSurvivor:NPC_ERW_AroundMainPlayer(VarDist)
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC_ERW_ AroundMainPlayer() called");
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
+
+-- 	local distanceToPlayer0 = self.distanceToPlayer0
+-- 	if not distanceToPlayer0 then 
+-- 		distanceToPlayer0 = GetXYDistanceBetween(self.player, getSpecificPlayer(0))
+-- 	end
+
+-- 	if distanceToPlayer0 > VarDist and getSpecificPlayer(0):getZ() == self.player:getZ()
+-- 	then
+-- 		if self:isInAction() == true then
+-- 			self:setRunning(true)
+-- 		end
+-- 	else
+-- 		if self:isInAction() == false then
+-- 			self:setRunning(false)
+-- 		end
+-- 	end
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC_ERW_ AroundMainPlayer() end ---");
+-- end
+
 
 -- Manages movement and movement speed
 -- Walks to target

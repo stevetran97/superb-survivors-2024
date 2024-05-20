@@ -35,7 +35,7 @@ function TakeGiftTask:isComplete()
 end
 
 function TakeGiftTask:isValid()
-	if not self.parent or self.TheGift == nil then
+	if self.TheGift == nil then
 		return false
 	else
 		return true
