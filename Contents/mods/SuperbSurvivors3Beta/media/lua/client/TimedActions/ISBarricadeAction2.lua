@@ -60,7 +60,7 @@ function ISBarricadeAction2:waitToStart()
 end
 
 function ISBarricadeAction2:update()
-	CreateLogLine("Barricade BuildingTask", true, " update barricading action ");
+	-- CreateLogLine("Barricade BuildingTask", true, " update barricading action ");
 
 	-- This updates dozens of times per second - consider reducing load here
 
