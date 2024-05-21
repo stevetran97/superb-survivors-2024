@@ -43,12 +43,12 @@ function PileCorpsesTask:update()
 	if self.parent:isInAction() == false then
 		local player = self.parent.player
 
-		if ((player:getInventory():FindAndReturn("CorpseMale") ~= nil)
-				or (player:getInventory():FindAndReturn("CorpseFemale") ~= nil))
+		-- Corpse Transport and dropoff
+		if player:getInventory():FindAndReturn("CorpseMale")
+			or player:getInventory():FindAndReturn("CorpseFemale")
 		then
-			local distanceToPoint = GetDistanceBetween(self.BringHereSquare, player)
-
-			if (distanceToPoint > 2.0) then
+			local distanceToPoint = GetXYDistanceBetween(self.BringHereSquare, player)
+			if distanceToPoint > 2.0 then
 				self.parent:walkToDirect(self.BringHereSquare)
 			else
 				local Corpse = player:getInventory():FindAndReturn("CorpseMale")
@@ -61,7 +61,8 @@ function PileCorpsesTask:update()
 				self.parent:Get():setSecondaryHandItem(nil)
 				self.Target = nil
 			end
-		elseif (self.Target == nil) then
+		-- Case - Corpse Retrieval - Search for Target Dead Body
+		elseif not self.Target then
 			-- WIP - Cows: "range" determines the number of scans for corpses.
 			-- 45 * 45 = 2045 -- original value
 			-- 30 * 30 = 900, - which reduces the scan range
@@ -73,9 +74,9 @@ function PileCorpsesTask:update()
 			local maxy = math.floor(player:getY() + range);
 			local z = 0
 
-			if (self.group ~= nil) then
+			if self.group then
 				local area = self.group:getGroupArea("TakeCorpseArea")
-				if (area[1] ~= 0) then
+				if area[1] ~= 0 then
 					minx = area[1]
 					maxx = area[2]
 					miny = area[3]
@@ -87,25 +88,24 @@ function PileCorpsesTask:update()
 			local gamehours = getGameTime():getWorldAgeHours();
 
 			for x = minx, maxx do
-
 				for y = miny, maxy do
 					Square = getCell():getGridSquare(x, y, z);
 
-					if (Square ~= nil)
-						and (GetDistanceBetween(self.BringHereSquare, Square) > 2)
-						and (Square:getDeadBody())
+					if Square
+						and GetXYDistanceBetween(self.BringHereSquare, Square) > 2
+						and Square:getDeadBody()
 					then
-						local distance = GetDistanceBetween(Square, player); -- WIP - literally spammed inside the nested for loops...
+						local distance = GetXYDistanceBetween(Square, player); -- WIP - literally spammed inside the nested for loops...
 						self.Target = Square:getDeadBody()
 						self.TargetSquare = Square
 
-						if (distance < closestsoFar) then
+						if distance < closestsoFar then
 							closestsoFar = distance;
 						end
 					end
 				end
 			end
-			if (self.Target ~= nil) then
+			if self.Target then
 				player:StopAllActionQueue();
 				self.Target:getModData().isClaimed = gamehours;
 				--ISTimedActionQueue.add(ISWalkToTimedAction:new(player, self.TargetSquare:getN()));
@@ -113,9 +113,10 @@ function PileCorpsesTask:update()
 			else
 				self.Complete = true
 			end
-		elseif (self.Target ~= nil) then
-			if (self.TargetSquare:getDeadBody()
-					and (GetDistanceBetween(self.TargetSquare, player) > 2.0))
+		-- Case - Corpse Retrieval - Has Target Dead Body, Now Getting it
+		elseif self.Target then
+			if self.TargetSquare:getDeadBody()
+				and GetXYDistanceBetween(self.TargetSquare, player) > 2.0
 			then
 				self.parent:walkTo(self.TargetSquare);
 			elseif self.TargetSquare:getDeadBody() then

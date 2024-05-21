@@ -25,7 +25,13 @@ function ReturnToBaseTask:new(superSurvivor)
 end
 
 function ReturnToBaseTask:isComplete()
-	if (not self:isValid()) or self.parent:isInBase() or (self.BaseCoords == nil or self.BaseCoords[1] == nil or self.BaseCoords[2] == nil or self.BaseCoords[3] == nil) then
+	if not self:isValid() or 
+		self.parent:isInBase() or 
+		not self.BaseCoords or 
+		not self.BaseCoords[1] or 
+		not self.BaseCoords[2] or 
+		not self.BaseCoords[3]
+	then
 		return true
 	else
 		return false
@@ -33,7 +39,7 @@ function ReturnToBaseTask:isComplete()
 end
 
 function ReturnToBaseTask:isValid()
-	if (not self.parent:getGroupID()) then
+	if not self.parent:getGroupID() then
 		return false
 	else
 		return true
@@ -41,16 +47,18 @@ function ReturnToBaseTask:isValid()
 end
 
 function ReturnToBaseTask:update()
-	if (not self:isValid()) then return false end
+	if not self:isValid() then return false end
 
 
-	if (self.parent:isInAction() == false) then
+	if self.parent:isInAction() == false then
 		local baseSquare = getCell():getGridSquare(self.BaseCoords[1], self.BaseCoords[2], self.BaseCoords[3])
-		if (baseSquare) then
+		if baseSquare then
 			self.parent:walkTo(baseSquare)
 		else
 			local cs = self.parent:Get():getCurrentSquare()
-			if (not cs) or (not cs:IsOnScreen()) then
+			if not cs or 
+				not cs:IsOnScreen() 
+			then
 				self.parent.player:setX(self.BaseCoords[1])
 				self.parent.player:setY(self.BaseCoords[2])
 				self.parent.player:setZ(self.BaseCoords[3])

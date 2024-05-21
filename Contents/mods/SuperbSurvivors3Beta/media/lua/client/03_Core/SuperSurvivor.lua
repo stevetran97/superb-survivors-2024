@@ -354,7 +354,7 @@ function SuperSurvivor:Wait(ticks)
 end
 
 function SuperSurvivor:isInBase()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:isInBase() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:is InBase() called");
 	if (self:getGroupID() == nil) then
 		return false
 	else
@@ -1745,9 +1745,9 @@ end
 
 function SuperSurvivor:isInCell()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:isInCell() called");
-	if (self.player == nil)
-		or (self.player:getCurrentSquare() == nil)
-		or (self:isDead())
+	if not self.player
+		or not self.player:getCurrentSquare()
+		or self:isDead()
 	then
 		return false;
 	else
@@ -1766,7 +1766,9 @@ end
 
 function SuperSurvivor:isInAction()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:isInAction() called");
-	if ((self.player:getModData().bWalking == true) and (self.TicksSinceSquareChanged <= 10)) then
+	if self.player:getModData().bWalking == true and 
+		self.TicksSinceSquareChanged <= 10 
+	then
 		return true
 	end
 
@@ -1783,17 +1785,18 @@ function SuperSurvivor:isInAction()
 	return false;
 end
 
-function SuperSurvivor:isWalking()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:isWalking() called");
-	local queue = ISTimedActionQueue.queues[self.player]
-	if queue == nil then return false end
-	--for k,v in ipairs(queue.queue) do
-	for k = 1, #queue.queue do
-		local v = queue.queue[k]
-		if v then return true end
-	end
-	return false;
-end
+-- Never Used
+-- function SuperSurvivor:isWalking()
+-- 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:isWalking() called");
+-- 	local queue = ISTimedActionQueue.queues[self.player]
+-- 	if queue == nil then return false end
+-- 	--for k,v in ipairs(queue.queue) do
+-- 	for k = 1, #queue.queue do
+-- 		local v = queue.queue[k]
+-- 		if v then return true end
+-- 	end
+-- 	return false;
+-- end
 
 -- This activitely manages AI walking. 
 -- Tracks AI target building, Manages ai door management (locked, barricaded, etc.)
@@ -2752,7 +2755,6 @@ function SuperSurvivor:updateSurvivorStatus()
 	-- This seems like its for tasks that do not need to be updated 1-3 times per second
 	if self.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then
 		self:setSneaking(false)
-		self.UpdateDelayTicks = globalBaseUpdateDelayTicks; -- We allow the ai to stay in combat mode for 8 seconds so they can fight
 	end
 
 	if self.GoFindThisCounter > 0 then self.GoFindThisCounter = self.GoFindThisCounter - 1 end

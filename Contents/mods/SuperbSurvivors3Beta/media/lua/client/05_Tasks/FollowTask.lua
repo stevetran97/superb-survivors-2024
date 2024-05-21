@@ -44,7 +44,7 @@ function FollowTask:new(superSurvivor, FollowMeplayer)
 	-- This is literally always 0 wherever it is used
 	o.FollowDistanceOffset = 0
 
-	if (o.group ~= nil) then
+	if o.group then
 		o.FollowDistanceOffset = 0
 	end
 
