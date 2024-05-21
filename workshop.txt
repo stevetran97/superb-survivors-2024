@@ -1,6 +1,6 @@
 version=1
 id=3231442597
-title=Superb Survivor  2024 BETA
+title=Superb Survivor  2024 BETA (SP Only)
 description=[h2]What is different about this branch[/h2]
 description=This is a standalone duplicate of my other Superb Survivors Continued mod. In this branch I will be aggressively trying to rewrite and optimize the code. This branch will be expected to be unstable.
 description=
