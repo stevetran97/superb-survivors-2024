@@ -16,8 +16,8 @@ function TaskManager:new(superSurvivor)
 	o.Tasks = {}
 	o.Tasks[0] = nil -- Why does the first task need to be nil - Batmane
 	o.CurrentTask = 0
-	o.LastTask = 0
-	o.LastLastTask = 0
+	-- o.LastTask = 0
+	-- o.LastLastTask = 0
 
 	return o
 end
@@ -25,6 +25,12 @@ end
 function TaskManager:setTaskUpdateLimit(toValue)
 	self.TaskUpdateLimit = toValue
 	self.TaskUpdateCount = 0
+end
+
+function TaskManager:getTaskCount()
+	local taskCount = #self.Tasks
+	if self.Tasks[0] then taskCount = taskCount + 1 end
+	return taskCount
 end
 
 function TaskManager:AddToTop(newTask)
@@ -42,20 +48,20 @@ function TaskManager:AddToTop(newTask)
 
 	if newTask == nil then return false end
 
-	self.LastLastTask = self.LastTask -- WIP - Cows: "LastTask" is undefined...
-	self.LastTask = self:getCurrentTask()
+	-- self.LastLastTask = self.LastTask -- WIP - Cows: "LastTask" is undefined...
+	-- self.LastTask = self:getCurrentTask()
 	self.CurrentTask = newTask.Name
 
-	if self.LastTask == self.CurrentTask then
-		CreateLogLine("TaskManager", isLocalLoggingEnabled, "... possibly stuck in task loop ...");
-	end
-	if self.LastLastTaskt == self.CurrentTask then
-		CreateLogLine("TaskManager", isLocalLoggingEnabled, "... possibly stuck in task loop ...");
-	end
+	-- if self.LastTask == self.CurrentTask then
+	-- 	CreateLogLine("TaskManager", isLocalLoggingEnabled, "... possibly stuck in task loop ...");
+	-- end
+	-- if self.LastLastTaskt == self.CurrentTask then
+	-- 	CreateLogLine("TaskManager", isLocalLoggingEnabled, "... possibly stuck in task loop ...");
+	-- end
 
 	self.TaskUpdateCount = 0
 	-- Old task list management system - shift task list down to add new task to front
-	for i = #self.Tasks - 1, 0, -1 do
+	for i = #self.Tasks, 0, -1 do
 		self.Tasks[i + 1] = self.Tasks[i]
 	end
 
@@ -64,6 +70,7 @@ function TaskManager:AddToTop(newTask)
 	-- for i, Task in pairs(self.Tasks) do
 	-- 	CreateLogLine("AddToTop", true, tostring(self.parent:getName()) .. " has current queued task: " .. tostring(Task.Name));
 	-- end
+	-- CreateLogLine("AddToTop", true, tostring(self.parent:getName()) .. " AFTER #self.Tasks = " .. tostring(#self.Tasks));
 	-- CreateLogLine("AddToTop", true, tostring(self.parent:getName()) .. " AFTER task list end -------- ");
 
 	self.Tasks[0] = newTask

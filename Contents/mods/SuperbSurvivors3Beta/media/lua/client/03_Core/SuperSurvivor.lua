@@ -650,10 +650,10 @@ end
 function SuperSurvivor:setSitOnGround(toValue)
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:set SitOnGround() called");
 	if self.player ~= nil then
-		CreateLogLine("FollowTaskSit", true, " NPC now sitting on ground = " .. tostring(toValue));
+		-- CreateLogLine("FollowTaskSit", true, " NPC now sitting on ground = " .. tostring(toValue));
 		-- self.player:NPCSetAiming(toValue)
 
-		CreateLogLine("FollowTaskSit", true, " Function = " .. tostring(self.player.setSitOnGround));
+		-- CreateLogLine("FollowTaskSit", true, " Function = " .. tostring(self.player.setSitOnGround));
 
 
 		self.player:setSitOnGround(toValue);
@@ -1279,27 +1279,25 @@ function SuperSurvivor:getUnBarricadedWindow(building)
 end
 
 function SuperSurvivor:isEnemy(character)
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:isEnemy() called");
-	local group = self:getGroup();
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:is Enemy() called");
 
-	if (group) then
-		return group:isEnemy(self, character);
+	if character:isZombie() then
+		return true;
+	elseif self:isInGroup(character) then
+		return false;
+	elseif self.player:getModData().isHostile ~= true and self.player:getModData().surender == true then
+		return false -- so other npcs dont attack anyone surendering
+	elseif self.player:getModData().hitByCharacter == true and character:getModData().semiHostile == true then
+		return true;
+	elseif character:getModData().isHostile ~= self.player:getModData().isHostile then
+		return true;
 	else
-		-- A zombie is an enemy to EVERYONE
-		if character:isZombie() then
-			return true;
-		elseif (self:isInGroup(character)) then
-			return false;
-		elseif (self.player:getModData().isHostile ~= true and self.player:getModData().surender == true) then
-			return false -- so other npcs dont attack anyone surendering
-		elseif (self.player:getModData().hitByCharacter == true) and (character:getModData().semiHostile == true) then
-			return true;
-		elseif (character:getModData().isHostile ~= self.player:getModData().isHostile) then
-			return true;
-		else
-			return false;
-		end
+		return false;
 	end
+
+	local group = self:getGroup();
+	if group then return group:isEnemy(self, character) end
+	return false
 end
 
 function SuperSurvivor:hasWeapon()
@@ -1307,6 +1305,7 @@ function SuperSurvivor:hasWeapon()
 	local handItem = self.player:getPrimaryHandItem()
 	if not handItem then return false end
 	if instanceof(handItem, "HandWeapon") then
+		if handItem:isBroken() then return false end
 		return handItem;
 	end
 	return false;
@@ -2688,10 +2687,11 @@ function SuperSurvivor:updateSurvivorStatus()
 	if self.Reducer % (2 * globalBaseUpdateDelayTicks)
 	then
 		-- Fire Immunity - This can run every few seconds or so
-		if self.player:isOnFire() then
-			self.player:getBodyDamage():RestoreToFullHealth() -- temporarily give some fireproofing as they walk right through fire via pathfinding
-			self.player:setFireSpreadProbability(0);    -- give some fireproofing as they walk right through fire via pathfinding	
-		end
+		-- Disable this because it protects raiders from molotov
+		-- if self.player:isOnFire() then
+		-- 	self.player:getBodyDamage():RestoreToFullHealth() -- temporarily give some fireproofing as they walk right through fire via pathfinding
+		-- 	self.player:setFireSpreadProbability(0);    -- give some fireproofing as they walk right through fire via pathfinding	
+		-- end
 		-- 
 
 		-- Handle Whether NPC can run, walk, limp
@@ -2704,19 +2704,19 @@ function SuperSurvivor:updateSurvivorStatus()
 
 		-- Batmane TODO - Try disabling this and seeing if still stuck.
 		-- From Cows: Stuck Melee Animation Fix
-		if self:isInAction() == false and -- no current timedaction in Q, nor have we set bWalking true so AI is not trying to move character
-			self:Get():IsInMeleeAttack() == true
-		then                              -- isinmeleeattack means, is any swipe attack state true
-			self.SwipeStateTicks = self.SwipeStateTicks + 1
+		-- if self:isInAction() == false and -- no current timedaction in Q, nor have we set bWalking true so AI is not trying to move character
+		-- 	self:Get():IsInMeleeAttack() == true
+		-- then                              -- isinmeleeattack means, is any swipe attack state true
+		-- 	self.SwipeStateTicks = self.SwipeStateTicks + 1
 
-			if self.SwipeStateTicks > 3 then -- if npc has been in 6 seconds (because this function runs once every 2 seconds)  update loops and has been in swipe attack state entire time, assume they are stuck in animation
-				CreateLogLine("Stuck Survivor", true, tostring(self:getName()) .. "attemping to unstuck...");
-				self:UnStuckFrozenAnim()
-				self.SwipeStateTicks = 0;
-			end
-		else
-			self.SwipeStateTicks = 0;
-		end
+		-- 	if self.SwipeStateTicks > 3 then -- if npc has been in 6 seconds (because this function runs once every 2 seconds)  update loops and has been in swipe attack state entire time, assume they are stuck in animation
+		-- 		CreateLogLine("Stuck Survivor", true, tostring(self:getName()) .. "attemping to unstuck...");
+		-- 		self:UnStuckFrozenAnim()
+		-- 		self.SwipeStateTicks = 0;
+		-- 	end
+		-- else
+		-- 	self.SwipeStateTicks = 0;
+		-- end
 		-- 
 
 		-- Batmane - I dont even know what this does - Maybe just try running it every like second?
@@ -2737,46 +2737,22 @@ function SuperSurvivor:updateSurvivorStatus()
 
 	-- Batmane TODO - Most of the task manager does not need to update 1-3 times every second unless the ai is attacking.
 	-- WIP - Cows: Check if player(0) exists, because during respawn after death, player actually does not exist!
-	if getSpecificPlayer(0) ~= nil then
+	if 
+		-- getSpecificPlayer(0) and
+		-- not getSpecificPlayer(0):isAsleep() and
+		self:getGroupRole() ~= "Random Solo" -- WIP - Cows: ... "Random Solo" apparently doesn't get tasks updates...
+		-- and getSpecificPlayer(0):isAlive() -- WIP - Cows: Added a check isPlayerAlive, otherwise errors will be thrown here.
+	then
 		-- WIP - Cows: There is actually an error here, and it will run often if the player dies.
 		-- CreateLogLine("SuperSurvivorBatmane", true, tostring(self:getName()) .. " group role is " ..tostring(self:getGroupRole()));
-		if not getSpecificPlayer(0):isAsleep()
-			and self:getGroupRole() ~= "Random Solo" -- WIP - Cows: ... "Random Solo" apparently doesn't get tasks updates...
-			and getSpecificPlayer(0):isAlive() -- WIP - Cows: Added a check isPlayerAlive, otherwise errors will be thrown here.
-		then
-			self.MyTaskManager:update()
-		end
+		self.MyTaskManager:update()
 	end
 
 	-- Batmane: This runs every 8 seconds at 60 fps
 	-- This seems like its for tasks that do not need to be updated 1-3 times per second
-	if self.Reducer % (8 * globalBaseUpdateDelayTicks) == 0 then
-		-- 
+	if self.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then
 		self:setSneaking(false)
-
-		-- This whole function belongs in the task manager
-		-- Handles equiping weapon and corpse piling for some reason
-		-- Basically If hand weapon is nil (also not a corpse when not assigned to piling corpses) (also not broken)
-		-- Drop the corpse/ broken weapon. Get new weapon
-		-- Otherwise if weapon doesn't exist, get a weapon
-
-		-- Batmane TODO Found Bug: This function forces ai to equip random gun instead of the weapon you tell them to
-		if self:Get():getPrimaryHandItem() ~= nil 
-			and (
-				(self:Get():getPrimaryHandItem():getDisplayName() == "Corpse" and self:getCurrentTask() ~= "Pile Corpses") 
-				or self:Get():getPrimaryHandItem():isBroken())
-		then
-			ISTimedActionQueue.add(ISDropItemAction:new(self:Get(), self:Get():getPrimaryHandItem(), 30))
-			self:Get():setPrimaryHandItem(nil);
-			self:Get():setSecondaryHandItem(nil);
-			local weaponToGet = self:getWeapon()
-			if weaponToGet 
-			then
-				self:Get():setPrimaryHandItem(weaponToGet);
-			end
-		end
-
-		self.UpdateDelayTicks = globalBaseUpdateDelayTicks;
+		self.UpdateDelayTicks = globalBaseUpdateDelayTicks; -- We allow the ai to stay in combat mode for 8 seconds so they can fight
 	end
 
 	if self.GoFindThisCounter > 0 then self.GoFindThisCounter = self.GoFindThisCounter - 1 end

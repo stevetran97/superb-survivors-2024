@@ -55,18 +55,7 @@ function SuperSurvivorGroup:getFollowCount()
 end
 
 function SuperSurvivorGroup:isEnemy(SS, character)
-	-- zombie is enemy to anyone
-	if character:isZombie() then
-		return true;
-	elseif (SS:isInGroup(character)) then
-		return false;
-	elseif (SS.player:getModData().isHostile ~= true and character:getModData().surender == true) then
-		return false; -- so other npcs dont attack anyone surendering
-	elseif (SS.player:getModData().hitByCharacter == true) and (character:getModData().semiHostile == true) then
-		return true;
-	elseif (character:getModData().isHostile ~= SS.player:getModData().isHostile) then
-		return true;
-	elseif (self.ROE == 4) then
+	if self.ROE == 4 then
 		return true;
 	end
 	return false;

@@ -28,13 +28,19 @@ function AIEssentialTasks(TaskMangerIn)
 	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has wait ticks: " .. tostring(currentNPC.WaitTicks));
 	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has group role: " .. tostring(currentNPC:getGroupRole()));
 	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list start -------- ");
+	-- local debugTaskCount = 0
 	-- for i, Task in pairs(TaskMangerIn.Tasks) do
-	-- 	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has queued task: " .. tostring(Task.Name));
+	-- 	CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has queued task: " .. tostring(Task.Name) .. " at idx " .. tostring(i));
+	-- 	debugTaskCount = debugTaskCount + 1
 	-- end
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " debug tasks count : " .. tostring(debugTaskCount));
+
 	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " task list end -------- ");
-	-- local actionQueue = ISTimedActionQueue.getTimedActionQueue(npc)
+	-- local actionQueue = ISTimedActionQueue.getTimedActionQueue(currentNPC.player)
 	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has this action queue -------- " .. tostring(actionQueue));
 	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has this AI MODE -------- " .. tostring(currentNPC:getAIMode()));
+
+	-- CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " has #TaskMangerIn.Tasks = " .. tostring(#TaskMangerIn.Tasks));
 	-- -- Logging Block
 
 	-- Variable Block
@@ -186,7 +192,7 @@ function AIEssentialTasks(TaskMangerIn)
     -- ----------------------------- --
     -- Has not weapon in hand
     if not currentNPC:hasWeapon() 
-	-- and currentNPC:Get():getPrimaryHandItem() == nil
+		and TaskMangerIn:getCurrentTask() ~= "Pile Corpses"
     then
 		if TaskMangerIn:getCurrentTask() ~= "Equip Weapon" then
 			currentNPC:Speak('Wheres my weapon?!')
@@ -394,13 +400,6 @@ function AIManager(TaskMangerIn)
 	-- Only run very 6 ish seconds and finished essential tasks
 	if currentNPC.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then 
 		CreateLogLine("AIEssentialTasks", true, tostring(currentNPC:getName()) .. " is now processing old routines.... ");
-
-		-- Skip Task Management if Survivor needs to follow you rn or is in a vehicle
-		-- if currentNPC:needToFollow()
-		-- 	or currentNPC:Get():getVehicle() ~= nil
-		-- then
-		-- 	return false
-		-- end -- if in vehicle skip AI -- or high priority follow
 
 		local npcIsInAction = currentNPC:isInAction();
 		local npcGroup = currentNPC:getGroup();

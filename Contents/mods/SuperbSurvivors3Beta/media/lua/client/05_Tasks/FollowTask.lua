@@ -116,7 +116,7 @@ function FollowTask:update()
 
 	self.parent:setSneaking(self.FollowChar:isSneaking()) -- sneaking if person you follow is
 
-	CreateLogLine("FollowTaskSit", true, "self.FollowChar = " .. tostring(self.FollowChar));
+	-- CreateLogLine("FollowTaskSit", true, "self.FollowChar = " .. tostring(self.FollowChar));
 
 	-- WIP Sitting when players sit
 	-- if self.FollowChar:isSitOnGround() then 

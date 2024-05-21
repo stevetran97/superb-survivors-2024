@@ -22,14 +22,14 @@ function PileCorpsesTask:new(superSurvivor, BringHere)
 	return o
 end
 
-function PileCorpsesTask:ForceFinish()
-	self.parent:reEquipLastWeapon()
-	self.Complete = true;
-end
+-- function PileCorpsesTask:ForceFinish()
+-- 	self.parent:reEquipLastWeapon()
+-- 	self.Complete = true;
+-- end
 
-function PileCorpsesTask:isComplete()
-	return self.Complete
-end
+-- function PileCorpsesTask:isComplete()
+-- 	return self.Complete
+-- end
 
 function PileCorpsesTask:isValid()
 	return true
@@ -38,9 +38,9 @@ end
 -- WIP - Cows: NEED TO REWORK THE NESTED LOOP CALLS
 function PileCorpsesTask:update()
 	CreateLogLine("PileCorpsesTask", isLocalLoggingEnabled, "PileCorpsesTask:update() Called");
-	if (not self:isValid()) then return false end
+	if not self:isValid() then return false end
 
-	if (self.parent:isInAction() == false) then
+	if self.parent:isInAction() == false then
 		local player = self.parent.player
 
 		if ((player:getInventory():FindAndReturn("CorpseMale") ~= nil)

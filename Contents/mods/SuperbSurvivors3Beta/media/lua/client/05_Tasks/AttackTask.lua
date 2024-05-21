@@ -27,8 +27,7 @@ end
 
 function AttackTask:isComplete()
 	if 
-		self.parent:getDangerSeenCount() <= 0 or
-		not self.parent:hasWeapon()
+		self.parent:getDangerSeenCount() <= 0 
 	then 
 		self.parent:StopWalk()
 		return true 

@@ -389,7 +389,7 @@ function SetRulesOfEngagement(test, value)
 
 	local SS = SSM:Get(0)
 	local group = SS:getGroup()
-	if (group) then
+	if group then
 		group:setROE(value)
 		getSpecificPlayer(0):Say(Get_SS_ContextMenuText("ROESet"));
 	end
@@ -481,12 +481,10 @@ function SurvivorsFillWorldObjectContextMenu(player, context, worldobjects, test
 	local SurvivorOptions = context:addOption(Get_SS_ContextMenuText("SurvivorOptions"), worldobjects, nil);
 	local submenu = context:getNew(context);
 
-	-- Batmane Just add directly to Survivor Options
 	MakeToolTip(submenu:addOption(Get_SS_ContextMenuText("UseMelee"), nil, SetMeleeOrGun, 'melee'),
 		Get_SS_ContextMenuText("UseMelee"), Get_SS_ContextMenuText("UseMeleeDesc"));
 	MakeToolTip(submenu:addOption(Get_SS_ContextMenuText("UseGun"), nil, SetMeleeOrGun, 'gun'),
 		Get_SS_ContextMenuText("UseGun"), Get_SS_ContextMenuText("UseGunDesc"));
-	-- 
 
 	-- Generate Rules of Engagement Sub menu then append it to survivor menu
 	local RulesOfEngagementOption = submenu:addOption(Get_SS_ContextMenuText("RulesOfEngagement"), worldobjects, nil);
@@ -501,15 +499,6 @@ function SurvivorsFillWorldObjectContextMenu(player, context, worldobjects, test
 	--MakeToolTip(subsubmenu:addOption("No Attacking", nil, SetRulesOfEngagement, 1),"Rules of Engagement","Do not shoot or attack anything or anyone. Just avoid when possible.");
 	submenu:addSubMenu(RulesOfEngagementOption, subsubmenu);
 	-- 
-
-	-- local MeleeOrGunOption = submenu:addOption(Get_SS_ContextMenuText("CallToArms"), worldobjects, nil);
-	-- subsubmenu = submenu:getNew(submenu);
-	-- MakeToolTip(subsubmenu:addOption(Get_SS_ContextMenuText("UseMelee"), nil, SetMeleeOrGun, 'melee'),
-	-- 	Get_SS_ContextMenuText("UseMelee"), Get_SS_ContextMenuText("UseMeleeDesc"));
-	-- MakeToolTip(subsubmenu:addOption(Get_SS_ContextMenuText("UseGun"), nil, SetMeleeOrGun, 'gun'),
-	-- 	Get_SS_ContextMenuText("UseGun"), Get_SS_ContextMenuText("UseGunDesc"));
-	-- submenu:addSubMenu(MeleeOrGunOption, subsubmenu);
-
 
 	context:addSubMenu(SurvivorOptions, submenu); --Add ">" entire Survivor Options submenu
 end
