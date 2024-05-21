@@ -17,19 +17,21 @@ function BarricadeBuildingTask:new(superSurvivor)
 	o.PreviousSquare = nil
 	o.Complete = false
 	o.parent:setLastWeapon()
+	o.myTimedAction = nil
 
-	CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "function: Barricade BuildingTask:new() called");
+
+	-- CreateLogLine("Barricade BuildingTask", true, "function: Barricade BuildingTask:new() called");
 
 	local inv = o.parent.player:getInventory()
 	local temp = inv:FindAndReturn("Hammer")
-	if (temp) then
+	if temp then 
 		o.Hammer = temp
 	else
 		o.Hammer = inv:AddItem("Base.Hammer")
 	end
 
 	temp = inv:FindAndReturn("Plank")
-	if (temp) then
+	if temp then
 		o.Plank = temp
 	else
 		o.Plank = inv:AddItem("Base.Plank")
@@ -53,9 +55,7 @@ function BarricadeBuildingTask:OnComplete()
 end
 
 function BarricadeBuildingTask:isComplete()
-	if self.Complete then
-		self:ForceComplete()
-	end
+	if self.Complete then self:ForceComplete() end
 	return self.Complete
 end
 
@@ -65,33 +65,39 @@ end
 
 function BarricadeBuildingTask:update()
 	CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "function: Barricade BuildingTask:update() called");
-	if (not self:isValid()) then return false end
+	if not self:isValid() then return false end
 
-	if (self.parent:isInAction() == false) then
+	if self.parent:isInAction() == false then
 		local building = self.parent:getBuilding();
-		if (building ~= nil) then
-			if (self.Window == nil) then self.Window = self.parent:getUnBarricadedWindow(building) end
-			if (not self.Window) then
+		if not building then 
+			self.Complete = true
+			return false
+		end
+		if building then
+			if not self.Window then 
+				self.Window = self.parent:getUnBarricadedWindow(building) 
+			end
+			if not self.Window then
 				CreateLogLine("Barricade BuildingTask", isLocalLoggingEnabled, "No window found...");
 				self.Complete = true
 				return false
 			end
-		else
-			self.Complete = true
-			return false
 		end
 
 		local barricade = self.Window:getBarricadeForCharacter(self.parent.player)
-		local distance = GetDistanceBetween(self.parent.player, self.Window:getIndoorSquare());
-		if (distance > 2) or (self.parent.player:getZ() ~= self.Window:getZ()) then
+		local distance = GetXYDistanceBetween(self.parent.player, self.Window:getIndoorSquare());
+		if distance > 2 or self.parent.player:getZ() ~= self.Window:getZ() then
 			local attempts = self.parent:getWalkToAttempt(self.Window:getIndoorSquare())
 			self.parent:walkTo(self.Window:getIndoorSquare())
 
-			if (attempts > 8) then
+			if attempts > 8 then
 				self.Complete = true
 				return false
 			end
-		elseif barricade == nil or (barricade:canAddPlank()) then
+		elseif 
+			not barricade or 
+			barricade:canAddPlank() 
+		then
 			self.parent.player:setPrimaryHandItem(self.Hammer)
 			self.parent.player:setSecondaryHandItem(self.Plank)
 			if not self.parent.player:getInventory():contains("Nails", true) then
@@ -99,10 +105,10 @@ function BarricadeBuildingTask:update()
 			end
 
 			self.parent:StopWalk()
-			ISTimedActionQueue.add(ISBarricadeAction:new(self.parent.player, self.Window, false, false, 100));
 
-
-			self.Window = nil
+			self.myTimedAction = ISBarricadeAction2:new(self.parent.player, self.Window, false, false, 800) -- Use this best practice to set action
+			ISTimedActionQueue.add(self.myTimedAction)	
+			
 		else
 			self.Window = nil
 		end

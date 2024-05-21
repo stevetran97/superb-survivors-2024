@@ -1773,6 +1773,11 @@ function SuperSurvivor:isInAction()
 	end
 
 	local queue = ISTimedActionQueue.queues[self.player]
+
+	-- if queue then 
+	-- 	CreateLogLine("isInAction", true, tostring(self:getName()) .. " Survivor has Number of TimedActionQueue" .. tostring(#queue.queue));
+	-- end
+
 	if queue == nil then return false end
 
 	for k = 1, #queue.queue do
@@ -2602,7 +2607,7 @@ local thresholdMildStuck = 100
 local thresholdVeryBadStuck = 250
 
 function SuperSurvivor:CheckForIfStuck() -- This code was taken out of update () and put into a function, to reduce how big the code looked
-	CreateLogLine("SuperSurvivorStuck", survivorStuckCheck, tostring(self:getName()) .. "SuperSurvivor:CheckFor IfStuck() called");
+	-- CreateLogLine("SuperSurvivorStuck", survivorStuckCheck, tostring(self:getName()) .. "SuperSurvivor:CheckFor IfStuck() called");
 	-- Counter to determine if NPC has been stuck in the same square
 	local cs = self.player:getCurrentSquare()
 	if cs then

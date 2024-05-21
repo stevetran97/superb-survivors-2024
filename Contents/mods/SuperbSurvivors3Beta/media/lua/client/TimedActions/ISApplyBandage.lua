@@ -86,9 +86,9 @@ function ISApplyBandage:perform()
             self.bodyPart:SetInfected(true);
         end
         -- apply bandage to model
---        if self.bodyPart:getType():getBandageModel() then
---            self.otherPlayer:addBandageModel(self.bodyPart:getType():getBandageModel());
---        end
+        --        if self.bodyPart:getType():getBandageModel() then
+        --            self.otherPlayer:addBandageModel(self.bodyPart:getType():getBandageModel());
+        --        end
         if isClient() then
             sendBandage(self.otherPlayer:getOnlineID(), self.bodyPart:getIndex(), true, bandageLife, self.item:isAlcoholic(), self.item:getModule() .. "." .. self.item:getType());
         end

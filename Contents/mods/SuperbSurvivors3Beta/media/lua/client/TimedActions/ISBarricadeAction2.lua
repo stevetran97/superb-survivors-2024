@@ -1,12 +1,14 @@
+-- Had to rename action with a 2 because ISBarricadeAction is taken and this wasnt getting called
+
 --***********************************************************
 --**                    ROBERT JOHNSON                     **
 --***********************************************************
 
 require "TimedActions/ISBaseTimedAction"
 
-ISBarricadeAction = ISBaseTimedAction:derive("ISBarricadeAction");
+ISBarricadeAction2 = ISBaseTimedAction:derive("ISBarricadeAction2");
 
-function ISBarricadeAction:isValid()
+function ISBarricadeAction2:isValid()
 	if not instanceof(self.item, "BarricadeAble") or self.item:getObjectIndex() == -1 then
 		return false
 	end
@@ -52,17 +54,25 @@ function ISBarricadeAction:isValid()
 	return true
 end
 
-function ISBarricadeAction:waitToStart()
+function ISBarricadeAction2:waitToStart()
 	self.character:faceThisObject(self.item)
 	return self.character:shouldBeTurning()
 end
 
-function ISBarricadeAction:update()
-	self.character:faceThisObject(self.item)
-    self.character:setMetabolicTarget(Metabolics.LightWork);
+function ISBarricadeAction2:update()
+	CreateLogLine("Barricade BuildingTask", true, " update barricading action ");
+
+	-- This updates dozens of times per second - consider reducing load here
+
+	-- self.character:faceThisObject(self.item) -- Forget reorienting towards it - Performance
+    -- self.character:setMetabolicTarget(Metabolics.LightWork); -- This doesnt matter because AI does not get tired yet
+
 end
 
-function ISBarricadeAction:start()
+function ISBarricadeAction2:start()
+	CreateLogLine("Barricade BuildingTask", true, " start barricading action ");
+
+
     if self.character:hasEquipped("BlowTorch") then
         self:setActionAnim("BlowTorch")
         self:setOverrideHandModels(self.character:getPrimaryHandItem(), nil)
@@ -83,7 +93,7 @@ function ISBarricadeAction:start()
     end
 end
 
-function ISBarricadeAction:stop()
+function ISBarricadeAction2:stop()
 	if self.sound then
 		self.character:getEmitter():stopSound(self.sound)
 		self.sound = nil
@@ -91,11 +101,15 @@ function ISBarricadeAction:stop()
     ISBaseTimedAction.stop(self);
 end
 
-function ISBarricadeAction:perform()
+-- This only occurs like once every once and a while (like when it finishes)
+function ISBarricadeAction2:perform()
     if self.sound then
         self.character:getEmitter():stopSound(self.sound)
         self.sound = nil
     end
+	CreateLogLine("Barricade BuildingTask", true, " System performing barricade ");
+
+
 	local material = self.character:getSecondaryHandItem()
 	if not instanceof(material, "InventoryItem") then return end
 	if isClient() then
@@ -104,7 +118,13 @@ function ISBarricadeAction:perform()
 		local args = { x=obj:getX(), y=obj:getY(), z=obj:getZ(), index=index, isMetal=self.isMetal, isMetalBar=self.isMetalBar, itemID=material:getID(), condition=material:getCondition() }
 		sendClientCommand(self.character, 'object', 'barricade', args)
 	else
+		CreateLogLine("Barricade BuildingTask", true, " System adding barricade to window ");
+
 		local barricade = IsoBarricade.AddBarricadeToObject(self.item, self.character)
+
+		CreateLogLine("Barricade BuildingTask", true, " barricade to add to object " .. tostring(barricade));
+
+
 		if barricade then
 			if self.isMetal then
 				barricade:addMetal(self.character, material)
@@ -113,6 +133,8 @@ function ISBarricadeAction:perform()
                 barricade:addMetalBar(self.character, material)
                 self.character:getXp():AddXPNoMultiplier(Perks.MetalWelding, 6)
 			else
+				CreateLogLine("Barricade BuildingTask", true, " System adding plank across window ");
+
 				barricade:addPlank(self.character, material)
 				self.character:getInventory():RemoveOneOf("Nails")
                 self.character:getInventory():RemoveOneOf("Nails")
@@ -143,7 +165,7 @@ function ISBarricadeAction:perform()
 	ISBaseTimedAction.perform(self);
 end
 
-function ISBarricadeAction:new(character, item, isMetal, isMetalBar, time)
+function ISBarricadeAction2:new(character, item, isMetal, isMetalBar, time)
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
@@ -161,5 +183,8 @@ function ISBarricadeAction:new(character, item, isMetal, isMetalBar, time)
         o.maxTime = 1;
     end
     o.caloriesModifier = 8;
+
+
+
 	return o;
 end

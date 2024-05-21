@@ -9,14 +9,12 @@ end
 
 function ISGetHitFromBehindAction:update()
     if self.character then
-      
 		self.character:getModData().felldown = true
-    self.character:setMetabolicTarget(Metabolics.LightDomestic);
+    	self.character:setMetabolicTarget(Metabolics.LightDomestic);
     end
 end
 
 function ISGetHitFromBehindAction:start()
-	
 	self:setActionAnim("staggerforward")
 	self:setOverrideHandModels(nil, nil)
 end
