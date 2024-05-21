@@ -61,7 +61,7 @@ function TaskManager:AddToTop(newTask)
 
 	self.TaskUpdateCount = 0
 	-- Old task list management system - shift task list down to add new task to front
-	for i = #self.Tasks, 0, -1 do
+	for i = self:getTaskCount() - 1, 0, -1 do
 		self.Tasks[i + 1] = self.Tasks[i]
 	end
 
@@ -77,7 +77,7 @@ function TaskManager:AddToTop(newTask)
 end
 
 function TaskManager:AddToBottom(newTask)
-	self.Tasks[#self.Tasks] = newTask
+	self.Tasks[self:getTaskCount()] = newTask
 end
 
 function TaskManager:Display()

@@ -440,7 +440,7 @@ function SuperSurvivor:setName(nameToSet)
 end
 
 function SuperSurvivor:renderName() -- To do: Make an in game option to hide rendered names. It was requested.
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:renderName() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:render Name() called");
 	if not self.userName
 		or not self.JustSpoke
 		or not self:isInCell()
@@ -454,7 +454,7 @@ function SuperSurvivor:renderName() -- To do: Make an in game option to hide ren
 	if self.JustSpoke == true 
 		and self.TicksSinceSpoke == 0 
 	then
-		self.TicksSinceSpoke = 4 * globalBaseUpdateDelayTicks
+		self.TicksSinceSpoke = 2 * globalBaseUpdateDelayTicks
 
 		if (not IsDisplayingNpcName) then
 			self.userName:ReadString(tostring(self.SayLine1))

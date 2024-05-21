@@ -27,9 +27,9 @@ end
 -- 	self.Complete = true;
 -- end
 
--- function PileCorpsesTask:isComplete()
--- 	return self.Complete
--- end
+function PileCorpsesTask:isComplete()
+	return self.Complete
+end
 
 function PileCorpsesTask:isValid()
 	return true
