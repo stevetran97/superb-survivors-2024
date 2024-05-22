@@ -56,7 +56,7 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 
 	local fakehit = false -- means no hit when registered
 
-	if (SSV == nil) or (SSW == nil) then return false end
+	if not SSV or not SSW then return false end
 
 	-- Handle Avoid Damage when victim is in the same group as the attacker
 	if victim.setAvoidDamage ~= nil then
@@ -88,6 +88,15 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 		victim:getBodyDamage():DamageFromWeapon(weapon);
 		victim:update(); 
 	end
+
+	-- Batmane Test Impact sound -- None of these are working
+	-- local sound = weapon:getZombieHitSound() -- No impact sound for some reason
+	-- local sound = weapon:getImpactSound()
+	-- local range = 2
+	-- local volume = 2
+	-- addSound(wielder, wielder:getX(), wielder:getY(), wielder:getZ(), range, volume)
+	-- getSoundManager():PlayWorldSound(sound, wielder:getCurrentSquare(), 0.5, range, 1.0, false)
+
 
 	if instanceof(victim, "IsoPlayer") then
 		local GroupID = SSV:getGroupID()

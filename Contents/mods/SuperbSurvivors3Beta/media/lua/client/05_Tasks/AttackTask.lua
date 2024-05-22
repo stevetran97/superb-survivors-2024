@@ -29,8 +29,7 @@ function AttackTask:isComplete()
 	if 
 		self.parent:getDangerSeenCount() <= 0 
 	then 
-		self.parent:StopWalk()
-		return true 
+		return true  
 	end
 	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " has attack NOT COMPLETE ");
 
@@ -38,10 +37,12 @@ function AttackTask:isComplete()
 end
 
 function AttackTask:isValid()
-	if not self.parent.LastEnemySeen then return false end
-	if self.parent.LastEnemySeen:isDead() then return false end
-	if not self.parent:RealCanSee(self.parent.LastEnemySeen) then return false end
-
+	if not self.parent.LastEnemySeen or
+		self.parent.LastEnemySeen:isDead() or
+		not self.parent:RealCanSee(self.parent.LastEnemySeen)
+	then 
+		return false 
+	end
 	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " has valid attack ");
 
 	return true;

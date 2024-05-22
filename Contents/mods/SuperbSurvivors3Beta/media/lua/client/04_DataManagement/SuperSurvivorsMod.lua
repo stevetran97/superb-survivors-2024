@@ -125,16 +125,21 @@ function SuperSurvivorsOnSwing(player, weapon)
 				end
 			end
 
-			if (weapon:isRoundChambered()) then
-				local range = weapon:getSoundRadius()
-				local volume = weapon:getSoundVolume()
+			local range = weapon:getSoundRadius()
+			local volume = weapon:getSoundVolume()
+			if weapon:isAimedFirearm() then 
+				if weapon:isRoundChambered() then
+					addSound(player, player:getX(), player:getY(), player:getZ(), range, volume)
+					getSoundManager():PlayWorldSound(weapon:getSwingSound(), player:getCurrentSquare(), 0.5, range, 1.0, false)
+				end
+			else
 				addSound(player, player:getX(), player:getY(), player:getZ(), range, volume)
 				getSoundManager():PlayWorldSound(weapon:getSwingSound(), player:getCurrentSquare(), 0.5, range, 1.0, false)
 			end
 
 			player:NPCSetAttack(false)
 			player:NPCSetMelee(false)
-		elseif (player:isLocalPlayer()) and weapon:isRanged() then
+		elseif player:isLocalPlayer() and weapon:isRanged() then
 			SSM:GunShotHandle(SS)
 		end
 	end

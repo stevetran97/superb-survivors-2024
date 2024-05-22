@@ -1494,7 +1494,7 @@ surveyRange = 18; -- Range in which the npc will start surveying the object(s) i
 maxProcessingRange = 25
 criticalDangerRange = 3 -- dangerRange where NPC typically needs to run so 2 here is actually more like a distance of 3
 local minSightDistance = 3 -- Range in which NPC will detect regardless of vision cone
-groupCohesion = 1 -- Constant that determines how strongly a character is drawn towards their group when fleeing
+groupCohesion = 0.3 -- Constant that determines how strongly a character is drawn towards their group when fleeing -- value of 1 causes ai freezing in group center despite 1 zombie being there 
 
 function SuperSurvivor:DoVisionV3()
 	local isFunctionLoggingEnabled = false;
@@ -2712,19 +2712,19 @@ function SuperSurvivor:updateSurvivorStatus()
 
 		-- Batmane TODO - Try disabling this and seeing if still stuck.
 		-- From Cows: Stuck Melee Animation Fix
-		if self:isInAction() == false and -- no current timedaction in Q, nor have we set bWalking true so AI is not trying to move character
-			self:Get():IsInMeleeAttack() == true
-		then                              -- isinmeleeattack means, is any swipe attack state true
-			self.SwipeStateTicks = self.SwipeStateTicks + 1
+		-- if self:isInAction() == false and -- no current timedaction in Q, nor have we set bWalking true so AI is not trying to move character
+		-- 	self:Get():IsInMeleeAttack() == true
+		-- then                              -- isinmeleeattack means, is any swipe attack state true
+		-- 	self.SwipeStateTicks = self.SwipeStateTicks + 1
 
-			if self.SwipeStateTicks > 3 then -- if npc has been in 6 seconds (because this function runs once every 2 seconds)  update loops and has been in swipe attack state entire time, assume they are stuck in animation
-				CreateLogLine("Stuck Survivor", true, tostring(self:getName()) .. "attemping to unstuck...");
-				self:UnStuckFrozenAnim()
-				self.SwipeStateTicks = 0;
-			end
-		else
-			self.SwipeStateTicks = 0;
-		end
+		-- 	if self.SwipeStateTicks > 3 then -- if npc has been in 6 seconds (because this function runs once every 2 seconds)  update loops and has been in swipe attack state entire time, assume they are stuck in animation
+		-- 		CreateLogLine("Stuck Survivor", true, tostring(self:getName()) .. "attemping to unstuck...");
+		-- 		self:UnStuckFrozenAnim() -- Batmane - trying to phase this out
+		-- 		self.SwipeStateTicks = 0;
+		-- 	end
+		-- else
+		-- 	self.SwipeStateTicks = 0;
+		-- end
 		-- 
 
 		-- Batmane - I dont even know what this does - Maybe just try running it every like second?
@@ -3038,7 +3038,7 @@ end
 
 
 function SuperSurvivor:StopWalk()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:StopWalk() called");
+	CreateLogLine("StopWalk", isLocalLoggingEnabled, tostring(self:getName()) .. " SuperSurvivor:StopWalk() called");
 	ISTimedActionQueue.clear(self.player)
 	self.player:StopAllActionQueue()
 	self.player:setPath2(nil)
@@ -3047,8 +3047,10 @@ function SuperSurvivor:StopWalk()
 	self:setRunning(false)
 	self.player:setSneaking(false)
 	self.player:NPCSetJustMoved(false)
-	self.player:NPCSetAttack(false)
-	self.player:NPCSetMelee(false)
+
+	-- self.player:NPCSetAttack(false) -- Batmane, I dont think we need this. It just freezes animation whenever it gets called when AI is in the middle of an attack
+	-- self.player:NPCSetMelee(false)  -- Batmane, I dont think we need this. It just freezes animation whenever it gets called when AI is in the middle of an attack
+	
 	self.player:NPCSetAiming(false)
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:StopWalk() end ---");
 end
@@ -4068,6 +4070,7 @@ function SuperSurvivor:getGunHitChance(weapon, victim)
 	return hitChance;
 end
 
+-- Batmane - I think I managed to fix the frozen melee animation by not setting melee or attack to false when attack task was complete
 function SuperSurvivor:UnStuckFrozenAnim()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:UnStuckFrozenAnim() called");
 	self.player:setNPC(false)
@@ -4148,7 +4151,7 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
 	if (RealDistance <= maxrange or zNPC_AttackRange) 
 		and self.player:NPCGetRunning() == false 
 	then
-		victim:Hit(weapon, self.player, damage, false, 1.0, false)
+		local hit = victim:Hit(weapon, self.player, damage, false, 1.0, false)
 
 		if victim == getSpecificPlayer(0) then 
 			self:Wait(1)
@@ -4203,8 +4206,6 @@ function SuperSurvivor:AttackWithGun(victim)
 
 			-- Animations
 			self.player:NPCSetAiming(true)
-			self.player:NPCSetAttack(true)
-			self.player:AttemptAttack(10.0); -- Try to animate gun fire
 
 			-- Hit registration
 			-- Shove attack
@@ -4212,6 +4213,7 @@ function SuperSurvivor:AttackWithGun(victim)
 				-- or self.player:getPrimaryHandItem() == nil 
 			then
 				self:Speak("Get off of me!")
+				self.player:NPCSetAttack(true)
 				victim:Hit(weapon, self.player, damage, true, 1.0, false)
 
 				if victim == getSpecificPlayer(0) then 
@@ -4219,6 +4221,9 @@ function SuperSurvivor:AttackWithGun(victim)
 				end
 			-- Actual attack
 			else
+				self.player:NPCSetAttack(true)
+				self.player:AttemptAttack(10.0); -- Try to animate gun fire
+
 				local hitChance = self:getGunHitChance(weapon, victim);
 				local dice = ZombRand(0, 100);
 
