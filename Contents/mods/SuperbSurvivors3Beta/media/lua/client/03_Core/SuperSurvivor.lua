@@ -2712,19 +2712,19 @@ function SuperSurvivor:updateSurvivorStatus()
 
 		-- Batmane TODO - Try disabling this and seeing if still stuck.
 		-- From Cows: Stuck Melee Animation Fix
-		-- if self:isInAction() == false and -- no current timedaction in Q, nor have we set bWalking true so AI is not trying to move character
-		-- 	self:Get():IsInMeleeAttack() == true
-		-- then                              -- isinmeleeattack means, is any swipe attack state true
-		-- 	self.SwipeStateTicks = self.SwipeStateTicks + 1
+		if self:isInAction() == false and -- no current timedaction in Q, nor have we set bWalking true so AI is not trying to move character
+			self:Get():IsInMeleeAttack() == true
+		then                              -- isinmeleeattack means, is any swipe attack state true
+			self.SwipeStateTicks = self.SwipeStateTicks + 1
 
-		-- 	if self.SwipeStateTicks > 3 then -- if npc has been in 6 seconds (because this function runs once every 2 seconds)  update loops and has been in swipe attack state entire time, assume they are stuck in animation
-		-- 		CreateLogLine("Stuck Survivor", true, tostring(self:getName()) .. "attemping to unstuck...");
-		-- 		self:UnStuckFrozenAnim()
-		-- 		self.SwipeStateTicks = 0;
-		-- 	end
-		-- else
-		-- 	self.SwipeStateTicks = 0;
-		-- end
+			if self.SwipeStateTicks > 3 then -- if npc has been in 6 seconds (because this function runs once every 2 seconds)  update loops and has been in swipe attack state entire time, assume they are stuck in animation
+				CreateLogLine("Stuck Survivor", true, tostring(self:getName()) .. "attemping to unstuck...");
+				self:UnStuckFrozenAnim()
+				self.SwipeStateTicks = 0;
+			end
+		else
+			self.SwipeStateTicks = 0;
+		end
 		-- 
 
 		-- Batmane - I dont even know what this does - Maybe just try running it every like second?
