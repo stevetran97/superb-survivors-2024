@@ -200,6 +200,8 @@ function SuperSurvivorManager:OnDeath(ID)
 	-- end-- Batmane Test - Turn Dead NPC into corpse -- Not activated yet
 
 	CreateLogLine("OnDeath", true, tostring(self.SuperSurvivors[ID]:getName()) .. ' is becoming getting nilled');
+	CreateLogLine("OnDeath", true, tostring(self.SuperSurvivors[ID]:getName()) .. ' had an ID of ' .. tostring(ID));
+
 	self.SuperSurvivors[ID] = nil
 end
 
@@ -295,7 +297,7 @@ function SuperSurvivorManager:PublicExecution(SSW, SSV)
 end
 
 function SuperSurvivorManager:GunShotHandle(SSW)
-	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:GunShotHandle() called");
+	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:GunShot Handle() called");
 	local maxdistance = 20
 	local weapon = getSpecificPlayer(0):getPrimaryHandItem()
 

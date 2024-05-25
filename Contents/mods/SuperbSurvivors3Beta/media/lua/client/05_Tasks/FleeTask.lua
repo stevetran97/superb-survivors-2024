@@ -131,7 +131,7 @@ function FleeTask:update()
 		if attemptIdx > angleDivisions - 1 then
 			if not targetSquareObj
 			then
-				CreateLogLine('Flee Errors', enableLogErrors, 'FleeTask:update(): Cannot find a target square to travel to')
+				CreateLogLine('Flee Errors', isFleeCallLogged, 'FleeTask:update(): Cannot find a target square to travel to')
 				self.Complete = true
 				return
 			end

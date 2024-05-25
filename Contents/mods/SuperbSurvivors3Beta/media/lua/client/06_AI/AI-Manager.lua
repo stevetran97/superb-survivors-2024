@@ -1,9 +1,5 @@
 require "04_Group.SuperSurvivorManager";
 
---- Cows: I'll regret working on this but I need the NPCs to stop shitting themselves when enemies are only at the edge of their attack range.
---- Cows: Also need Companion NPCs to actually FOLLOW over any other tasks at hand.
-
--- Bug: companions are pursing a target without they returning to the player when out of range
 local isLocalLoggingEnabled = false;
 
 function checkAiTaskIs(AiTmi, TaskName)
@@ -79,7 +75,9 @@ function AIEssentialTasks(TaskMangerIn)
 		return false
 	-- Cowardice - Bravery
 	elseif
-		(currentNPC:getDangerSeenCount() > npcBravery and currentNPC.EnemiesOnMe >= 2) -- 2 enemies in grabbing distance -- more the npcBravery # of zombies in fight radius 
+		not currentNPC:usingGun() and -- Disable running when have gun for now
+		currentNPC:getDangerSeenCount() > npcBravery and 
+		currentNPC.EnemiesOnMe >= 2 -- 2 enemies in grabbing distance -- more the npcBravery # of zombies in fight radius 
 	then
 		CreateLogLine("SuperSurvivor", isFleeCallLogged, tostring(currentNPC:getName()) .. " needs to flee because they are afraid");
 		if TaskMangerIn:getCurrentTask() ~= "Flee" then 

@@ -118,7 +118,7 @@ end
 function SuperSurvivorGroupManager:Save()
 	-- for i = 0, self.GroupCount do
 	for i, Group in pairs(self.Groups) do
-		CreateLogLine("Saving Groups ", true, "Saving this group " .. tostring(i));
+		-- CreateLogLine("Saving Groups ", true, "Saving this group " .. tostring(i));
 
 		if self.Groups[i] then
 			self.Groups[i]:Save() -- WIP - console.txt logged an error tracing to this line
