@@ -613,6 +613,9 @@ end
 
 context_options.show_context_menu_member = function(member_index)
     if member_index == 1 then return end
+    local group_id = SSM:Get(0):getGroupID()
+    local group = SSGM:GetGroupById(group_id)
+    local group_members = SSGM:GetGroupById(group_id):getMembers()
     local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[member_index]
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
     context_menu:addOption("Information", nil, function() ShowSurvivorInfo(member_index) end)
@@ -627,7 +630,9 @@ context_options.show_context_menu_member = function(member_index)
 
     local remove = context_menu:addOption("Remove", nil, nil)
     local sub_remove = context_menu:getNew(context_menu)
-    sub_remove:addOption("Confirm", nil, function() group:removeMember(member:getID()) end)
+    sub_remove:addOption("Confirm", nil, function() 
+        group:removeMember(member:getID()) 
+    end)
     context_menu:addSubMenu(remove, sub_remove)
 end
 

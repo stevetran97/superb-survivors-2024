@@ -100,8 +100,7 @@ function handleGroupMemberInteraction(mySS, command)
         playerSurvivor:Say("GetClosestMember returned nil")
         return
     end
-    mySS:Get():Say(Get_SS_UIActionText("ComeWithMe_Before") ..
-                   member:Get():getForname() .. Get_SS_UIActionText(command .. "_After"))
+    mySS:Get():Say(Get_SS_UIActionText("ComeWithMe_Before") ..  member:Get():getForname() .. Get_SS_UIActionText(command .. "_After"))
     member:getTaskManager():clear()
     member:getTaskManager():AddToTop(FollowTask:new(member, mySS:Get()))
 end
