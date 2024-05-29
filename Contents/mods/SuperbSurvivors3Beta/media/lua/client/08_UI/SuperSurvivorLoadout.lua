@@ -66,7 +66,7 @@ end
 function InventoryRow:on_click_transfer(direction)
     -- v unequip
     -- ^ equip
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index]
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index]
     if direction == "v" then
         if self.item:isEquipped() then
             ISTimedActionQueue.add(ISUnequipAction:new(member.player, self.item, 1))
@@ -207,7 +207,7 @@ function PanelEquipableItems:dupdate()
     self:clearChildren()
     local dy = 0
     local switch = 0
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index]
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index]
     local items = member.player:getInventory():getItems()
     local scroll_height = 0
     for i = 0, items:size() - 1 do
@@ -260,7 +260,7 @@ function PanelEquippedItems:dupdate()
     self:clearChildren()
     local dy = 0
     local switch = 0
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index]
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index]
     local items = member.player:getInventory():getItems()
     local scroll_height = 0
     for i = 0, items:size() - 1 do
@@ -325,7 +325,7 @@ end
 
 function PanelLoadout:createChildren()
     self:clearChildren()
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index]
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index]
     self.header_member = TitleBar:new(tostring(member:getName()), self)
     local equipped_items = ISButton:new(0, 25, self.width, 25, "Equipped Items", nil, nil)
     local equipable_items = ISButton:new(0, (25 * 2) + (2 + (275 / 2) + 2), self.width, 25, "Equipable Items", nil, nil)

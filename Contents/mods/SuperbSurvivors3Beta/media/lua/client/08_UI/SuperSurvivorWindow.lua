@@ -33,14 +33,17 @@ base_area_visibility = {
 local PanelGroup = ISPanel:new(0, 60, window_width, panel_height)
 table.insert(SurvivorPanels, 1, PanelGroup)
 
+-- This is very similar to the Companion menu
 function PanelGroup:dupdate()
     self:clearChildren()
     local dy = 0
     local switch = 0
     local group = UIUtil_GetGroup()
     if not group then return end--clear panel on player death
-    local group_members = group:getMembers()
-    for i = 1, #group_members do
+    local group_members = group:getMembers(true)
+    
+    -- for i = 1, #group_members do
+    for i, member in pairs(group_members) do
         local name, role = UIUtil_GetMemberInfo(i)
         if role == "IGUI_SS_Job_Leader" then role = Get_SS_ContextMenuText("Job_Leader") end
         local panel_entry = ISPanel:new(0, dy, 850, 30)
@@ -55,8 +58,10 @@ function PanelGroup:dupdate()
             function() create_panel_inventory_transfer(i) end)
         local cat_member_loadout = ISButton:new(panel_entry.dwidth * 2 + cat_member_inventory.width - 1, 0,
             panel_entry.dwidth / 2, 30, "Equipment", nil, function() create_panel_loadout(i) end)
-        if i == 1 then cat_member_inventory.enable = false end
-        if i == 1 then cat_member_loadout.enable = false end
+
+        if member:getID() == 0 then cat_member_inventory.enable = false end
+        if member:getID() == 0 then cat_member_loadout.enable = false end
+
         cat_member_name.borderColor = { r = 0, g = 0, b = 0, a = 0 }
         cat_member_role.borderColor = { r = 0, g = 0, b = 0, a = 0 }
         cat_member_inventory.borderColor = { r = 0, g = 0, b = 0, a = 0 }
@@ -263,9 +268,10 @@ function PanelCompanions:dupdate()
     local switch = 0
     local group = UIUtil_GetGroup()
     if not group then return end--clear panel on player death
-    local group_members = group:getMembers()
+    local group_members = group:getMembers(true)
     local companion_count = 0
-    for i = 1, #group_members do
+    for i, member in pairs(group_members) do
+    -- for i = 1, #group_members do
         local name, role, _, ai_mode = UIUtil_GetMemberInfo(i)
         local panel_entry = ISPanel:new(0, dy, 850, 30)
         panel_entry.borderColor = { r = 1, g = 1, b = 1, a = 0.2 }
@@ -530,7 +536,7 @@ end
 
 function on_click_companion_call(member_index)
     local group_id = SSM:Get(0):getGroupID()
-    local group_members = SSGM:GetGroupById(group_id):getMembers()
+    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
     local member = group_members[member_index]
     if member then
         getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") ..
@@ -571,7 +577,7 @@ context_options.show_context_menu_role = function(member_index)
     if member_index == 1 then return end
     local group_id = SSM:Get(0):getGroupID()
     local group = SSGM:GetGroupById(group_id)
-    local group_members = SSGM:GetGroupById(group_id):getMembers()
+    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
     local member = group_members[member_index]
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
 
@@ -615,8 +621,8 @@ context_options.show_context_menu_member = function(member_index)
     if member_index == 1 then return end
     local group_id = SSM:Get(0):getGroupID()
     local group = SSGM:GetGroupById(group_id)
-    local group_members = SSGM:GetGroupById(group_id):getMembers()
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[member_index]
+    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[member_index]
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
     context_menu:addOption("Information", nil, function() ShowSurvivorInfo(member_index) end)
     context_menu:addOption("Call", nil, function() on_click_companion_call(member_index) end)

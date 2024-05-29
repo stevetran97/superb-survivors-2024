@@ -348,8 +348,9 @@ function SuperSurvivorsInit()
 	SurvivorsCreatePVPButton();
 	SurvivorTogglePVP();
 
-	if (IsoPlayer.getCoopPVP() == true
-			or IsPVPEnabled == true) then
+	if IsoPlayer.getCoopPVP() == true or
+        IsPVPEnabled == true 
+    then
 		SurvivorTogglePVP()
 	end
 
@@ -357,7 +358,9 @@ function SuperSurvivorsInit()
 	player:getModData().isHostile = false
 	player:getModData().ID = 0
 
-	if (player:getX() >= 7679 and player:getX() <= 7680) and (player:getY() >= 11937 and player:getY() <= 11938) then -- if spawn in prizon
+	if player:getX() >= 7679 and player:getX() <= 7680 and 
+        player:getY() >= 11937 and player:getY() <= 11938 
+    then -- if spawn in prizon
 		local keyid = player:getBuilding():getDef():getKeyId();
 
 		if (keyid) then

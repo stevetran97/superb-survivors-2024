@@ -71,7 +71,10 @@ function UIUtil_GetGroup()
     return group
 end
 
-function UIUtil_GetMemberInfo(member_index)
+function UIUtil_GetMemberInfo(
+    member_index
+    -- memberID
+)
     local group_id = SSM:Get(0):getGroupID()
     local group = SSGM:GetGroupById(group_id)
     if group == nil then
@@ -85,22 +88,24 @@ function UIUtil_GetMemberInfo(member_index)
             group:setLeader(0)
         end
     end
-    local group_members = group:getMembers()
+    local group_members = group:getMembers(true)
     local member = group_members[member_index]
+    -- local member = SSM:Get(memberID)
+
     local name = "none"
     local role = "none"
     local task = "none"
     local ai_mode = "none"
-    if member.getName ~= nil and member:isInCell() then
+    if member and member.getName ~= nil and member:isInCell() then
         name = member:getName()
         role = tostring(member:getGroupRole())
         task = member.MyTaskManager.Tasks[member.MyTaskManager.CurrentTask]
-        ai_mode = tostring(group_members[member_index]:getAIMode())
-    elseif member.getName ~= nil and (member:isDead() or not member:saveFileExists()) then
+        ai_mode = tostring(member:getAIMode())
+    elseif member and member.getName ~= nil and (member:isDead() or not member:saveFileExists()) then
         name = member:getName()
         role = getText("IGUI_health_Deceased")
         group:removeMember(member:getID())
-    elseif member.getName ~= nil and member:isInCell() == false then
+    elseif member and member.getName ~= nil and member:isInCell() == false then
         name = member:getName()
         local coords = GetCoordsFromID(member:getID())
         -- WIP - Cows: WHAT WAS "coord"? IS THIS A TYPO? Renamed to "coords"
@@ -125,7 +130,11 @@ function UIUtil_GetMemberInfo(member_index)
     return name, role, task, ai_mode
 end
 
-function UIUtil_GiveOrder(order_index, member_index)
+function UIUtil_GiveOrder(
+    order_index, 
+    member_index
+    -- memberID
+)
     local isLoggingSurvivorOrder = false;
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "function: UIUtil_GiveOrder() called");
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "order_index: " .. tostring(order_index));
@@ -135,6 +144,8 @@ function UIUtil_GiveOrder(order_index, member_index)
     local group_id = SSM:Get(0):getGroupID()
     local group_members = SSGM:GetGroupById(group_id):getMembers()
     local member = group_members[member_index]
+    -- local member = SSM:Get(memberID)
+
     if member then
         getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") .. member:getName() .. Get_SS_UIActionText("CallName_After"))
         member:getTaskManager():AddToTop(ListenTask:new(member, getSpecificPlayer(0), false))

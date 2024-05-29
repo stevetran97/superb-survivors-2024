@@ -91,11 +91,11 @@ function AskToJoin(test, player) -- When the NPC asks another npc to join a grou
 		local group = SS:getGroup()
 		CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "joining group: " .. tostring(SS:getGroupID()));
 
-		if (group) then
+		if group then
 			SS:Speak(Get_SS_DialogueSpeech("Roger"));
 
-			if (MySS:getGroup() ~= nil) then
-				local members = MySS:getGroup():getMembers()
+			if MySS:getGroup() then
+				local members = MySS:getGroup():getMembers(true)
 				for x = 1, #members do
 					if (members[x] and members[x].player ~= nil) then
 						members[x]:Speak(Get_SS_DialogueSpeech("Roger"));

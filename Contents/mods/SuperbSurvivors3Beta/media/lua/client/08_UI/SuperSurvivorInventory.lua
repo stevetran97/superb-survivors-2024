@@ -68,7 +68,7 @@ function InventoryRow:on_click_transfer(direction)
     -- > player to member
     -- < member to player
     local item_id = self.item:getID();
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index];
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index];
     local member_inventory = member.player:getInventory();
     local player_inventory = getPlayerInventory(0).inventory;
     if direction == ">" then
@@ -131,8 +131,7 @@ function InventoryRow:createChildren()
     local cat_icon = ISButton:new(0, 0, 25, 25, "", nil, nil);
     local cat_item = ISButton:new(25, 0, 250, 25, tostring(self.item:getName()), nil, nil);
     local cat_type = ISButton:new(25 + 250, 0, 150, 25, tostring(self.item:getCategory()), nil, nil);
-    local cat_transfer = ISButton:new(25 + 250 + 150, 0, 50, 25, self.direction, nil,
-        function() self:on_click_transfer(self.direction) end);
+    local cat_transfer = ISButton:new(25 + 250 + 150, 0, 50, 25, self.direction, nil, function() self:on_click_transfer(self.direction) end);
     cat_icon:setImage(self.item:getTex());
     cat_icon:forceImageSize(25, 25);
     cat_icon.onMouseDown = function() return end
@@ -192,7 +191,7 @@ function PanelMemberInventory:dupdate()
     self:clearChildren()
     local dy = 0;
     local switch = 0;
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index];
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index];
     local items = member.player:getInventory():getItems();
     local scroll_height = 0;
     -- Cows: There should be a better way.. because if an inventory has over > 100 items, that means > 100 new items are being re-rendered every time...
@@ -321,7 +320,7 @@ function PanelInventoryTransfer:createChildren()
     local isLocalFunctionLoggingEnabled = false;
 	CreateLogLine("SuperSurvivorInventory", isLocalFunctionLoggingEnabled, "function: createChildren() called");
     self:clearChildren();
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers()[self.member_index];
+    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index];
     local member_inventory = member.player:getInventory();
     local player_inventory = getPlayerInventory(0).inventory;
     self.header_player = TitleBar:new(

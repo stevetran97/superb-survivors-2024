@@ -77,7 +77,7 @@ end
 
 function PanelSurvivorInfo:on_click_call()
     local group_id = SSM:Get(0):getGroupID()
-    local group_members = SSGM:GetGroupById(group_id):getMembers()
+    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
     local member = group_members[self.member_index]
     if (member) then
         getSpecificPlayer(0):Say(getText("ContextMenu_SS_CallName_Before") ..
@@ -163,7 +163,7 @@ function ShowSurvivorInfo(member_index)
         panel_survivor_info:setVisible(false)
         return
     end
-    local group_members = group:getMembers()
+    local group_members = group:getMembers(true)
     local group_member = group_members[member_index]
     local text_info = getText("ContextMenu_SS_SurvivorInfoName_Before") ..
         group_member:getName() .. getText("ContextMenu_SS_SurvivorInfoName_After") .. "\n"

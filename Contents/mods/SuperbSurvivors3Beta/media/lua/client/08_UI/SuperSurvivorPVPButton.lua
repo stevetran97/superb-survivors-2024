@@ -25,7 +25,7 @@ function SurvivorTogglePVP()
 end
 
 function SurvivorsCreatePVPButton()
-	CreateLogLine("SuperSurvivorPVPButton", isLocalLoggingEnabled, "SurvivorsCreatePVPButton() called");
+	CreateLogLine("SuperSurvivorPVPButton", isLocalLoggingEnabled, "SurvivorsCreate PVPButton() called");
 	PVPTextureOn = getTexture("media/textures/PVPOn.png");
 	PVPTextureOff = getTexture("media/textures/PVPOff.png");
 

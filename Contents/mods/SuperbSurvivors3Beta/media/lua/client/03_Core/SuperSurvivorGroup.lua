@@ -341,26 +341,30 @@ function SuperSurvivorGroup:getClosestMember(ofThisRole, referencePoint)
 	end
 end
 
-function SuperSurvivorGroup:getMember(ofThisRole, closest)
-	for i, MemberId in pairs(self.Members) do 
-		local workingID = MemberId;
-		if MemberId ~= 0 and 
-			workingID and 
-			(SSM:Get(workingID):getGroupRole() == ofThisRole
-				or ofThisRole == "Any"
-				or ofThisRole == nil)
-		then
-			return SSM:Get(workingID);
-		end
-	end
+-- Never Used
+-- function SuperSurvivorGroup:getMember(ofThisRole, closest)
+-- 	for i, MemberId in pairs(self.Members) do 
+-- 		local workingID = MemberId;
+-- 		if MemberId ~= 0 and 
+-- 			workingID and 
+-- 			(SSM:Get(workingID):getGroupRole() == ofThisRole
+-- 				or ofThisRole == "Any"
+-- 				or ofThisRole == nil)
+-- 		then
+-- 			return SSM:Get(workingID);
+-- 		end
+-- 	end
 
-	return nil;
-end
+-- 	return nil;
+-- end
 
-function SuperSurvivorGroup:getMembers()
+
+
+function SuperSurvivorGroup:getMembers(isGetAllMembers)
+	isGetAllMembers = isGetAllMembers or false
 	local TableOut = {};
 	for i, MemberId in pairs(self.Members) do 
-		if MemberId ~= 0 then 
+		if isGetAllMembers or MemberId ~= 0 then 
 			local workingID = MemberId;
 			if workingID and SSM:Get(workingID) then
 				table.insert(TableOut, SSM:Get(workingID));
@@ -405,43 +409,45 @@ function SuperSurvivorGroup:AllSpokeTo()
 	end
 end
 
-function SuperSurvivorGroup:getIdleMember(ofThisRole, closest)
-	for i, MemberId in pairs(self.Members) do 
-		local workingID = MemberId;
-		if MemberId ~= 0 and 
-			workingID and 
-			SSM:Get(workingID):isInAction() == false and 
-			(SSM:Get(workingID):getGroupRole() == ofThisRole or ofThisRole == "Any" or ofThisRole == nil)
-		then
-			return SSM:Get(workingID);
-		end
-	end
+-- Never Used
+-- function SuperSurvivorGroup:getIdleMember(ofThisRole, closest)
+-- 	for i, MemberId in pairs(self.Members) do 
+-- 		local workingID = MemberId;
+-- 		if MemberId ~= 0 and 
+-- 			workingID and 
+-- 			SSM:Get(workingID):isInAction() == false and 
+-- 			(SSM:Get(workingID):getGroupRole() == ofThisRole or ofThisRole == "Any" or ofThisRole == nil)
+-- 		then
+-- 			return SSM:Get(workingID);
+-- 		end
+-- 	end
 
-	return nil;
-end
+-- 	return nil;
+-- end
 
-function SuperSurvivorGroup:getMembersThisCloseCount(range, referencePoint)
-	CreateLogLine("SuperSurvivorGroup", isLocalLoggingEnabled,
-		"function: SuperSurvivorGroup:getMembersThisCloseCount() called"
-	);
-	local count = 0;
+-- Never Used
+-- function SuperSurvivorGroup:getMembersThisCloseCount(range, referencePoint)
+-- 	CreateLogLine("SuperSurvivorGroup", isLocalLoggingEnabled,
+-- 		"function: SuperSurvivorGroup:getMembers ThisCloseCount() called"
+-- 	);
+-- 	local count = 0;
 
-	for i, MemberId in pairs(self.Members) do 
-		local workingID = MemberId;
+-- 	for i, MemberId in pairs(self.Members) do 
+-- 		local workingID = MemberId;
 
-		if MemberId ~= 0 and workingID and SSM:Get(workingID) then
-			local distance = GetDistanceBetween(referencePoint, SSM:Get(workingID):Get());
+-- 		if MemberId ~= 0 and workingID and SSM:Get(workingID) then
+-- 			local distance = GetDistanceBetween(referencePoint, SSM:Get(workingID):Get());
 
-			if distance <= range then
-				count = count + 1;
-			end
-		end
-	end
-	CreateLogLine("SuperSurvivorGroup", isLocalLoggingEnabled,
-		"--- function: SuperSurvivorGroup:getMembersThisCloseCount() end ---"
-	);
-	return count;
-end
+-- 			if distance <= range then
+-- 				count = count + 1;
+-- 			end
+-- 		end
+-- 	end
+-- 	CreateLogLine("SuperSurvivorGroup", isLocalLoggingEnabled,
+-- 		"--- function: SuperSurvivorGroup:getMembers ThisCloseCount() end ---"
+-- 	);
+-- 	return count;
+-- end
 
 function SuperSurvivorGroup:PVPAlert(attacker)
 	local count = 0;
@@ -514,15 +520,15 @@ end
 
 function SuperSurvivorGroup:removeMember(ID)
 	local member = SSM:Get(ID);
-	if (member) then
+	if member then
 		member:setGroupID(nil);
 	end
 
-	if (CheckIfTableHasValue(self.Members, ID)) then
+	if CheckIfTableHasValue(self.Members, ID) then
 		--#region
 		-- for i = 1, #self.Members do
 		for i, MemberId in pairs(self.Members) do 
-			if i ~= 0 and ID == MemberId then
+			if MemberId ~= 0 and ID == MemberId then
 				table.remove(self.Members, i);
 			end
 		end

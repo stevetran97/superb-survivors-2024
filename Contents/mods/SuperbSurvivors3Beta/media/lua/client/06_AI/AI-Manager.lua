@@ -164,6 +164,7 @@ function AIEssentialTasks(TaskMangerIn)
 	then
 		if TaskMangerIn:getCurrentTask() ~= "Follow" then
 			currentNPC:Speak('Wait for me!')
+			currentNPC:StopWalk()
 			TaskMangerIn:clear();
 			TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
 		end
