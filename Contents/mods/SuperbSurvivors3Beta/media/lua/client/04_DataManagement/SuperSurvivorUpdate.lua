@@ -55,6 +55,13 @@ end
 -- Whenever character is hit, recalculate stuff
 function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	local SSW = SSM:Get(wielder:getModData().ID);
+
+	-- CreateLogLine('Handle Hit', true, 'SSV victim ' .. tostring(victim))
+	-- CreateLogLine('Handle Hit', true, 'SSV victim modData' .. tostring(victim:getModData()))
+	-- CreateLogLine('Handle Hit', true, 'SSV victim modData ID' .. tostring(victim:getModData().ID))
+
+
+
 	local SSV = SSM:Get(victim:getModData().ID);
 
 	-- if not victim:isZombie() then 
@@ -63,15 +70,25 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	-- end
 
 	-- local fakehit = false -- means no hit when registered
+	
+	-- CreateLogLine('Handle Hit', true, 'Run PVP Handle ')
+	-- CreateLogLine('Handle Hit', true, 'SSV ' .. tostring(SSV))
+	-- CreateLogLine('Handle Hit', true, 'SSW ' .. tostring(SSW))
 
-	if not SSV or not SSW then return false end
+	if 
+		not SSV or 
+		not SSW 
+	then 
+		return false 
+	end
 
 	-- Handle Avoid Damage when victim is in the same group as the attacker
 	-- Debug tests
 	-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. ' victim is an enemy: ' ..  tostring(SSW:isEnemy(victim) ))
 	-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. ' victim is a zombie: ' ..  tostring(victim:isZombie()))
 
-	if not SSW:isEnemy(victim) 
+	if 
+		SSW:isInGroup(SSV) 
 	then 
 		-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. 'Victim avoids Damage')
 		victim:setAvoidDamage(true);
