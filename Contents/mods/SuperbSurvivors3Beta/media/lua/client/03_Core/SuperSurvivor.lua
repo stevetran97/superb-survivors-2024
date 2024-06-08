@@ -440,12 +440,12 @@ function SuperSurvivor:setName(nameToSet)
 end
 
 function SuperSurvivor:renderName() -- To do: Make an in game option to hide rendered names. It was requested.
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:render Name() called");
+	CreateLogLine("Render Name", isLocalLoggingEnabled, "SuperSurvivor:render Name() called");
+
 	if not self.userName
-		or not self.JustSpoke
 		or not self:isInCell()
 		or self:Get():getAlpha() ~= 1.0
-		or getSpecificPlayer(0) == nil
+		or not getSpecificPlayer(0)
 		or not getSpecificPlayer(0):CanSee(self.player)
 	then
 		return false
@@ -461,9 +461,9 @@ function SuperSurvivor:renderName() -- To do: Make an in game option to hide ren
 		elseif (IsDisplayingNpcName) then
 			self.userName:ReadString(self.player:getForname() .. "\n" .. tostring(self.SayLine1))
 		end
-	elseif (self.TicksSinceSpoke > 0) then
+	elseif self.TicksSinceSpoke > 0 then
 		self.TicksSinceSpoke = self.TicksSinceSpoke - 1
-		if (self.TicksSinceSpoke == 0) then
+		if self.TicksSinceSpoke == 0 then
 			if (not IsDisplayingNpcName) then
 				self.userName:ReadString("");
 			elseif (IsDisplayingNpcName) then
@@ -2374,7 +2374,7 @@ function SuperSurvivor:updateTime()
 	self:renderName();
 	self.Reducer = self.Reducer + 1;
 
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:updateTime() called");
+	CreateLogLine("Update Time", isLocalLoggingEnabled, "SuperSurvivor:updateTime() called");
 
 	-- the lower the value the more frequent survivor:update () gets called, means faster reactions but worse performance
 	-- Does not run when waiting is active
