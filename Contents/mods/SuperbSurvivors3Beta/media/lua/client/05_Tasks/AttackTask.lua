@@ -41,6 +41,7 @@ function AttackTask:isValid()
 		self.parent.LastEnemySeen:isDead() or
 		not self.parent:RealCanSee(self.parent.LastEnemySeen)
 	then 
+		self.parent.LastEnemySeen = nil
 		return false 
 	end
 	CreateLogLine("Attack Task", isAttackCallLogged, tostring(self.parent:getName()) .. " has valid attack ");

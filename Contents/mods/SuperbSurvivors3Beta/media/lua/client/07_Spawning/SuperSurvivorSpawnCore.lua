@@ -84,66 +84,80 @@ function Equip_SS_RandomNpc(npc, isRaider)
     return npc;
 end
 
+-- Define the functions for each spawn location
+local function spawnFromNorth(center, range, drange)
+    -- mySS:Speak("spawn from north")
+    local x = center:getX() + (ZombRand(drange) - range)
+    local y = center:getY() - range
+    return x, y
+end
+
+local function spawnFromEast(center, range, drange)
+    -- mySS:Speak("spawn from east")
+    local x = center:getX() + range
+    local y = center:getY() + (ZombRand(drange) - range)
+    return x, y
+end
+
+local function spawnFromSouth(center, range, drange)
+    -- mySS:Speak("spawn from south")
+    local x = center:getX() + (ZombRand(drange) - range)
+    local y = center:getY() + range
+    return x, y
+end
+
+local function spawnFromWest(center, range, drange)
+    -- mySS:Speak("spawn from west")
+    local x = center:getX() - range
+    local y = center:getY() + (ZombRand(drange) - range)
+    return x, y
+end
+
 --- Merged identical code block from SuperSurvivorsNewSurvivorManager() and SuperSurvivorDoRandomSpawns()
 ---@param hisGroup any
 ---@param center any
 ---@return unknown
+---@
+local spawnAttempts = 10
 function Set_SS_SpawnSquare(hisGroup, center)
     local isLocalFunctionLoggingEnabled = false
 
-    local spawnSquare;
     -- Batmane notes - If this is set beyond the render square range of the player, npcs wont spawn. Ie. If you use Potato pc settings with BetterFPS mod
-    local range = NpcSpawnDistance;
-    if (range == nil) then range = 30 end;
+    local range = NpcSpawnDistance or 30;
     CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "NpcSpawnDistance = " .. tostring(NpcSpawnDistance));
-    
     local drange = range * 2;
 
-    for i = 1, 10 do
+    for i = 1, spawnAttempts do
         local spawnLocation = ZombRand(4);
         CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "spawnLocation = " .. tostring(spawnLocation));
 
-        local x, y; -- WIP - Cows: x, y are not used anywhere else... keep it local for each iteration.
-        if (spawnLocation == 0) then
-            --mySS:Speak("spawn from north")
-            x = center:getX() + (ZombRand(drange) - range);
-            y = center:getY() - range;
-        elseif (spawnLocation == 1) then
-            --mySS:Speak("spawn from east")
-            x = center:getX() + range;
-            y = center:getY() + (ZombRand(drange) - range);
-        elseif (spawnLocation == 2) then
-            --mySS:Speak("spawn from south")
-            x = center:getX() + (ZombRand(drange) - range);
-            y = center:getY() + range;
-        elseif (spawnLocation == 3) then
-            --mySS:Speak("spawn from west")
-            x = center:getX() - range;
-            y = center:getY() + (ZombRand(drange) - range);
-        end
+        -- Create a hash table (array) with the functions
+        local spawnFunctions = {
+            [0] = spawnFromNorth,
+            [1] = spawnFromEast,
+            [2] = spawnFromSouth,
+            [3] = spawnFromWest
+        }
+
+        local x, y = spawnFunctions[spawnLocation](center, range, drange)
 
         CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "x = " .. tostring(x));
         CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "y = " .. tostring(y));
 
-        spawnSquare = getCell():getGridSquare(x, y, 0);
-        CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "getCell() = " .. tostring(getCell()));
-
-
+        local spawnSquare = getCell():getGridSquare(x, y, 0);
         CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "final spawnsquare = " .. tostring(spawnSquare));
 
-
-        if (spawnSquare ~= nil)
-            and (not hisGroup:IsInBounds(spawnSquare))
+        if spawnSquare -- Cell is loaded
+            and not hisGroup:IsInBounds(spawnSquare)
             and spawnSquare:isOutside()
-            and (not spawnSquare:IsOnScreen())
-            and (not spawnSquare:isSolid())
-            and (spawnSquare:isSolidFloor())
+            and not spawnSquare:IsOnScreen()
+            and not spawnSquare:isSolid()
+            and spawnSquare:isSolidFloor()
         then
-            break;
+            return spawnSquare;     
         end
     end
 
-    return spawnSquare;
 end
 
 --- WIP - Cows: Need to rework the spawning functions and logic...
@@ -162,9 +176,7 @@ function SuperSurvivorSpawnNpcAtSquare(square)
     end
 
     -- CreateLogLine("Spawned Survivor", true, "Spawned Survivor = " .. tostring(ASuperSurvivor));
-
-
-    if ASuperSurvivor ~= nil then
+    if ASuperSurvivor then
         -- Batmane TODO need to set weapons here
         -- wife:setMeleeWep(baseballBat);
         -- wife:setGunWep(pistol);

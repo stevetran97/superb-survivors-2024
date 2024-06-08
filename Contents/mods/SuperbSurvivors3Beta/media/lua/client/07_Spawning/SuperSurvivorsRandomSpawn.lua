@@ -10,51 +10,50 @@ local function spawnNpcs(mySS, spawnSquare)
 
     -- WIP - Cows: Need to rework the spawning functions and logic...
     -- TODO: Capped the number of groups, now to cap the number of survivors and clean up dead ones.
-    if (spawnSquare ~= nil) then
-        local isGroupHostile = false;
-        local npcSurvivorGroup;
-        local actualGroupsLimit = Limit_Npc_Groups + 1; -- Cows: +1 because the player group was is part of the Group Count total... -- Batmane based on this I can assume that group count should never exceed the sandbox setting
-        local GroupSize = ZombRand(1, Max_Group_Size);
-        -- Cows: Spawn a new group if possible.
-        if SSGM.GroupCount < actualGroupsLimit then
-        -- if #SSGM.Groups < actualGroupsLimit then
-            CreateLogLine("Spawn Survivor", true, " Under Group Limit. new group made - Survivor");
-            npcSurvivorGroup = SSGM:newGroup();
-        else
-            local rng = ZombRand(1, actualGroupsLimit);
-            npcSurvivorGroup = SSGM:GetGroupById(rng);
-            CreateLogLine("Spawn Survivor", true, " Group limit exceeded. Adding Survivor to group " .. tostring(rng));
-        end
+    if not spawnSquare then return end
+    local isGroupHostile = false;
+    local npcSurvivorGroup;
+    local actualGroupsLimit = Limit_Npc_Groups + 1; -- Cows: +1 because the player group was is part of the Group Count total... -- Batmane based on this I can assume that group count should never exceed the sandbox setting
+    local GroupSize = ZombRand(1, Max_Group_Size);
+    -- Cows: Spawn a new group if possible.
+    if SSGM.GroupCount < actualGroupsLimit then
+    -- if #SSGM.Groups < actualGroupsLimit then
+        CreateLogLine("Spawn Survivor", true, " Under Group Limit. new group made - Survivor");
+        npcSurvivorGroup = SSGM:newGroup();
+    else
+        local rng = ZombRand(1, actualGroupsLimit);
+        npcSurvivorGroup = SSGM:GetGroupById(rng);
+        CreateLogLine("Spawn Survivor", true, " Group limit exceeded. Adding Survivor to group " .. tostring(rng));
+    end
 
-        if FinalChanceToBeHostile > ZombRand(0, 100) then
-            isGroupHostile = true;
-        end
+    if FinalChanceToBeHostile > ZombRand(0, 100) then
+        isGroupHostile = true;
+    end
 
-        for i = 1, GroupSize do
-            local npcSurvivor = SuperSurvivorSpawnNpcAtSquare(spawnSquare);
-            CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "Spawning npcSurvivor" .. tostring(npcSurvivor));
+    for i = 1, GroupSize do
+        local npcSurvivor = SuperSurvivorSpawnNpcAtSquare(spawnSquare);
+        CreateLogLine("SuperSurvivorsRandomSpawn", isLocalFunctionLoggingEnabled, "Spawning npcSurvivor" .. tostring(npcSurvivor));
 
-            if (npcSurvivor) then
-                local name = npcSurvivor:getName();
-                npcSurvivor:setHostile(isGroupHostile);
+        if (npcSurvivor) then
+            local name = npcSurvivor:getName();
+            npcSurvivor:setHostile(isGroupHostile);
 
-                local isPlayerSurvivorGroup = SuperSurvivorGroup:isMember(mySS);
+            local isPlayerSurvivorGroup = SuperSurvivorGroup:isMember(mySS);
 
-                if (i == 1 and not isPlayerSurvivorGroup) then
-                    npcSurvivorGroup:addMember(npcSurvivor, "Leader"); -- Cows: funny enough the leader still isn't set to the group with this role assignment...
-                else
-                    -- npcSurvivorGroup:addMember(npcSurvivor, "Guard"); -- Cows: This... needs to be reworked because npcs would spawn in and do NOTHING.
-                    npcSurvivorGroup:addMember(npcSurvivor, "Follower"); -- Cows: I can't set "follow" nor "companion" because these roles defaults to following the player...
-                    npcSurvivor:NPCTask_DoWander();
-                end
-
-                npcSurvivor.player:getModData().isRobber = false;
-                npcSurvivor:setName("Survivor " .. name);
-                CreateLogLine("Spawn Survivor", true, " Created New Survivor with the name " .. tostring(npcSurvivor:getName()) .. ' with an id of ' .. tostring(npcSurvivor:getID()) .. ' inside of group ' .. tostring(npcSurvivorGroup:getID()));
-
-                Equip_SS_RandomNpc(npcSurvivor, false);
-                GetRandomSurvivorSuit(npcSurvivor) -- WIP: Cows - Consider creating a preset outfit for raiders?
+            if (i == 1 and not isPlayerSurvivorGroup) then
+                npcSurvivorGroup:addMember(npcSurvivor, "Leader"); -- Cows: funny enough the leader still isn't set to the group with this role assignment...
+            else
+                -- npcSurvivorGroup:addMember(npcSurvivor, "Guard"); -- Cows: This... needs to be reworked because npcs would spawn in and do NOTHING.
+                npcSurvivorGroup:addMember(npcSurvivor, "Follower"); -- Cows: I can't set "follow" nor "companion" because these roles defaults to following the player...
+                npcSurvivor:NPCTask_DoWander();
             end
+
+            npcSurvivor.player:getModData().isRobber = false;
+            npcSurvivor:setName("Survivor " .. name);
+            CreateLogLine("Spawn Survivor", true, " Created New Survivor with the name " .. tostring(npcSurvivor:getName()) .. ' with an id of ' .. tostring(npcSurvivor:getID()) .. ' inside of group ' .. tostring(npcSurvivorGroup:getID()));
+
+            Equip_SS_RandomNpc(npcSurvivor, false);
+            GetRandomSurvivorSuit(npcSurvivor) -- WIP: Cows - Consider creating a preset outfit for raiders?
         end
     end
 end
@@ -181,8 +180,8 @@ function SuperSurvivorsRandomSpawn()
         local rngRaiderSpawnCheck = (RaidersSpawnChance > ZombRand(0, 100));
         local isSpawningRaiders = (rngRaiderSpawnCheck and RaidersStartTimePassed);
 
-        if (isSpawning) then
-            if (isSpawningRaiders) then
+        if isSpawning then
+            if isSpawningRaiders then
                 CreateLogLine("SuperSurvivorsRandomSpawn", true, "spawn raiders");
                 spawnRaiders(mySS, spawnSquare);
             else

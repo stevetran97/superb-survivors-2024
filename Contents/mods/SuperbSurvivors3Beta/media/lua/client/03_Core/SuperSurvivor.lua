@@ -2754,9 +2754,9 @@ function SuperSurvivor:updateSurvivorStatus()
 
 	-- Batmane: This runs every 8 seconds at 60 fps
 	-- This seems like its for tasks that do not need to be updated 1-3 times per second
-	if self.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then
-		self:setSneaking(false)
-	end
+	-- if self.Reducer % (6 * globalBaseUpdateDelayTicks) == 0 then
+	-- 	self:setSneaking(false)
+	-- end
 
 	if self.GoFindThisCounter > 0 then self.GoFindThisCounter = self.GoFindThisCounter - 1 end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:updateSurvivor Status() end ---");

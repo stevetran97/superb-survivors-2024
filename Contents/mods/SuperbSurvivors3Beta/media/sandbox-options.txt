@@ -339,7 +339,7 @@ option SuperbSurvivorsContinued.NpcSpawnDistance
 	type = integer,
 	min = 0,
 	max = 40,
-	default = 20,
+	default = 25,
 
 	page = SuperbSurvivorsContinued,
 	translation = SuperbSurvivorsContinued_NpcSpawnDistance,
