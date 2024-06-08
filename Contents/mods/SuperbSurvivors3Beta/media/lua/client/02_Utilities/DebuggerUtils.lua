@@ -5,7 +5,9 @@ local function log_SS_SandboxOptions()
     CreateLogLine("SS_OptionsValues", isLoggingDebugInfo,
         "Limit_Npc_Groups: " .. tostring(Limit_Npc_Groups));
     CreateLogLine("SS_OptionsValues", isLoggingDebugInfo,
-        "Limit_Npcs_Spawn: " .. tostring(Limit_Npcs_Spawn));
+        "Limit_Npcs_Global: " .. tostring(Limit_Npcs_Global));
+    CreateLogLine("SS_OptionsValues", isLoggingDebugInfo,
+        "Limit_Npcs_Active: " .. tostring(Limit_Npcs_Active));
     CreateLogLine("SS_OptionsValues", isLoggingDebugInfo,
         "IsWifeSpawn: " .. tostring(IsWifeSpawn));
     CreateLogLine("SS_OptionsValues", isLoggingDebugInfo,

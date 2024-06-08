@@ -175,23 +175,23 @@ function Add_SS_NpcPerkLevel(npc, perkName, levels)
 end
 
 
---- Cows: Count and return the number of non-dead NPCs
+-- Counts Total Global Survivors that are alive anywhere on the map
 ---@return integer
 function Get_SS_Alive_Count()
 	local actualLivingSurvivors = 0;
 
-	CreateLogLine("Live Survivors", true, "Live Survivors = " .. tostring(#SSM.SuperSurvivors)); -- Dont rely on # - Cautionary tale - It something completely different 
+	-- CreateLogLine("Live Survivors", true, "Live Survivors = " .. tostring(#SSM.SuperSurvivors)); -- Dont rely on # - Cautionary tale - It something completely different 
 
 	-- Note you can use #SSM.SuperSurvivors but it will include only the count of survivors - 1 (which is ok because we dont count player)
 	for i, Survivor in pairs(SSM.SuperSurvivors) do
 		if i ~= 0 and Survivor then
-			CreateLogLine("Live Survivors", true, "actualLivingSurvivor Name = " .. tostring(Survivor:getName()));
+			-- CreateLogLine("Live Survivors", true, "actualLivingSurvivor Name = " .. tostring(Survivor:getName()));
             if not Survivor:isDead() then
                 actualLivingSurvivors = actualLivingSurvivors + 1;
             end
 		end
 	end
-	CreateLogLine("Live Survivors", true, "Live Survivors Alt = " .. tostring(actualLivingSurvivors));
+	-- CreateLogLine("Live Survivors", true, "Live Survivors Alt = " .. tostring(actualLivingSurvivors));
 
 	return actualLivingSurvivors
 
@@ -206,4 +206,23 @@ function Get_SS_Alive_Count()
 	-- end
 	-- CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "actualLivingSurvivors = " .. tostring(actualLivingSurvivors));
 	-- return actualLivingSurvivors;
+end
+
+
+-- Counts Total Active Survivors in a cell
+function Get_SS_Active_Count() 
+	local actualActiveSurvivors = 0;
+	for i, Survivor in pairs(SSM.SuperSurvivors) do
+		-- CreateLogLine("Active Survivors", true, "Checking Survivor = " .. tostring(Survivor:getName()));
+
+		if i ~= 0 and Survivor then
+			-- CreateLogLine("Active Survivors", true, "actualActiveSurvivors Name = " .. tostring(Survivor:getName()));
+            if not Survivor:isDead() and Survivor:isInCell() then
+                actualActiveSurvivors = actualActiveSurvivors + 1;
+            end
+		end
+	end
+	CreateLogLine("Active Survivors", true, "actualActiveSurvivors Count = " .. tostring(actualActiveSurvivors));
+
+	return actualActiveSurvivors
 end

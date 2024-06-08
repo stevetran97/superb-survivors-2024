@@ -160,7 +160,10 @@ function SuperSurvivorsRandomSpawn()
     local center = Get_SS_PlayerGroupBoundsCenter(hisGroup);
     local spawnSquare = Set_SS_SpawnSquare(hisGroup, center);
 
-    local activeNpcs = Get_SS_Alive_Count();
+    -- local globalAliveNpcs = Get_SS_Alive_Count();
+    -- local activeNpcs = Get_SS_Active_Count()
+    local globalAliveNpcs = SSM.aliveNpcs
+    local activeNpcs = SSM.activeNpcs
     -- CreateLogLine("SuperSurvivorsRandomSpawn", true, "activeNpcs = " .. tostring(activeNpcs));
 
     local spawnChanceVal = NpcSpawnChance;
@@ -171,7 +174,10 @@ function SuperSurvivorsRandomSpawn()
     -- Cows: Spawn up to this many npc groups.
     for i = 1, NpcGroupsSpawnsSize do
         -- Cows: Spawn if spawnChanceVal is greater than the random roll between 0 and 100, and activeNPCs are less than the limit.
-        local isSpawning = spawnChanceVal > ZombRand(0, 100) and activeNpcs < Limit_Npcs_Spawn;
+        local isSpawning = spawnChanceVal > ZombRand(0, 100) 
+            and activeNpcs < Limit_Npcs_Active
+            and globalAliveNpcs < Limit_Npcs_Global
+
         local rngRaiderSpawnCheck = (RaidersSpawnChance > ZombRand(0, 100));
         local isSpawningRaiders = (rngRaiderSpawnCheck and RaidersStartTimePassed);
 

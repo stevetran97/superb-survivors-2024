@@ -7,8 +7,11 @@ Sandbox_EN = {
 	Sandbox_SuperbSurvivorsContinued_Limit_Npc_Groups = "Limit NPC Groups",
 	Sandbox_SuperbSurvivorsContinued_Limit_Npc_Groups_tooltip = "Stops spawning new groups after set numbers. WIP - This is incomplete",
 	
-	Sandbox_SuperbSurvivorsContinued_Limit_Npcs_Spawn = "Soft Cap Limit NPC Spawns",
-	Sandbox_SuperbSurvivorsContinued_Limit_Npcs_Spawn_tooltip = "Soft Maximum number of NPCs that can be active in-game. Not exactly... There can be up to the maximum + Max Group Size in the game because NPCs are created in batches",
+	Sandbox_SuperbSurvivorsContinued_Limit_Npcs_Global = "Soft Cap GLOBAL Limit NPC Spawns",
+	Sandbox_SuperbSurvivorsContinued_Limit_Npcs_Global_tooltip = "Soft Maximum number of NPCs that can be alive in-game anywhere on the map. Not exactly... There can be up to the maximum + Max Group Size in the game because NPCs are created in batches",
+
+	Sandbox_SuperbSurvivorsContinued_Limit_Npcs_Active = "Soft Cap Limit ACTIVE NPC Spawns",
+	Sandbox_SuperbSurvivorsContinued_Limit_Npcs_Active_tooltip = "Soft Maximum number of NPCs that can be active in-game (active in a cell). Not exactly... There can be up to the maximum + Max Group Size in the game because NPCs are created in batches",
 
 	Sandbox_SuperbSurvivorsContinued_Perk_Level = "Sets ALL Survivors Skills level to 10",
 	Sandbox_SuperbSurvivorsContinued_Perk_Level_tooltip = "WARNING! If all NPCs are set to skills 10, raiders will never miss and kill you far quicker.",

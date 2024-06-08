@@ -318,7 +318,7 @@ end
 
 function AILowPriorityTasks(TaskMangerIn) 
 	-- ----------------------------- --
-	-- Find food / drink - like task --
+	-- Find and Drink
 	-- ----------------------------- --
 	local currentNPC = TaskMangerIn.parent;
 	local npcIsInAction = currentNPC:isInAction();
@@ -326,24 +326,71 @@ function AILowPriorityTasks(TaskMangerIn)
 	local npcGroup = currentNPC:getGroup();
 	-- Manages AI getting water
 	if SurvivorNeedsFoodWater -- Sandbox Setting
-		and npcIsInAction == false
+		-- and npcIsInAction == false
 		and TaskMangerIn:getCurrentTask() ~= "Enter New Building"
 		and TaskMangerIn:getCurrentTask() ~= "Eat Food"
 		and TaskMangerIn:getCurrentTask() ~= "Find This"
-		and ((currentNPC:isThirsty() 
-				and npcIsInBase)
-			or currentNPC:isVThirsty())
-		and currentNPC:getDangerSeenCount() == 0
-		and currentNPC:getNoWaterNearBy() == false
+		and (
+			(currentNPC:isThirsty() and npcIsInBase)
+			or currentNPC:isVThirsty()
+		)
+		-- and currentNPC:getDangerSeenCount() == 0
 	then
-		if npcGroup then
-			local area = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
-			if area then currentNPC:walkTo(area) end
-			currentNPC:Speak("I'm going to get some water before I die of thirst.")
+		if not currentNPC:hasWater() and currentNPC:getNoWaterNearBy() == false then 
+			if npcGroup then
+				local area = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
+				if area then currentNPC:walkTo(area) end
+				currentNPC:Speak("I'm going to get some water before I die of thirst.")
+			end
+			TaskMangerIn:AddToTop(FindThisTask:new(currentNPC, "Water", "Category", 1))
+			return false
+		elseif currentNPC:hasWater() then
+			currentNPC:Speak("I need to drink this!")
+			TaskMangerIn:AddToTop(EatFoodTask:new(currentNPC, currentNPC:getWater()))
+			return false
 		end
-		TaskMangerIn:AddToTop(FindThisTask:new(currentNPC, "Water", "Category", 1))
-		return false
 	end
+	if checkAiTaskIs(TaskMangerIn, "Find This") then return false end -- No further task if above task is in progress
+	if checkAiTaskIs(TaskMangerIn, "Eat Food") then return false end -- No further task if above task is in progress
+
+	-- ----------------------------- --
+	-- Find and Eat
+	-- ----------------------------- --
+	if 
+		SurvivorNeedsFoodWater and
+		TaskMangerIn:getCurrentTask() ~= "Enter New Building"
+		-- and TaskMangerIn:getCurrentTask() ~= "Clean Inventory"
+		-- and npcIsInAction == false
+		and TaskMangerIn:getCurrentTask() ~= "Eat Food"
+		and TaskMangerIn:getCurrentTask() ~= "Find This"
+		-- and TaskMangerIn:getCurrentTask() ~= "First Aide"
+		-- and TaskMangerIn:getCurrentTask() ~= "Listen"
+		and (
+			(currentNPC:isHungry() and npcIsInBase)
+			or currentNPC:isVHungry()
+		)
+		-- and currentNPC:getDangerSeenCount() == 0
+	then
+		if not currentNPC:hasFood() and currentNPC:getNoFoodNearBy() == false 
+		-- and (getSpecificPlayer(0) == nil or not getSpecificPlayer(0):isAsleep()) 
+		then
+			if npcGroup then
+				local area = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
+				if area then currentNPC:walkTo(area) end
+				currentNPC:Speak("I'm going to get some food before I die of starvation.")
+			end
+			TaskMangerIn:AddToTop(FindThisTask:new(currentNPC, "Food", "Category", 1))
+			return false
+		elseif currentNPC:hasFood() then
+			currentNPC:Speak("I need to eat this!")
+			TaskMangerIn:AddToTop(EatFoodTask:new(currentNPC, currentNPC:getFood()))
+			return false
+		end
+	end
+	if checkAiTaskIs(TaskMangerIn, "Find This") then return false end -- No further task if above task is in progress
+	if checkAiTaskIs(TaskMangerIn, "Eat Food") then return false end -- No further task if above task is in progress
+
+
 
 	-- ----------------------------- --
 	-- Idle Chatter --
@@ -430,307 +477,313 @@ function AIManager(TaskMangerIn)
 			-- Guard
 			-- -------
 			-- Batmane - Duplicate Code?
-			if AiNPC_Job_Is(currentNPC, "Guard") then
+			if AiNPC_Job_Is(currentNPC, "Guard") and not npcIsInAction then
 				-- if getGroupArea 'getGroupArea = does this area exist'
-				if 
-					npcIsInAction == false
-					and not checkAiTaskIs(TaskMangerIn, "Find This")
-					and not checkAiTaskIs(TaskMangerIn, "Eat Food")
-					-- and not checkAiTaskIs(TaskMangerIn, "Follow")
-				then
-					if npcGroup:getGroupAreaCenterSquare("GuardArea") ~= nil and npcGroup:getGroupArea("GuardArea") then
+				-- if 
+				-- 	npcIsInAction == false
+				-- 	-- and not checkAiTaskIs(TaskMangerIn, "Find This")
+				-- 	-- and not checkAiTaskIs(TaskMangerIn, "Eat Food")
+				-- 	-- and not checkAiTaskIs(TaskMangerIn, "Follow")
+				-- then
+					if npcGroup:getGroupAreaCenterSquare("GuardArea") and npcGroup:getGroupArea("GuardArea") then
 						if GetXYDistanceBetween(npcGroup:getGroupAreaCenterSquare("GuardArea"), currentNPC:Get():getCurrentSquare()) > 10 then
 							currentNPC:Speak("I will guard around this area")
 							TaskMangerIn:clear();
 							TaskMangerIn:AddToTop(
 								GuardTask:new(currentNPC, GetRandomAreaSquare(npcGroup:getGroupArea("GuardArea")))
 							);
+						-- end
+						-- if GetXYDistanceBetween(npcGroup:getGroupAreaCenterSquare("GuardArea"), currentNPC:Get():getCurrentSquare()) <= 10 then
+						else
+							currentNPC:Speak("I will watch over this area")
+							TaskMangerIn:AddToTop(
+								GuardTask:new(currentNPC, GetRandomAreaSquare(npcGroup:getGroupArea("GuardArea")))
+							)
+						end
+
+					end
+
+					
+					if 
+						npcGroup:getGroupAreaCenterSquare("GuardArea") == nil and 
+						not npcIsInBase
+					then
+						if centerBaseSquare then
+							TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
+						else
+							currentNPC:Speak("Count on me to watch this area!")
+							TaskMangerIn:AddToTop(GuardTask:new(currentNPC, npcGroup:getRandomBaseSquare()))
 						end
 					end
 
-					if GetXYDistanceBetween(npcGroup:getGroupAreaCenterSquare("GuardArea"), currentNPC:Get():getCurrentSquare()) <= 10 then
-						currentNPC:Speak("I will watch over this area")
-						if npcGroup:getGroupAreaCenterSquare("GuardArea") ~= nil and npcGroup:getGroupArea("GuardArea") then
-							TaskMangerIn:AddToTop(GuardTask:new(currentNPC,
-								GetRandomAreaSquare(npcGroup:getGroupArea("GuardArea"))))
-						end
-					end
-
-					if npcGroup:getGroupAreaCenterSquare("GuardArea") == nil and centerBaseSquare ~= nil and not npcIsInBase then
-						TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
-					elseif npcGroup:getGroupAreaCenterSquare("GuardArea") == nil and centerBaseSquare == nil and not npcIsInBase then
-						currentNPC:Speak("Count on me to watch this area!")
-						TaskMangerIn:AddToTop(GuardTask:new(currentNPC, npcGroup:getRandomBaseSquare()))
-					end
-				else
-					if checkAiTaskIs(TaskMangerIn, "Flee") then currentNPC:NPC_ShouldRunOrWalk() end
-				end
+					return false
 			end
 
-			if currentNPC:getCurrentTask() == "None" and 
-				npcIsInBase and 
-				not npcIsInAction and 
-				ZombRand(4) == 0 
-			then
-				-- if AiNPC_Job_Is(currentNPC, "Companion") then
-				-- 	TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
-				-- else
-				if not SurvivorCanFindWork and AiNPC_Job_Is(currentNPC, "Doctor") then
-					local randresult = ZombRand(10) + 1;
-					--
-					if (randresult == 1) then
-						currentNPC:Speak(Get_SS_UIActionText("IGoRelax"))
-						TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
-					else
-						local medicalarea = npcGroup:getGroupArea("MedicalStorageArea");
-						local gotoSquare;
-						--
-						if (medicalarea) and (medicalarea[1] ~= 0) then
-							gotoSquare = GetCenterSquareFromArea(medicalarea[1],
-								medicalarea[2], medicalarea[3], medicalarea[4], medicalarea[5]);
-						end
-						--
-						if (not gotoSquare) then
-							gotoSquare = centerBaseSquare;
-						end
-						--
-						if (gotoSquare) then
-							currentNPC:walkTo(gotoSquare);
-						end
-						TaskMangerIn:AddToTop(DoctorTask:new(currentNPC))
-						return TaskMangerIn
-					end
-				elseif (not SurvivorCanFindWork) and (AiNPC_Job_Is(currentNPC, "Farmer")) then
-					if (SurvivorCanFindWork) and (RainManager.isRaining() == false) then
-						local randresult = ZombRand(10) + 1
+			-- Seems to assign job when ai in the base is not doing anything
+			-- if currentNPC:getCurrentTask() == "None" and 
+			-- 	npcIsInBase and 
+			-- 	not npcIsInAction and 
+			-- 	ZombRand(4) == 0 
+			-- then
+			-- 	-- if AiNPC_Job_Is(currentNPC, "Companion") then
+			-- 	-- 	TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
+			-- 	-- else
+			-- 	if not SurvivorCanFindWork and AiNPC_Job_Is(currentNPC, "Doctor") then
+			-- 		local randresult = ZombRand(10) + 1;
+			-- 		--
+			-- 		if (randresult == 1) then
+			-- 			currentNPC:Speak(Get_SS_UIActionText("IGoRelax"))
+			-- 			TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
+			-- 		else
+			-- 			local medicalarea = npcGroup:getGroupArea("MedicalStorageArea");
+			-- 			local gotoSquare;
+			-- 			--
+			-- 			if (medicalarea) and (medicalarea[1] ~= 0) then
+			-- 				gotoSquare = GetCenterSquareFromArea(medicalarea[1],
+			-- 					medicalarea[2], medicalarea[3], medicalarea[4], medicalarea[5]);
+			-- 			end
+			-- 			--
+			-- 			if (not gotoSquare) then
+			-- 				gotoSquare = centerBaseSquare;
+			-- 			end
+			-- 			--
+			-- 			if (gotoSquare) then
+			-- 				currentNPC:walkTo(gotoSquare);
+			-- 			end
+			-- 			TaskMangerIn:AddToTop(DoctorTask:new(currentNPC))
+			-- 			return TaskMangerIn
+			-- 		end
+			-- 	elseif (not SurvivorCanFindWork) and (AiNPC_Job_Is(currentNPC, "Farmer")) then
+			-- 		if (SurvivorCanFindWork) and (RainManager.isRaining() == false) then
+			-- 			local randresult = ZombRand(10) + 1
 
-						if (randresult == 1) then
-							currentNPC:Speak(Get_SS_UIActionText("IGoRelax"))
-							TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
-							TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-						else
-							local area = npcGroup:getGroupArea("FarmingArea")
-							if (area) then
-								currentNPC:Speak(Get_SS_UIActionText("IGoFarm"))
-								TaskMangerIn:AddToTop(FarmingTask:new(currentNPC))
-								TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-							else
-								CreateLogLine("AI-Manager", isLocalLoggingEnabled, "farming area was nil");
-							end
-						end
-					end
-				elseif (SurvivorCanFindWork)
-					and not (AiNPC_Job_Is(currentNPC, "Guard"))
-					and not (AiNPC_Job_Is(currentNPC, "Leader"))
-					and not (AiNPC_Job_Is(currentNPC, "Doctor"))
-					and not (AiNPC_Job_Is(currentNPC, "Farming"))
-				then
-					if (currentNPC:Get():getBodyDamage():getWetness() < 0.2) then
-						if (SafeToGoOutAndWork) then
-							TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 			if (randresult == 1) then
+			-- 				currentNPC:Speak(Get_SS_UIActionText("IGoRelax"))
+			-- 				TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
+			-- 				TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 			else
+			-- 				local area = npcGroup:getGroupArea("FarmingArea")
+			-- 				if (area) then
+			-- 					currentNPC:Speak(Get_SS_UIActionText("IGoFarm"))
+			-- 					TaskMangerIn:AddToTop(FarmingTask:new(currentNPC))
+			-- 					TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 				else
+			-- 					CreateLogLine("AI-Manager", isLocalLoggingEnabled, "farming area was nil");
+			-- 				end
+			-- 			end
+			-- 		end
+			-- 	elseif (SurvivorCanFindWork)
+			-- 		and not (AiNPC_Job_Is(currentNPC, "Guard"))
+			-- 		and not (AiNPC_Job_Is(currentNPC, "Leader"))
+			-- 		and not (AiNPC_Job_Is(currentNPC, "Doctor"))
+			-- 		and not (AiNPC_Job_Is(currentNPC, "Farming"))
+			-- 	then
+			-- 		if (currentNPC:Get():getBodyDamage():getWetness() < 0.2) then
+			-- 			if (SafeToGoOutAndWork) then
+			-- 				TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
 
-							local forageSquare = npcGroup:getGroupAreaCenterSquare("ForageArea")
-							local chopWoodSquare = npcGroup:getGroupAreaCenterSquare("ChopTreeArea")
-							local farmingArea = npcGroup:getGroupArea("FarmingArea")
-							local guardArea = npcGroup:getGroupArea("GuardArea")
+			-- 				local forageSquare = npcGroup:getGroupAreaCenterSquare("ForageArea")
+			-- 				local chopWoodSquare = npcGroup:getGroupAreaCenterSquare("ChopTreeArea")
+			-- 				local farmingArea = npcGroup:getGroupArea("FarmingArea")
+			-- 				local guardArea = npcGroup:getGroupArea("GuardArea")
 
-							local jobScores = {}
-							local job = "Relax"
-							-- idle tasks
-							jobScores["Relax"] = 0 + math.floor(currentNPC:Get():getStats():getBoredom() * 20.0)
-							jobScores["Wash Self"] = 1
+			-- 				local jobScores = {}
+			-- 				local job = "Relax"
+			-- 				-- idle tasks
+			-- 				jobScores["Relax"] = 0 + math.floor(currentNPC:Get():getStats():getBoredom() * 20.0)
+			-- 				jobScores["Wash Self"] = 1
 
-							-- maintenance
-							jobScores["Clean Inventory"] = 2
-							jobScores["Gather Wood"] = 2
-							jobScores["Pile Corpses"] = 2
+			-- 				-- maintenance
+			-- 				jobScores["Clean Inventory"] = 2
+			-- 				jobScores["Gather Wood"] = 2
+			-- 				jobScores["Pile Corpses"] = 2
 
-							-- skilled work
-							jobScores["Chop Wood"] = 2 +
-								math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Axe")), 3)
-							jobScores["Forage"] = 2 +
-								math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Foraging")), 3)
+			-- 				-- skilled work
+			-- 				jobScores["Chop Wood"] = 2 +
+			-- 					math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Axe")), 3)
+			-- 				jobScores["Forage"] = 2 +
+			-- 					math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Foraging")), 3)
 
-							-- deprioritize assigned tasks
-							jobScores["Farming"] = 0 +
-								math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Farming")), 3)
-							jobScores["Doctor"] = -2 +
-								math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Doctor")), 3) +
-								math.min(currentNPC:Get():getPerkLevel(Perks.FromString("First Aid")), 3)
-							jobScores["Guard"] = 2 +
-								math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Aiming")), 3)
+			-- 				-- deprioritize assigned tasks
+			-- 				jobScores["Farming"] = 0 +
+			-- 					math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Farming")), 3)
+			-- 				jobScores["Doctor"] = -2 +
+			-- 					math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Doctor")), 3) +
+			-- 					math.min(currentNPC:Get():getPerkLevel(Perks.FromString("First Aid")), 3)
+			-- 				jobScores["Guard"] = 2 +
+			-- 					math.min(currentNPC:Get():getPerkLevel(Perks.FromString("Aiming")), 3)
 
-							-- jobs requiring zoned areas
-							if (forageSquare == nil) then jobScores["Forage"] = -10 end
-							if (chopWoodSquare == nil) then jobScores["Chop Wood"] = -10 end
-							if (farmingArea[1] == 0) then jobScores["Farming"] = -10 end
-							if (guardArea[1] == 0) then jobScores["Guard"] = -10 end
+			-- 				-- jobs requiring zoned areas
+			-- 				if (forageSquare == nil) then jobScores["Forage"] = -10 end
+			-- 				if (chopWoodSquare == nil) then jobScores["Chop Wood"] = -10 end
+			-- 				if (farmingArea[1] == 0) then jobScores["Farming"] = -10 end
+			-- 				if (guardArea[1] == 0) then jobScores["Guard"] = -10 end
 
-							-- reduce scores for jobs already being worked on
-							for key, value in pairs(jobScores) do
-								if key == "Guard" then
-									jobScores[key] = value - npcGroup:getTaskCount("Wander In Area")
-								elseif key == "Doctor" then
-									-- no point in more than one doctor at a time
-									jobScores[key] = value - (npcGroup:getTaskCount(key) * 10)
-								elseif key == "Farming" then
-									-- no point in more than one farmer at a time
-									jobScores[key] = value - (npcGroup:getTaskCount(key) * 10)
-								elseif key == "Forage" then
-									-- little point in more than one forager at a time
-									jobScores[key] = value - (npcGroup:getTaskCount(key) * 2)
-								else
-									jobScores[key] = value - npcGroup:getTaskCount(key)
-								end
-							end
+			-- 				-- reduce scores for jobs already being worked on
+			-- 				for key, value in pairs(jobScores) do
+			-- 					if key == "Guard" then
+			-- 						jobScores[key] = value - npcGroup:getTaskCount("Wander In Area")
+			-- 					elseif key == "Doctor" then
+			-- 						-- no point in more than one doctor at a time
+			-- 						jobScores[key] = value - (npcGroup:getTaskCount(key) * 10)
+			-- 					elseif key == "Farming" then
+			-- 						-- no point in more than one farmer at a time
+			-- 						jobScores[key] = value - (npcGroup:getTaskCount(key) * 10)
+			-- 					elseif key == "Forage" then
+			-- 						-- little point in more than one forager at a time
+			-- 						jobScores[key] = value - (npcGroup:getTaskCount(key) * 2)
+			-- 					else
+			-- 						jobScores[key] = value - npcGroup:getTaskCount(key)
+			-- 					end
+			-- 				end
 
-							-- rainy days
-							if RainManager.isRaining() then
-								jobScores["Wash Self"] = jobScores["Wash Self"] + 2 -- can wash in puddles
-								jobScores["Farming"] = jobScores["Farming"] - 10 -- really no reason to do this
-								jobScores["Gather Wood"] = jobScores["Gather Wood"] - 1
-								jobScores["Pile Corpses"] = jobScores["Pile Corpses"] - 2
-								jobScores["Chop Wood"] = jobScores["Chop Wood"] - 3
-								jobScores["Forage"] = jobScores["Forage"] - 3
-							end
-							if currentNPC:Get():getBodyDamage():getWetness() > 0.5 then
-								-- do indoor stuff to dry off
-								jobScores["Relax"] = jobScores["Relax"] + 3
-								jobScores["Clean Inventory"] = jobScores["Clean Inventory"] + 3
-								jobScores["Wash Self"] = jobScores["Wash Self"] + 2
-							end
+			-- 				-- rainy days
+			-- 				if RainManager.isRaining() then
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] + 2 -- can wash in puddles
+			-- 					jobScores["Farming"] = jobScores["Farming"] - 10 -- really no reason to do this
+			-- 					jobScores["Gather Wood"] = jobScores["Gather Wood"] - 1
+			-- 					jobScores["Pile Corpses"] = jobScores["Pile Corpses"] - 2
+			-- 					jobScores["Chop Wood"] = jobScores["Chop Wood"] - 3
+			-- 					jobScores["Forage"] = jobScores["Forage"] - 3
+			-- 				end
+			-- 				if currentNPC:Get():getBodyDamage():getWetness() > 0.5 then
+			-- 					-- do indoor stuff to dry off
+			-- 					jobScores["Relax"] = jobScores["Relax"] + 3
+			-- 					jobScores["Clean Inventory"] = jobScores["Clean Inventory"] + 3
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] + 2
+			-- 				end
 
-							-- personal needs
-							local filth = currentNPC:getFilth()
-							if filth < 1 then
-								jobScores["Wash Self"] = jobScores["Wash Self"] - 2
-							elseif filth < 5 then
-								jobScores["Wash Self"] = jobScores["Wash Self"] - 1
-							elseif filth < 10 then
-								jobScores["Wash Self"] = jobScores["Wash Self"] + 1
-							elseif filth < 15 then
-								jobScores["Wash Self"] = jobScores["Wash Self"] + 2
-							else
-								jobScores["Wash Self"] = jobScores["Wash Self"] + 3
-							end
+			-- 				-- personal needs
+			-- 				local filth = currentNPC:getFilth()
+			-- 				if filth < 1 then
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] - 2
+			-- 				elseif filth < 5 then
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] - 1
+			-- 				elseif filth < 10 then
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] + 1
+			-- 				elseif filth < 15 then
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] + 2
+			-- 				else
+			-- 					jobScores["Wash Self"] = jobScores["Wash Self"] + 3
+			-- 				end
 
-							-- randomize
-							for key, value in pairs(jobScores) do
-								jobScores[key] = ZombRand(0, value)
-							end
+			-- 				-- randomize
+			-- 				for key, value in pairs(jobScores) do
+			-- 					jobScores[key] = ZombRand(0, value)
+			-- 				end
 
-							-- find the best task
-							for key, value in pairs(jobScores) do
-								if value >= jobScores[job] then job = key end
-							end
+			-- 				-- find the best task
+			-- 				for key, value in pairs(jobScores) do
+			-- 					if value >= jobScores[job] then job = key end
+			-- 				end
 
-							currentNPC:Get():getStats():setBoredom(currentNPC:Get():getStats():getBoredom() +
-								(ZombRand(5) / 100.0))
-							if (job == "Relax") then
-								currentNPC:Speak(Get_SS_UIActionText("IGoRelax"))
-								currentNPC:Get():getStats():setBoredom(0.0)
-								TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
-							elseif (job == "Gather Wood") then
-								currentNPC:Speak(Get_SS_UIActionText("IGoGetWood"))
-								local dropSquare = centerBaseSquare
-								local woodstoragearea = npcGroup:getGroupArea("WoodStorageArea")
-								if (woodstoragearea[1] ~= 0) then
-									dropSquare = GetCenterSquareFromArea(woodstoragearea[1],
-										woodstoragearea[2], woodstoragearea[3], woodstoragearea[4], woodstoragearea[5])
-								end
-								TaskMangerIn:AddToTop(GatherWoodTask:new(currentNPC, dropSquare))
-								TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-							elseif (job == "Pile Corpses") then
-								currentNPC:Speak(Get_SS_UIActionText("IGoPileCorpse"))
-								local baseBounds = npcGroup:getBounds()
-								local dropSquare = getCell():getGridSquare(baseBounds[1] - 5, baseBounds[3] - 5, 0)
-								local storagearea = npcGroup:getGroupArea("CorpseStorageArea")
-								if (storagearea[1] ~= 0) then
-									dropSquare = GetCenterSquareFromArea(storagearea[1],
-										storagearea[2], storagearea[3], storagearea[4], storagearea[5])
-								end
-								if (dropSquare) then
-									TaskMangerIn:AddToTop(PileCorpsesTask:new(currentNPC, dropSquare))
-									TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-								end
-							elseif (job == "Forage") then
-								local dropSquare = centerBaseSquare
-								local FoodStorageCenter = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
-								if (FoodStorageCenter) then dropSquare = FoodStorageCenter end
+			-- 				currentNPC:Get():getStats():setBoredom(currentNPC:Get():getStats():getBoredom() +
+			-- 					(ZombRand(5) / 100.0))
+			-- 				if (job == "Relax") then
+			-- 					currentNPC:Speak(Get_SS_UIActionText("IGoRelax"))
+			-- 					currentNPC:Get():getStats():setBoredom(0.0)
+			-- 					TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
+			-- 				elseif (job == "Gather Wood") then
+			-- 					currentNPC:Speak(Get_SS_UIActionText("IGoGetWood"))
+			-- 					local dropSquare = centerBaseSquare
+			-- 					local woodstoragearea = npcGroup:getGroupArea("WoodStorageArea")
+			-- 					if (woodstoragearea[1] ~= 0) then
+			-- 						dropSquare = GetCenterSquareFromArea(woodstoragearea[1],
+			-- 							woodstoragearea[2], woodstoragearea[3], woodstoragearea[4], woodstoragearea[5])
+			-- 					end
+			-- 					TaskMangerIn:AddToTop(GatherWoodTask:new(currentNPC, dropSquare))
+			-- 					TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 				elseif (job == "Pile Corpses") then
+			-- 					currentNPC:Speak(Get_SS_UIActionText("IGoPileCorpse"))
+			-- 					local baseBounds = npcGroup:getBounds()
+			-- 					local dropSquare = getCell():getGridSquare(baseBounds[1] - 5, baseBounds[3] - 5, 0)
+			-- 					local storagearea = npcGroup:getGroupArea("CorpseStorageArea")
+			-- 					if (storagearea[1] ~= 0) then
+			-- 						dropSquare = GetCenterSquareFromArea(storagearea[1],
+			-- 							storagearea[2], storagearea[3], storagearea[4], storagearea[5])
+			-- 					end
+			-- 					if (dropSquare) then
+			-- 						TaskMangerIn:AddToTop(PileCorpsesTask:new(currentNPC, dropSquare))
+			-- 						TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 					end
+			-- 				elseif (job == "Forage") then
+			-- 					local dropSquare = centerBaseSquare
+			-- 					local FoodStorageCenter = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
+			-- 					if (FoodStorageCenter) then dropSquare = FoodStorageCenter end
 
-								if (forageSquare ~= nil) then
-									currentNPC:Speak(Get_SS_UIActionText("IGoForage"))
-									currentNPC:walkTo(forageSquare)
-									TaskMangerIn:AddToTop(SortLootTask:new(currentNPC, false))
-									TaskMangerIn:AddToTop(ForageTask:new(currentNPC))
-									TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-								else
-									CreateLogLine("AI-Manager", isLocalLoggingEnabled, "forage area was nil");
-								end
-							elseif (job == "Chop Wood") then
-								if (chopWoodSquare) then
-									currentNPC:Speak(Get_SS_UIActionText("IGoChopWood"))
-									TaskMangerIn:AddToTop(ChopWoodTask:new(currentNPC))
-									TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-								else
-									CreateLogLine("AI-Manager", isLocalLoggingEnabled, "chopWoodArea area was nil");
-								end
-							elseif (job == "Farming") then
-								if (farmingArea) then
-									currentNPC:Speak(Get_SS_UIActionText("IGoFarm"))
-									TaskMangerIn:AddToTop(FarmingTask:new(currentNPC))
-									TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-								else
-									CreateLogLine("AI-Manager", isLocalLoggingEnabled, "farmingArea area was nil");
-								end
-							elseif (job == "Guard") then
-								if (guardArea) then
-									currentNPC:Speak(Get_SS_UIActionText("IGoGuard"))
-									TaskMangerIn:AddToTop(WanderInAreaTask:new(currentNPC, guardArea))
-									TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-								else
-									CreateLogLine("AI-Manager", isLocalLoggingEnabled, "guardArea area was nil");
-								end
-							elseif (job == "Doctor") then
-								local medicalarea = npcGroup:getGroupArea("MedicalStorageArea")
+			-- 					if (forageSquare ~= nil) then
+			-- 						currentNPC:Speak(Get_SS_UIActionText("IGoForage"))
+			-- 						currentNPC:walkTo(forageSquare)
+			-- 						TaskMangerIn:AddToTop(SortLootTask:new(currentNPC, false))
+			-- 						TaskMangerIn:AddToTop(ForageTask:new(currentNPC))
+			-- 						TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 					else
+			-- 						CreateLogLine("AI-Manager", isLocalLoggingEnabled, "forage area was nil");
+			-- 					end
+			-- 				elseif (job == "Chop Wood") then
+			-- 					if (chopWoodSquare) then
+			-- 						currentNPC:Speak(Get_SS_UIActionText("IGoChopWood"))
+			-- 						TaskMangerIn:AddToTop(ChopWoodTask:new(currentNPC))
+			-- 						TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 					else
+			-- 						CreateLogLine("AI-Manager", isLocalLoggingEnabled, "chopWoodArea area was nil");
+			-- 					end
+			-- 				elseif (job == "Farming") then
+			-- 					if (farmingArea) then
+			-- 						currentNPC:Speak(Get_SS_UIActionText("IGoFarm"))
+			-- 						TaskMangerIn:AddToTop(FarmingTask:new(currentNPC))
+			-- 						TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 					else
+			-- 						CreateLogLine("AI-Manager", isLocalLoggingEnabled, "farmingArea area was nil");
+			-- 					end
+			-- 				elseif (job == "Guard") then
+			-- 					if (guardArea) then
+			-- 						currentNPC:Speak(Get_SS_UIActionText("IGoGuard"))
+			-- 						TaskMangerIn:AddToTop(WanderInAreaTask:new(currentNPC, guardArea))
+			-- 						TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 					else
+			-- 						CreateLogLine("AI-Manager", isLocalLoggingEnabled, "guardArea area was nil");
+			-- 					end
+			-- 				elseif (job == "Doctor") then
+			-- 					local medicalarea = npcGroup:getGroupArea("MedicalStorageArea")
 
-								local gotoSquare
-								if (medicalarea) and (medicalarea[1] ~= 0) then
-									gotoSquare = GetCenterSquareFromArea(
-										medicalarea[1], medicalarea[2], medicalarea[3], medicalarea[4], medicalarea[5])
-								end
-								if (not gotoSquare) then gotoSquare = centerBaseSquare end
+			-- 					local gotoSquare
+			-- 					if (medicalarea) and (medicalarea[1] ~= 0) then
+			-- 						gotoSquare = GetCenterSquareFromArea(
+			-- 							medicalarea[1], medicalarea[2], medicalarea[3], medicalarea[4], medicalarea[5])
+			-- 					end
+			-- 					if (not gotoSquare) then gotoSquare = centerBaseSquare end
 
-								if (gotoSquare) then currentNPC:walkTo(gotoSquare) end
-								TaskMangerIn:AddToTop(DoctorTask:new(currentNPC))
-								TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
-							elseif (job == "Clean Inventory") then
-								currentNPC:Speak("Cleaning Inventory")
-								local dropSquare = centerBaseSquare
-								local ToolStorageCenter = npcGroup:getGroupAreaCenterSquare("ToolStorageArea")
-								if (ToolStorageCenter) then dropSquare = ToolStorageCenter end
-								TaskMangerIn:AddToTop(SortLootTask:new(currentNPC, false))
-							elseif (job == "Wash Self") then
-								currentNPC:Speak("Washing Self")
-								TaskMangerIn:AddToTop(WashSelfTask:new(currentNPC))
-							end
-						else
-							TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
-						end -- safeto go out end
-					end -- allowed to go out work end
-				end
-			end
+			-- 					if (gotoSquare) then currentNPC:walkTo(gotoSquare) end
+			-- 					TaskMangerIn:AddToTop(DoctorTask:new(currentNPC))
+			-- 					TaskMangerIn:setTaskUpdateLimit(AutoWorkTaskTimeLimit)
+			-- 				elseif (job == "Clean Inventory") then
+			-- 					currentNPC:Speak("Cleaning Inventory")
+			-- 					local dropSquare = centerBaseSquare
+			-- 					local ToolStorageCenter = npcGroup:getGroupAreaCenterSquare("ToolStorageArea")
+			-- 					if (ToolStorageCenter) then dropSquare = ToolStorageCenter end
+			-- 					TaskMangerIn:AddToTop(SortLootTask:new(currentNPC, false))
+			-- 				elseif (job == "Wash Self") then
+			-- 					currentNPC:Speak("Washing Self")
+			-- 					TaskMangerIn:AddToTop(WashSelfTask:new(currentNPC))
+			-- 				end
+			-- 			else
+			-- 				TaskMangerIn:AddToTop(WanderInBaseTask:new(currentNPC))
+			-- 			end -- safeto go out end
+			-- 		end -- allowed to go out work end
+			-- 	end
+			-- end
 
 			-- Return to base task
 			-- Oop, found this. I could use this for followers to get back to main player
 			if currentNPC:getCurrentTask() == "None" and 
 				npcIsInBase == false and 
 				not npcIsInAction and 
-				npcGroup ~= nil 
+				npcGroup
 			then
 				local baseSq = centerBaseSquare;
 				--
-				if (baseSq ~= nil) then
+				if baseSq then
 					currentNPC:Speak(Get_SS_UIActionText("IGoBackBase"))
 					TaskMangerIn:AddToTop(ReturnToBaseTask:new(currentNPC))
 				end

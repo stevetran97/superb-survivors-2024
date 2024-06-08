@@ -10,11 +10,15 @@ function SuperSurvivorManager:new()
 	self.__index = self
 
 	o.SuperSurvivors = {}
-	o.SurvivorCount = 3
+	o.SurvivorCount = 3 -- Track survivors create I guess
 	o.MainPlayer = 0
+
+	o.activeNpcs = 0
+	o.aliveNpcs = 0
 
 	return o
 end
+
 
 function SuperSurvivorManager:getRealPlayerID()
 	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:getRealPlayerID() called");
@@ -44,9 +48,10 @@ function SuperSurvivorManager:LoadSurvivor(ID, square)
 		return false 
 	end
 
-	if ID ~= nil and square ~= nil then --
-		if self.SuperSurvivors[ID] ~= nil and self.SuperSurvivors[ID].player ~= nil then
 
+
+	if ID and square then --
+		if self.SuperSurvivors[ID] and self.SuperSurvivors[ID].player then
 			-- Do not load survivor if they are already in a cell and the survivor object exists
 			if self.SuperSurvivors[ID]:isInCell() then
 				return false -- Batmane - Why do I return false if loading survivor and they are in a cell?
@@ -159,7 +164,7 @@ function SuperSurvivorManager:spawnSurvivor(isFemale, square)
 		if not newSurvivor then return nil end
 
 		-- Replaced Iteration
-		-- for idx = 1, Limit_Npcs_Spawn + 10, 1 do
+		-- for idx = 1, Limit_Npcs_Global + 10, 1 do
 		-- 	CreateLogLine("Spawn Survivor", true, "Looping to find idx to spawn surivor " .. tostring(idx));
 		-- 	if not self.SuperSurvivors[idx] then
 		-- 		CreateLogLine("Spawn Survivor", true, "Found empty idx at " .. tostring(idx));
@@ -379,7 +384,7 @@ function SuperSurvivorManager:GetClosestNonParty()
 end
 
 function SuperSurvivorManager:SaveAll()
-	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:SaveAll() called");
+	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:Save All() called");
 
 	-- Need to experiment to see if I can get away with just counting survivors using: #self.SuperSurvivors
 	for key, SuperSurvivorObj in pairs(self.SuperSurvivors) do
@@ -390,6 +395,14 @@ function SuperSurvivorManager:SaveAll()
 end
 
 SSM = SuperSurvivorManager:new()
+function TrackSSMInfo() 
+	SSM.activeNpcs = Get_SS_Active_Count()
+	SSM.aliveNpcs = Get_SS_Alive_Count()
+	-- CreateLogLine('SSMTracker', true, 'Tracking activeNpcs =' .. tostring(SSM.activeNpcs))
+	-- CreateLogLine('SSMTracker', true, 'Tracking alive npcs =' .. tostring(SSM.aliveNpcs))
+end
+Events.EveryHours.Add(TrackSSMInfo);
+
 
 function LoadSurvivorMap()
 	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:LoadSurvivorMap() called");
@@ -422,7 +435,7 @@ function LoadSurvivorMap()
 end
 
 function SaveSurvivorMap()
-	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:SaveSurvivorMap() called");
+	CreateLogLine("SuperSurvivorManager", isLocalLoggingEnabled, "SuperSurvivorManager:Save SurvivorMap() called");
 	local tempTable = {}
 	tempTable[1] = SSM.SurvivorCount
 	table.save(tempTable, "SurvivorManagerInfo");

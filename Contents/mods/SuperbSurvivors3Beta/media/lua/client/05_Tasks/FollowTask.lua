@@ -10,41 +10,83 @@ FollowTask.__index = FollowTask
 
 local isLocalLoggingEnabled = false;
 
-function FollowTask:new(superSurvivor, FollowMeplayer)
-	CreateLogLine("FollowTask", isLocalLoggingEnabled, "function: FollowTask:new() called");
+-- This strategy wont work because what if you only get some of your group to follow
+-- function createCongoLine(group, leaderSS) 
+-- 	local prevSS = leaderSS
+
+-- 	for i, MemberId in pairs(group.Members) do
+-- 		local workingSS = SSM:Get(MemberId);
+
+
+-- 		-- self.MyTaskManager:clear()
+
+-- 	end
+-- end
+
+function getFollowChar(superSurvivor, FollowMeplayer) 
+	if not FollowMeplayer then
+		if superSurvivor.player:getModData().FollowCharID then
+			local SS = SSM:Get(superSurvivor.player:getModData().FollowCharID)
+			if SS then
+				return SS:Get()
+			end
+		end
+	else
+		superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
+
+		return FollowMeplayer -- type IsoPlayer
+	end
+end
+
+-- superSurvivor - current Survivor
+-- FollowMePlayer - Guessing this is just the main player?
+function FollowTask:new(superSurvivor, FollowMeplayer, isCongoLine)
+	CreateLogLine("FollowTask", isLocalLoggingEnabled, "function: Follow Task:new() called");
 
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 
-	if not FollowMeplayer then
-		if superSurvivor.player:getModData().FollowCharID then
-			local SS = SSM:Get(superSurvivor.player:getModData().FollowCharID)
-			if SS then
-				o.FollowChar = SS:Get()
-			else
-				return false
-			end
-		end
-	else
-		o.FollowChar = FollowMeplayer -- type IsoPlayer
-		superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
+	-- Get Initial Character to Follow - Either a given arg or just the current FollowCharID
+	-- if not FollowMeplayer then
+	-- 	if superSurvivor.player:getModData().FollowCharID then
+	-- 		local SS = SSM:Get(superSurvivor.player:getModData().FollowCharID)
+	-- 		if SS then
+	-- 			o.FollowChar = SS:Get()
+	-- 		else
+	-- 			return false
+	-- 		end
+	-- 	end
+	-- else
+	-- 	o.FollowChar = FollowMeplayer -- type IsoPlayer
+	-- 	superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
+	-- end
+	local FollowChar = getFollowChar(superSurvivor, FollowMeplayer)
+	local FollowSS = SSM:Get(FollowChar:getModData().ID)
+	local group = FollowSS:getGroup()
+
+	if isCongoLine and group then 
+		-- If FollowChar has group create a congo line
+		-- Need to loop through group 
+
+		o.FollowChar = FollowChar
+	else 
+		-- No group case
+		o.FollowChar = FollowChar
 	end
 
-	o.followSS = SSM:Get(o.FollowChar:getModData().ID)
-	o.group = o.followSS:getGroup()
+
 	-- o.InBaseAtStart = superSurvivor:isInBase() -- Phase out 
 	o.parent = superSurvivor
 	o.Name = "Follow"
-	o.OnGoing = true
-	o.LastDistance = 0
+	-- o.OnGoing = true // Never used - Why is this here
+	-- o.LastDistance = 0 // Never used - Why is this even here
 	o.Complete = false
 	o.MySeat = -1
 	o.MyDoor = -1
 	-- This is literally always 0 wherever it is used
 	o.FollowDistanceOffset = 0
-
-	if o.group then
+	if group then
 		o.FollowDistanceOffset = 0
 	end
 
@@ -310,5 +352,5 @@ function FollowTask:update()
 	-- 	--self.parent.player:Say("waiting for non-action "..tostring(self.parent.player:getCharacterActions())..","..tostring(self.parent.player:getModData().bWalking))
 	-- end
 
-	self.LastDistance = distance
+	-- self.LastDistance = distance
 end

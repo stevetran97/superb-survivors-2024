@@ -2789,6 +2789,10 @@ function SuperSurvivor:updateSurvivorHourlyStatus()
 		return false;
 	end
 
+	-- Emergency save
+	self:SaveSurvivor();
+
+
 	if not SurvivorNeedsFoodWater then
 		-- CreateLogLine("Food and Hunger", true, tostring(self:getName()) .. " setting hunger/thirst to zero");
 		self.player:getStats():setThirst(0.0);
@@ -2809,9 +2813,6 @@ function SuperSurvivor:updateSurvivorHourlyStatus()
 	if getSpecificPlayer(0):isAsleep() then
         SSM:AsleepHealAll()
     end
-
-	-- Emergency save
-	self:SaveSurvivor(); -- We shouldnt need to save unless we quite
 
 
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:updateSurvivorHourlyStatus() end ---");
@@ -2846,13 +2847,11 @@ function SuperSurvivor:updateSurvivor10MinStatus()
 
 	self.player:setNPC(true);
 
-	-- self.player:setCanSeeAll(true) -- Batmane - Try this cheat out to see if AI doesnt get snuck up on so easy
-
 	local group = self:getGroup()
 	if (group) then group:checkMember(self:getID()) end
 
 	-- Batmane: This manageXP function doesnt seem to ever work for me. I have never seen an ai level up
-	self:ManageXP()
+	-- self:ManageXP()
 
 	self.player:getModData().hitByCharacter = false
 	self.player:getModData().semiHostile = false
@@ -3151,7 +3150,7 @@ function SuperSurvivor:deleteSurvivor()
 end
 
 function SuperSurvivor:SaveSurvivorOnMap()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:SaveSurvivorOnMap() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:Save SurvivorOnMap() called");
 	if self.player:getModData().RealPlayer == true then return false end
 	local ID = self.player:getModData().ID;
 
@@ -3187,10 +3186,12 @@ function SuperSurvivor:SaveSurvivorOnMap()
 			end
 		end
 	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:SaveSurvivorOnMap() end ---");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:Save SurvivorOnMap() end ---");
 end
 
 function SuperSurvivor:SaveSurvivor()
+	CreateLogLine("Saving", true, "Saving Survivor");
+
 	if self.player:getModData().RealPlayer == true then return false end
 
 	local ID = self.player:getModData().ID;
@@ -3208,7 +3209,7 @@ function SuperSurvivor:SaveSurvivor()
 			end
 		end
 	end
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:SaveSurvivor() end ---");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:Save Survivor() end ---");
 end
 
 function SuperSurvivor:FindClosestOutsideSquare(thisBuildingSquare)

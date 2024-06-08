@@ -46,7 +46,7 @@ function TaskManager:AddToTop(newTask)
 	-- end
 	-- CreateLogLine("AddToTop", true, tostring(self.parent:getName()) .. " BEFORE task list end -------- ");
 
-	if newTask == nil then return false end
+	if not newTask then return false end
 
 	-- self.LastLastTask = self.LastTask -- WIP - Cows: "LastTask" is undefined...
 	-- self.LastTask = self:getCurrentTask()

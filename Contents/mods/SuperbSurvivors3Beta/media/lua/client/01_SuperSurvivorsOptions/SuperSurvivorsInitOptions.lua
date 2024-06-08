@@ -14,7 +14,7 @@
 
 -- -- NPC Spawning
 -- Limit_Npc_Groups = 8;     -- WIP - PlaceHolder - Cows: Max npc groups
--- Limit_Npcs_Spawn = 22;    -- WIP - PlaceHolder - Cows: Max npc spwans
+-- Limit_Npcs_Global = 22;    -- WIP - PlaceHolder - Cows: Max npc spwans
 -- IsWifeSpawn = true;       -- Cows: true to spawn wife / 1st follower, false to not spawn wife / 1st follower
 -- NpcGroupsSpawnsSize = 4; -- Cows: The max number of groups that can spawn every time.
 -- NpcSpawnChance = 50;      -- WIP - Cows: NpcSpawnChance (formerly "AlternativeSpawning") is used when the player is in the current map area
