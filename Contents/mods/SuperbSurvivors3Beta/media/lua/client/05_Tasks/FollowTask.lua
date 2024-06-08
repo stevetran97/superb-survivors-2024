@@ -11,17 +11,32 @@ FollowTask.__index = FollowTask
 local isLocalLoggingEnabled = false;
 
 -- This strategy wont work because what if you only get some of your group to follow
--- function createCongoLine(group, leaderSS) 
--- 	local prevSS = leaderSS
+function createSingleFileLine(superSurvivor, leaderSS) 
+	CreateLogLine('createSingleFileLine', isLocalLoggingEnabled, tostring(superSurvivor:getName()) .. ' creating congo line...')
 
--- 	for i, MemberId in pairs(group.Members) do
--- 		local workingSS = SSM:Get(MemberId);
+	local attempts = 0
+	while attempts < Limit_Npcs_Global + 10 do 
+		if attempts > Limit_Npcs_Global + 10 then return end
+		-- 
+		local SSFollowing = SSM:Get(leaderSS.player:getModData().FollowedByCharId)
+		if not SSFollowing or 
+			SSFollowing.player:getModData().ID == superSurvivor.player:getModData().ID or -- Following Char is themselves
+			SSFollowing.player:getModData().ID == 0 -- Following Char is player
+		then 
+			superSurvivor.player:getModData().FollowCharId = leaderSS.player:getModData().ID -- leaderId 
+			leaderSS.player:getModData().FollowedByCharId = superSurvivor.player:getModData().ID
+			superSurvivor:Speak('I\'m with ' .. tostring(leaderSS:getName()) .. '!' )
+			return leaderSS:Get()
+		else
+			CreateLogLine('createSingleFileLine', isLocalLoggingEnabled, tostring(superSurvivor:getName()) .. ' Recursing deeper on ...' .. tostring(SSFollowing:getName()))
 
-
--- 		-- self.MyTaskManager:clear()
-
--- 	end
--- end
+			attempts = attempts + 1
+			return createSingleFileLine(superSurvivor, SSFollowing)
+		end
+		-- 
+	end
+	CreateLogLine('Error', true, tostring(superSurvivor:getName()) .. ' Failed to generate single file line')
+end
 
 function getFollowChar(superSurvivor, FollowMeplayer) 
 	if not FollowMeplayer then
@@ -33,48 +48,43 @@ function getFollowChar(superSurvivor, FollowMeplayer)
 		end
 	else
 		superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
-
+		
 		return FollowMeplayer -- type IsoPlayer
 	end
 end
 
 -- superSurvivor - current Survivor
 -- FollowMePlayer - Guessing this is just the main player?
-function FollowTask:new(superSurvivor, FollowMeplayer, isCongoLine)
+function FollowTask:new(superSurvivor, FollowMeplayer, followMode)
 	CreateLogLine("FollowTask", isLocalLoggingEnabled, "function: Follow Task:new() called");
 
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self
 
-	-- Get Initial Character to Follow - Either a given arg or just the current FollowCharID
-	-- if not FollowMeplayer then
-	-- 	if superSurvivor.player:getModData().FollowCharID then
-	-- 		local SS = SSM:Get(superSurvivor.player:getModData().FollowCharID)
-	-- 		if SS then
-	-- 			o.FollowChar = SS:Get()
-	-- 		else
-	-- 			return false
-	-- 		end
-	-- 	end
-	-- else
-	-- 	o.FollowChar = FollowMeplayer -- type IsoPlayer
-	-- 	superSurvivor.player:getModData().FollowCharID = FollowMeplayer:getModData().ID -- save last follow obj id to mod data so can be reused on load
-	-- end
 	local FollowChar = getFollowChar(superSurvivor, FollowMeplayer)
 	local FollowSS = SSM:Get(FollowChar:getModData().ID)
 	local group = FollowSS:getGroup()
 
-	if isCongoLine and group then 
-		-- If FollowChar has group create a congo line
-		-- Need to loop through group 
+	-- Reset follow orders
+	superSurvivor.player:getModData().FollowCharId = nil 
+	superSurvivor.player:getModData().FollowedByCharId = nil
 
-		o.FollowChar = FollowChar
+	-- CreateLogLine('createSingleFileLine', true, tostring(superSurvivor:getName()) .. ' reset followed by...' .. tostring(superSurvivor.player:getModData().FollowCharId))
+	-- CreateLogLine('createSingleFileLine', true, tostring(superSurvivor:getName()) .. ' reset followed by...' .. tostring(superSurvivor.player:getModData().FollowedByCharId))
+
+	if followMode == SINGLEFILELINE then 
+		if FollowSS then 
+			o.FollowChar = createSingleFileLine(superSurvivor, FollowSS)
+		else 
+			CreateLogLine('Error', true, tostring(superSurvivor:getName()) ..  'cannot create congo line due to nonexisting FollowSS')
+			superSurvivor:Speak('I\'m with ' .. tostring(FollowSS:getName()) .. '!' )
+			o.FollowChar = FollowChar
+		end
 	else 
 		-- No group case
 		o.FollowChar = FollowChar
 	end
-
 
 	-- o.InBaseAtStart = superSurvivor:isInBase() -- Phase out 
 	o.parent = superSurvivor

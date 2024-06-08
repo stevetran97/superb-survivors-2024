@@ -177,7 +177,7 @@ function SurvivorOrder(test, player, order, orderParam)
 			["Follow"] = function()
 				ASuperSurvivor:setAIMode("Follow")
 				ASuperSurvivor:setGroupRole(Get_SS_JobText("Companion"))
-				TaskMangerIn:AddToTop(FollowTask:new(ASuperSurvivor, getSpecificPlayer(0)))
+				TaskMangerIn:AddToTop(FollowTask:new(ASuperSurvivor, getSpecificPlayer(0), getSpecificPlayer(0):getModData().FollowMode))
 			end,
 			["Pile Corpses"] = function()
 				ASuperSurvivor:setGroupRole(Get_SS_JobText("Dustman"))

@@ -41,18 +41,19 @@ function SuperSurvivorGroup:setROE(tothis)
 	self.ROE = tothis;
 end
 
-function SuperSurvivorGroup:getFollowCount()
-	local count = 0;
-	local members = self:getMembers();
-	for i = 1, #members do
-		if (members[i] ~= nil) and (members[i].getCurrentTask ~= nil) then
-			if (members[i]:getCurrentTask() == "Follow") then
-				count = count + 1;
-			end
-		end
-	end
-	return count;
-end
+-- Unused
+-- function SuperSurvivorGroup:getFollowCount()
+-- 	local count = 0;
+-- 	local members = self:getMembers();
+-- 	for i = 1, #members do
+-- 		if (members[i] ~= nil) and (members[i].getCurrentTask ~= nil) then
+-- 			if (members[i]:getCurrentTask() == "Follow") then
+-- 				count = count + 1;
+-- 			end
+-- 		end
+-- 	end
+-- 	return count;
+-- end
 
 function SuperSurvivorGroup:isEnemy(SS, character)
 	if self.ROE == 4 then

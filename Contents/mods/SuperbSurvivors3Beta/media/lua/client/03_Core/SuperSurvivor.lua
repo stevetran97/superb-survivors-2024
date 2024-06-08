@@ -3033,7 +3033,7 @@ end
 
 
 function SuperSurvivor:StopWalk()
-	CreateLogLine("StopWalk", true, tostring(self:getName()) .. " SuperSurvivor:StopWalk() called");
+	CreateLogLine("StopWalk", isLocalLoggingEnabled, tostring(self:getName()) .. " SuperSurvivor:StopWalk() called");
 	ISTimedActionQueue.clear(self.player)
 	self.player:StopAllActionQueue()
 	self.player:setPath2(nil)

@@ -4,7 +4,7 @@ WanderInBaseTask.__index = WanderInBaseTask
 local isLocalLoggingEnabled = false;
 
 function WanderInBaseTask:new(superSurvivor)
-	CreateLogLine("WanderInBaseTask", isLocalLoggingEnabled, "function: WanderInBaseTask:new() called");
+	CreateLogLine("WanderInBaseTask", isLocalLoggingEnabled, "function: WanderInBase Task:new() called");
 	local o = {}
 	setmetatable(o, self)
 	self.__index = self

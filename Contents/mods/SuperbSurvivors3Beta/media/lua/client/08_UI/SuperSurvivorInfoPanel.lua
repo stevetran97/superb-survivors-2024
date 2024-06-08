@@ -230,6 +230,10 @@ function ShowSurvivorInfo(member_index)
     text_info = text_info .. getText("ContextMenu_SS_GroupID") .. ": " .. tostring(group_member:getGroupID()) .. "\n"
     text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(group_member:getGroupRole()) .. "\n"
     text_info = text_info .. "AI mode: " .. tostring(group_member:getAIMode()) .. "\n"
+
+    text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(group_member.player:getModData().FollowCharId) .. "\n"
+    text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(group_member.player:getModData().FollowedByCharId) .. "\n"
+
     panel_survivor_info.member_index = member_index
     panel_survivor_info.text_panel.text = text_info
     panel_survivor_info.text_panel:paginate()

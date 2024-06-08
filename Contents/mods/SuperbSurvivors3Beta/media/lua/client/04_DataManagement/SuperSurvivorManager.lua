@@ -79,7 +79,7 @@ function SuperSurvivorManager:LoadSurvivor(ID, square)
 			end
 		end
 
-		CreateLogLine("NPC Load Survivor Management", true, "Passed first check block ");
+		-- CreateLogLine("NPC Load Survivor Management", true, "Passed first check block ");
 
 		self.SuperSurvivors[ID] = SuperSurvivor:newLoad(ID, square)
 

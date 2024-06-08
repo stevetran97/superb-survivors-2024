@@ -91,20 +91,27 @@ end
 
 -- Seems to force set complete all tasks 
 function TaskManager:clear()
+	-- Reset other task paramters
+	self.parent.player:getModData().FollowCharId = nil 
+	self.parent.player:getModData().FollowedByCharId = nil
+
+	-- Old
 	-- Cows: Why do we need to force complete the tasks?
 	-- Batmane: This was originally set to clear from index 1 to end for some reason? Doesnt clear current task at 0.
 	-- If I have it clear from 0, ai just abandons your follow task
-	for i = 1, #self.Tasks - 1 do -- before clearing run the force complete task of any task that has one 
-		if self.Tasks[i] ~= nil and self.Tasks[i].ForceComplete ~= nil then
-			return self.Tasks[i]:ForceComplete()
+	-- for i = 0, #self.Tasks - 1 do -- before clearing run the force complete task of any task that has one 
+	-- 	if self.Tasks[i] and self.Tasks[i].ForceComplete then
+	-- 		return self.Tasks[i]:ForceComplete() -- This force completes one task
+	-- 	end
+	-- end
+
+	-- New
+	for i, Task in pairs(self.Tasks) do
+		if self.Tasks[i] then
+			self.Tasks[i] = nil
+			table.remove(self.Tasks, i)
 		end
 	end
-
-	-- if I want to clear tasks, I want to clear all tasks but I dont know the effect on the ai yet
-	-- for i = 1, #self.Tasks - 1 do -- Batmane - if I want to clear tasks, I want to clear all tasks
-	-- 		table.remove(self.Tasks, i)
-	-- end
-	table.remove(self.Tasks, 0)
 end
 
 -- Batmane - I phased out the old system of setting finished tasks to nil and moving it down the list because that was accumulating infinite tasks

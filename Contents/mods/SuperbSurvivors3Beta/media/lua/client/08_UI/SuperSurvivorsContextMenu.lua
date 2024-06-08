@@ -395,6 +395,33 @@ function SetRulesOfEngagement(test, value)
 	end
 end
 
+function SetFollowMode(test, value) 
+	getSpecificPlayer(0):getModData().FollowMode = value;
+
+	local followModeDialog = ''
+	if value == SINGLEFILELINE then 
+		followModeDialog = 'Everyone follow in single file!'
+	else
+		followModeDialog = 'Everyone On me!'
+	end
+	getSpecificPlayer(0):Say(followModeDialog);
+
+	local SS = SSM:Get(0)
+	local group = SS:getGroup()
+	if group then
+		for i, MemberId in pairs(group.Members) do 
+			if MemberId and MemberId ~= 0 then 
+				local Member = SSM:Get(MemberId)
+				if Member and Member:isInCell() then
+					Member.MyTaskManager:clear()
+					Member.MyTaskManager:AddToTop(FollowTask:new(Member, getSpecificPlayer(0), getSpecificPlayer(0):getModData().FollowMode))
+				end
+			end
+		end
+	end
+	-- CreateLogLine('SetFollowMode', true, getSpecificPlayer(0):getModData().FollowMode)
+end
+
 -- Right Click Context Menu
 function SetMeleeOrGun(test, value)
 	local mySS = SSM:Get(0)
@@ -500,7 +527,23 @@ function SurvivorsFillWorldObjectContextMenu(player, context, worldobjects, test
 	submenu:addSubMenu(RulesOfEngagementOption, subsubmenu);
 	-- 
 
+	-- Generate Follow Mode Sub menu then append it to survivor menu
+	local FollowModeOption = submenu:addOption(Get_SS_ContextMenuText("FollowMode"), worldobjects, nil);
+	local subsubmenu = submenu:getNew(submenu);
+	MakeToolTip(subsubmenu:addOption(Get_SS_ContextMenuText("FollowMode_SingleFileLine"), nil, SetFollowMode, SINGLEFILELINE),
+		"Follow Mode",
+		"Follow in a single file line");
+	MakeToolTip(subsubmenu:addOption(Get_SS_ContextMenuText("FollowMode_DirectFollow"), nil, SetFollowMode, DIRECTFOLLOW),
+		"Follow Mode",
+		"Follow leader directly");
+	submenu:addSubMenu(FollowModeOption, subsubmenu);
+	-- 
+
+
 	context:addSubMenu(SurvivorOptions, submenu); --Add ">" entire Survivor Options submenu
 end
 
 Events.OnFillWorldObjectContextMenu.Add(SurvivorsFillWorldObjectContextMenu);
+
+SINGLEFILELINE = 'SINGLEFILELINE'
+DIRECTFOLLOW = 'DIRECTFOLLOW'
