@@ -193,7 +193,7 @@ function SurvivorOrder(test, player, order, orderParam)
 				local area = ASuperSurvivor:getGroup():getGroupArea("GuardArea")
 				if area then
 					ASuperSurvivor:Speak(Get_SS_ContextMenuText("IGoGuard"))
-					TaskMangerIn:AddToTop(WanderInAreaTask:new(ASuperSurvivor, area))
+					TaskMangerIn:AddToTop(WanderInAreaTask:new(ASuperSurvivor, area)) -- This line conflicts with userauto follow assignment when task is none
 					TaskMangerIn:setTaskUpdateLimit(300)
 					TaskMangerIn:AddToTop(GuardTask:new(ASuperSurvivor, GetRandomAreaSquare(area)))
 					ASuperSurvivor:Speak("And Where are you wanting me to guard at again? Show me an area to guard at.")
@@ -218,7 +218,9 @@ function SurvivorOrder(test, player, order, orderParam)
 				end
 				TaskMangerIn:AddToTop(WanderTask:new(ASuperSurvivor))
 			end,
-			["Stop"] = function()
+			["Stop"] = function()				
+				ASuperSurvivor:StopWalk()
+				TaskMangerIn:clear()
 				if ASuperSurvivor:getGroupRole() == "Companion" then
 					ASuperSurvivor:setGroupRole(Get_SS_JobText("Worker"))
 				end

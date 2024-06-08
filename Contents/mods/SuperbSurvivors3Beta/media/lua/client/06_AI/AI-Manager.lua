@@ -58,7 +58,17 @@ function AIEssentialTasks(TaskMangerIn)
 		enemySurvivor = SSM:Get(id);
 	end
 	-- 
-	
+
+	-- Ensure NPC never stuck aiming when not attacking or threatening
+	if currentNPC.player:isAiming() and (
+		TaskMangerIn:getCurrentTask() ~= "Attack" or
+		TaskMangerIn:getCurrentTask() ~= "Threaten"
+	)
+	then 
+		currentNPC.player:NPCSetAiming(false)
+		-- return 
+	end
+
 	-- Force NPC to slowdown near player - Need this to run every time task tick runs
 	currentNPC:NPC_EnforceWalkNearMainPlayer();
 
@@ -162,9 +172,9 @@ function AIEssentialTasks(TaskMangerIn)
 	-- We expect to pass through this task when the passive trigger conditions arent met
 	if currentNPC:needToFollow()
 	then
+		currentNPC:StopWalk()
 		if TaskMangerIn:getCurrentTask() ~= "Follow" then
 			currentNPC:Speak('Wait for me!')
-			currentNPC:StopWalk()
 			TaskMangerIn:clear();
 			TaskMangerIn:AddToTop(FollowTask:new(currentNPC, getSpecificPlayer(0)));
 		end

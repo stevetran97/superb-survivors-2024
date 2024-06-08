@@ -2735,7 +2735,7 @@ function SuperSurvivor:updateSurvivorStatus()
 
 		-- Batmane - This can just be run like every 10 minutes or so 
 		-- Todo: Currently this checks every 20 s - lets see if the there are issues
-		self:CheckForIfStuck() -- New function to cleanup the update () function
+		-- self:CheckForIfStuck() -- New function to cleanup the update () function
 	end
 
 
@@ -3033,7 +3033,7 @@ end
 
 
 function SuperSurvivor:StopWalk()
-	CreateLogLine("StopWalk", isLocalLoggingEnabled, tostring(self:getName()) .. " SuperSurvivor:StopWalk() called");
+	CreateLogLine("StopWalk", true, tostring(self:getName()) .. " SuperSurvivor:StopWalk() called");
 	ISTimedActionQueue.clear(self.player)
 	self.player:StopAllActionQueue()
 	self.player:setPath2(nil)
@@ -4069,7 +4069,7 @@ end
 
 -- Batmane - I think I managed to fix the frozen melee animation by not setting melee or attack to false when attack task was complete
 function SuperSurvivor:UnStuckFrozenAnim()
-	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:UnStuckFrozenAnim() called");
+	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:UnStuck FrozenAnim() called");
 	self.player:setNPC(false)
 	self.player:setBlockMovement(false)
 	self.player:update()

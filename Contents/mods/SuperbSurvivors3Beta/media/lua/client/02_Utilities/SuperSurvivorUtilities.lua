@@ -222,7 +222,7 @@ function Get_SS_Active_Count()
             end
 		end
 	end
-	CreateLogLine("Active Survivors", true, "actualActiveSurvivors Count = " .. tostring(actualActiveSurvivors));
+	-- CreateLogLine("Active Survivors", true, "actualActiveSurvivors Count = " .. tostring(actualActiveSurvivors));
 
 	return actualActiveSurvivors
 end
