@@ -157,19 +157,15 @@ function PanelSurvivorInfo:new(x, y, width, height)
     return o
 end
 
-function ShowSurvivorInfo(member_index)
-    local group = UIUtil_GetGroup()
+function ShowSurvivorInfo(member_index, memberSS, group)
     if not group then
         panel_survivor_info:setVisible(false)
         return
     end
-    local group_members = group:getMembers(true)
-    local group_member = group_members[member_index]
     local text_info = getText("ContextMenu_SS_SurvivorInfoName_Before") ..
-        group_member:getName() .. getText("ContextMenu_SS_SurvivorInfoName_After") .. "\n"
-    local player = group_member:Get()
-    text_info = text_info .. "(" ..
-        tostring(group_member:getGroupRole()) .. "/" .. group_member:getCurrentTask() .. ")" .. "\n\n"
+        memberSS:getName() .. getText("ContextMenu_SS_SurvivorInfoName_After") .. "\n"
+    local player = memberSS:Get()
+    text_info = text_info .. "(" .. tostring(memberSS:getGroupRole()) .. "/" .. memberSS:getCurrentTask() .. ")" .. "\n\n"
     for i = 1, GetTableSize(SurvivorPerks) do
         player:getModData().PerkCount = i
 
@@ -200,12 +196,12 @@ function ShowSurvivorInfo(member_index)
     text_info = text_info ..
         getText("Tooltip_Wetness") .. ": " .. tostring(math.floor(player:getBodyDamage():getWetness() * 100)) .. "\n"
     text_info = text_info ..
-        getText("Tooltip_clothing_dirty") .. ": " .. tostring(math.floor(group_member:getFilth() * 100)) .. "\n"
+        getText("Tooltip_clothing_dirty") .. ": " .. tostring(math.floor(memberSS:getFilth() * 100)) .. "\n"
     text_info = text_info .. "\n"
     local meleewepName = getText("Nothing")
     local gunwepName = getText("Nothing")
-    if group_member.LastMeleeUsed ~= nil then meleewepName = group_member.LastMeleeUsed:getDisplayName() end
-    if group_member.LastGunUsed ~= nil then gunwepName = group_member.LastGunUsed:getDisplayName() end
+    if memberSS.LastMeleeUsed ~= nil then meleewepName = memberSS.LastMeleeUsed:getDisplayName() end
+    if memberSS.LastGunUsed ~= nil then gunwepName = memberSS.LastGunUsed:getDisplayName() end
     local phi
     if player:getPrimaryHandItem() ~= nil then
         phi = player:getPrimaryHandItem():getDisplayName()
@@ -216,23 +212,24 @@ function ShowSurvivorInfo(member_index)
     text_info = text_info .. getText("ContextMenu_SS_MeleeWeapon") .. ": " .. tostring(meleewepName) .. "\n"
     text_info = text_info .. getText("ContextMenu_SS_GunWeapon") .. ": " .. tostring(gunwepName) .. "\n"
     text_info = text_info .. getText("ContextMenu_SS_CurrentTask") .. ": " ..
-        tostring(group_member:getCurrentTask()) .. "\n"
+        tostring(memberSS:getCurrentTask()) .. "\n"
     text_info = text_info .. "\n"
     text_info = text_info ..
-        getText("ContextMenu_SS_AmmoCount") .. ": " .. tostring(group_member.player:getModData().ammoCount) .. "\n"
+        getText("ContextMenu_SS_AmmoCount") .. ": " .. tostring(memberSS.player:getModData().ammoCount) .. "\n"
     text_info = text_info ..
-        getText("ContextMenu_SS_AmmoType") .. ": " .. tostring(group_member.player:getModData().ammotype) .. "\n"
+        getText("ContextMenu_SS_AmmoType") .. ": " .. tostring(memberSS.player:getModData().ammotype) .. "\n"
     text_info = text_info ..
-        getText("ContextMenu_SS_AmmoBoxType") .. ": " .. tostring(group_member.player:getModData().ammoBoxtype) .. "\n"
+        getText("ContextMenu_SS_AmmoBoxType") .. ": " .. tostring(memberSS.player:getModData().ammoBoxtype) .. "\n"
     text_info = text_info .. "\n"
 
-    text_info = text_info .. getText("ContextMenu_SS_SurvivorID") .. ": " .. tostring(group_member:getID()) .. "\n"
-    text_info = text_info .. getText("ContextMenu_SS_GroupID") .. ": " .. tostring(group_member:getGroupID()) .. "\n"
-    text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(group_member:getGroupRole()) .. "\n"
-    text_info = text_info .. "AI mode: " .. tostring(group_member:getAIMode()) .. "\n"
+    text_info = text_info .. getText("ContextMenu_SS_SurvivorID") .. ": " .. tostring(memberSS:getID()) .. "\n"
+    text_info = text_info .. getText("ContextMenu_SS_GroupID") .. ": " .. tostring(memberSS:getGroupID()) .. "\n"
+    text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(memberSS:getGroupRole()) .. "\n"
+    text_info = text_info .. "AI mode: " .. tostring(memberSS:getAIMode()) .. "\n"
 
-    text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(group_member.player:getModData().FollowCharId) .. "\n"
-    text_info = text_info .. getText("ContextMenu_SS_GroupRole") .. ": " .. tostring(group_member.player:getModData().FollowedByCharId) .. "\n"
+    -- Debug who following who
+    -- text_info = text_info .. getText("ContextMenu_SS_FollowCharId") .. ": " .. tostring(SSM:Get(memberSS.player:getModData().FollowCharId):getName()) .. "\n"
+    -- text_info = text_info .. getText("ContextMenu_SS_FollowedByCharId") .. ": " .. tostring(SSM:Get(memberSS.player:getModData().FollowedByCharId):getName()) .. "\n"
 
     panel_survivor_info.member_index = member_index
     panel_survivor_info.text_panel.text = text_info

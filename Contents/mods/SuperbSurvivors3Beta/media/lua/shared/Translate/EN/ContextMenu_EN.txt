@@ -159,6 +159,10 @@ ContextMenu_EN = {
 		ContextMenu_SS_FeetArmor = "Feet Armor",
 		ContextMenu_SS_SurvivorID = "Survivor ID",
 		ContextMenu_SS_GroupID = "Group ID",
+		ContextMenu_SS_FollowCharId = "Following Character",
+		ContextMenu_SS_FollowedByCharId = "Followed by Character",
+
+
 		ContextMenu_SS_GroupRole = "Group Role",
 		ContextMenu_SS_YourGroupMembers = "Your Super Survivor Group Members",
 		ContextMenu_SS_MIASurvivor = "MIA Survivor",

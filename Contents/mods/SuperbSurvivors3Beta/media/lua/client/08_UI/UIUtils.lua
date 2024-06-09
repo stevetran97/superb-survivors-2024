@@ -72,12 +72,9 @@ function UIUtil_GetGroup()
 end
 
 function UIUtil_GetMemberInfo(
-    member_index
-    -- memberID
+    memberSS, group_id, group_members, group
 )
-    local group_id = SSM:Get(0):getGroupID()
-    local group = SSGM:GetGroupById(group_id)
-    if group == nil then
+    if not group then
         group = SSGM:newGroup()
         group:addMember(SSM:Get(0), Get_SS_ContextMenuText("Job_Leader"))
     end
@@ -88,41 +85,38 @@ function UIUtil_GetMemberInfo(
             group:setLeader(0)
         end
     end
-    local group_members = group:getMembers(true)
-    local member = group_members[member_index]
-    -- local member = SSM:Get(memberID)
 
     local name = "none"
     local role = "none"
     local task = "none"
     local ai_mode = "none"
-    if member and member.getName ~= nil and member:isInCell() then
-        name = member:getName()
-        role = tostring(member:getGroupRole())
-        task = member.MyTaskManager.Tasks[member.MyTaskManager.CurrentTask]
-        ai_mode = tostring(member:getAIMode())
-    elseif member and member.getName ~= nil and (member:isDead() or not member:saveFileExists()) then
-        name = member:getName()
+    if memberSS and memberSS.getName ~= nil and memberSS:isInCell() then
+        name = memberSS:getName()
+        role = tostring(memberSS:getGroupRole())
+        task = memberSS.MyTaskManager.Tasks[memberSS.MyTaskManager.CurrentTask]
+        ai_mode = tostring(memberSS:getAIMode())
+    elseif memberSS and memberSS.getName ~= nil and (memberSS:isDead() or not memberSS:saveFileExists()) then
+        name = memberSS:getName()
         role = getText("IGUI_health_Deceased")
-        group:removeMember(member:getID())
-    elseif member and member.getName ~= nil and member:isInCell() == false then
-        name = member:getName()
-        local coords = GetCoordsFromID(member:getID())
+        group:removeMember(memberSS:getID())
+    elseif memberSS and memberSS.getName ~= nil and memberSS:isInCell() == false then
+        name = memberSS:getName()
+        local coords = GetCoordsFromID(memberSS:getID())
         -- WIP - Cows: WHAT WAS "coord"? IS THIS A TYPO? Renamed to "coords"
         if coords == 0 then
-            SSM:LoadSurvivor(member:getID(), getSpecificPlayer(0):getCurrentSquare())
+            SSM:LoadSurvivor(memberSS:getID(), getSpecificPlayer(0):getCurrentSquare())
             coords = "0"
         end
         -- role = coords -- WIP - Cows: why is "role" assigned coords?
-    elseif not checkSaveFileExists("Survivor" .. tostring(member)) then
-        name = Get_SS_ContextMenuText("MIASurvivor") .. "[" .. tostring(member) .. "]"
+    elseif not checkSaveFileExists("Survivor" .. tostring(memberSS)) then
+        name = Get_SS_ContextMenuText("MIASurvivor") .. "[" .. tostring(memberSS) .. "]"
         role = getText("IGUI_health_Deceased")
-        group:removeMember(member)
+        group:removeMember(memberSS)
     else
-        name = Get_SS_ContextMenuText("MIASurvivor") .. "[" .. tostring(member) .. "]"
-        local coords = GetCoordsFromID(member)
+        name = Get_SS_ContextMenuText("MIASurvivor") .. "[" .. tostring(memberSS) .. "]"
+        local coords = GetCoordsFromID(memberSS)
         if coords == 0 then
-            SSM:LoadSurvivor(member, getSpecificPlayer(0):getCurrentSquare())
+            SSM:LoadSurvivor(memberSS, getSpecificPlayer(0):getCurrentSquare())
             coords = "0"
         end
         role = tostring(coords)
@@ -130,26 +124,21 @@ function UIUtil_GetMemberInfo(
     return name, role, task, ai_mode
 end
 
+local isLoggingSurvivorOrder = true;
+
 function UIUtil_GiveOrder(
     order_index, 
-    member_index
-    -- memberID
+    memberSS
 )
-    local isLoggingSurvivorOrder = false;
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "function: UIUtil_GiveOrder() called");
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "order_index: " .. tostring(order_index));
-    CreateLogLine("UIUtils", isLoggingSurvivorOrder, "member_index: " .. tostring(member_index));
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "Order: " .. tostring(Orders[order_index]));
 
-    local group_id = SSM:Get(0):getGroupID()
-    local group_members = SSGM:GetGroupById(group_id):getMembers()
-    local member = group_members[member_index]
-    -- local member = SSM:Get(memberID)
-
-    if member then
-        getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") .. member:getName() .. Get_SS_UIActionText("CallName_After"))
-        member:getTaskManager():AddToTop(ListenTask:new(member, getSpecificPlayer(0), false))
-        SurvivorOrder(nil, member.player, Orders[order_index], nil)
+    CreateLogLine("UIUtils", isLoggingSurvivorOrder, "memberSS: " .. tostring(memberSS:getName()));
+    if memberSS then
+        getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") .. memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
+        memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
+        SurvivorOrder(nil, memberSS.player, Orders[order_index], nil)
     end
 end
 

@@ -8,6 +8,8 @@ local panel_height = 30 * 10; -- 30 is about the height of each row.
 local context_options = {};
 local survivor_headers = {};
 local isLocalLoggingEnabled = false;
+local baseColor = { r = 0, g = 0, b = 0, a = 0 }
+local backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
 
 SurvivorPanels = {}
 
@@ -39,44 +41,44 @@ function PanelGroup:dupdate()
     local dy = 0
     local switch = 0
     local group = UIUtil_GetGroup()
-    if not group then return end--clear panel on player death
+    if not group then return end --clear panel on player death
+    local group_id = group:getID()
     local group_members = group:getMembers(true)
-    
-    -- for i = 1, #group_members do
-    for i, member in pairs(group_members) do
-        local name, role = UIUtil_GetMemberInfo(i)
+
+    for i, memberSS in pairs(group_members) do        
+        local name, role = UIUtil_GetMemberInfo(memberSS, group_id, group_members, group)
         if role == "IGUI_SS_Job_Leader" then role = Get_SS_ContextMenuText("Job_Leader") end
         local panel_entry = ISPanel:new(0, dy, 850, 30)
         panel_entry.borderColor = { r = 1, g = 1, b = 1, a = 0.2 }
-        panel_entry.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+        panel_entry.backgroundColor = baseColor
         panel_entry.dwidth = 850 / 3
         local cat_member_name = ISButton:new(0, 0, panel_entry.dwidth, 30, tostring(name), nil,
-            function() context_options.show_context_menu_member(i) end)
+            function() context_options.show_context_menu_member(i, memberSS, group_id, group_members, group) end)
         local cat_member_role = ISButton:new(panel_entry.dwidth, 0, panel_entry.dwidth, 30, tostring(role), nil,
-            function() context_options.show_context_menu_role(i) end)
+            function() context_options.show_context_menu_role(memberSS) end)
         local cat_member_inventory = ISButton:new(panel_entry.dwidth * 2, 0, panel_entry.dwidth / 2, 30, "Inventory", nil,
             function() create_panel_inventory_transfer(i) end)
         local cat_member_loadout = ISButton:new(panel_entry.dwidth * 2 + cat_member_inventory.width - 1, 0,
             panel_entry.dwidth / 2, 30, "Equipment", nil, function() create_panel_loadout(i) end)
 
-        if member:getID() == 0 then cat_member_inventory.enable = false end
-        if member:getID() == 0 then cat_member_loadout.enable = false end
+        if memberSS:getID() == 0 then cat_member_inventory.enable = false end
+        if memberSS:getID() == 0 then cat_member_loadout.enable = false end
 
-        cat_member_name.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_member_role.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_member_inventory.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_member_loadout.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+        cat_member_name.borderColor = baseColor
+        cat_member_role.borderColor = baseColor
+        cat_member_inventory.borderColor = baseColor
+        cat_member_loadout.borderColor = baseColor
         if switch == 0 then
-            cat_member_name.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-            cat_member_role.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-            cat_member_inventory.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-            cat_member_loadout.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
+            cat_member_name.backgroundColor = backgroundColor
+            cat_member_role.backgroundColor = backgroundColor
+            cat_member_inventory.backgroundColor = backgroundColor
+            cat_member_loadout.backgroundColor = backgroundColor
             switch = 1
         else
-            cat_member_name.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-            cat_member_role.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-            cat_member_inventory.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-            cat_member_loadout.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+            cat_member_name.backgroundColor = baseColor
+            cat_member_role.backgroundColor = baseColor
+            cat_member_inventory.backgroundColor = baseColor
+            cat_member_loadout.backgroundColor = baseColor
             switch = 0
         end
         panel_entry:addChild(cat_member_name)
@@ -158,25 +160,25 @@ function PanelBaseEntry:createChildren()
         function() create_panel_base_info(self.area_name) end)
     cat_area_name.onMouseDown = function() return end
     cat_area_set.onMouseDown = function() return end
-    cat_area_name.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    cat_area_set.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    cat_area_show.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-    cat_area_edit.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+    cat_area_name.borderColor = baseColor
+    cat_area_set.borderColor = baseColor
+    cat_area_show.borderColor = baseColor
+    cat_area_edit.borderColor = baseColor
     cat_area_show.enable = is_area_set(self.area_name)
     if self.switch == 0 then
-        cat_area_name.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-        cat_area_set.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-        cat_area_show.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-        cat_area_edit.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-        cat_area_set.backgroundColorMouseOver = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-        cat_area_name.backgroundColorMouseOver = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
+        cat_area_name.backgroundColor = backgroundColor
+        cat_area_set.backgroundColor = backgroundColor
+        cat_area_show.backgroundColor = backgroundColor
+        cat_area_edit.backgroundColor = backgroundColor
+        cat_area_set.backgroundColorMouseOver = backgroundColor
+        cat_area_name.backgroundColorMouseOver = backgroundColor
     else
-        cat_area_name.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_area_set.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_area_show.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_area_edit.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_area_set.backgroundColorMouseOver = { r = 0, g = 0, b = 0, a = 0 }
-        cat_area_name.backgroundColorMouseOver = { r = 0, g = 0, b = 0, a = 0 }
+        cat_area_name.backgroundColor = baseColor
+        cat_area_set.backgroundColor = baseColor
+        cat_area_show.backgroundColor = baseColor
+        cat_area_edit.backgroundColor = baseColor
+        cat_area_set.backgroundColorMouseOver = baseColor
+        cat_area_name.backgroundColorMouseOver = baseColor
     end
     self:addChild(cat_area_name)
     self:addChild(cat_area_set)
@@ -190,7 +192,7 @@ function PanelBaseEntry:new(x, y, width, height, area_name, area_set, area_show,
     setmetatable(o, self)
     self.__index = self
     o.borderColor = { r = 1, g = 1, b = 1, a = 0.2 }
-    o.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+    o.backgroundColor = baseColor
     o.dwidth = 850 / 4
     o.area_name = area_name
     o.area_set = area_set
@@ -262,49 +264,50 @@ local PanelCompanions = ISPanel:new(0, 60, window_width, panel_height)
 PanelCompanions:setVisible(false)
 table.insert(SurvivorPanels, 3, PanelCompanions)
 
+
 function PanelCompanions:dupdate()
     self:clearChildren()
     local dy = 0
     local switch = 0
     local group = UIUtil_GetGroup()
     if not group then return end--clear panel on player death
+    local group_id = group:getID()
     local group_members = group:getMembers(true)
     local companion_count = 0
-    for i, member in pairs(group_members) do
-    -- for i = 1, #group_members do
-        local name, role, _, ai_mode = UIUtil_GetMemberInfo(i)
+
+    for i, memberSS in pairs(group_members) do
+        local name, role, _, ai_mode = UIUtil_GetMemberInfo(memberSS, group_id, group_members, group)
         local panel_entry = ISPanel:new(0, dy, 850, 30)
         panel_entry.borderColor = { r = 1, g = 1, b = 1, a = 0.2 }
-        panel_entry.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
+        panel_entry.backgroundColor = baseColor
         panel_entry.dwidth = 850 / 4
         local cat_companion_name = ISButton:new(1, 0, panel_entry.dwidth, 30, tostring(name), nil,
-            function() context_options.show_context_menu_member(i) end)
-        local cat_companion_task = ISButton:new(panel_entry.dwidth + 1, 0, panel_entry.dwidth, 30, tostring(ai_mode), nil,
-            nil)
+            function() context_options.show_context_menu_member(i, memberSS, group_id, group_members, group) end)
+        local cat_companion_task = ISButton:new(panel_entry.dwidth + 1, 0, panel_entry.dwidth, 30, tostring(ai_mode), nil, nil)
         local cat_companion_order = ISButton:new(panel_entry.dwidth * 2, 0, panel_entry.dwidth, 30, "order", nil,
-            function() context_options.show_context_menu_order(i) end)
+            function() context_options.show_context_menu_order(memberSS) end)
         local cat_companion_call = ISButton:new(panel_entry.dwidth * 3, 0, panel_entry.dwidth, 30, "call", nil,
-            function() on_click_companion_call(i) end)
+            function() on_click_companion_call(memberSS) end)
         cat_companion_task.onMouseDown = function() return end
-        cat_companion_name.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_companion_task.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_companion_order.borderColor = { r = 0, g = 0, b = 0, a = 0 }
-        cat_companion_call.borderColor = { r = 0, g = 0, b = 0, a = 0 }
+        cat_companion_name.borderColor = baseColor
+        cat_companion_task.borderColor = baseColor
+        cat_companion_order.borderColor = baseColor
+        cat_companion_call.borderColor = baseColor
         if role == "Companion" then
             companion_count = companion_count + 1
             if switch == 0 then
-                cat_companion_name.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-                cat_companion_task.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-                cat_companion_order.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-                cat_companion_call.backgroundColor = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
-                cat_companion_task.backgroundColorMouseOver = { r = 0.25, g = 0.31, b = 0.37, a = 0.3 }
+                cat_companion_name.backgroundColor = backgroundColor
+                cat_companion_task.backgroundColor = backgroundColor
+                cat_companion_order.backgroundColor = backgroundColor
+                cat_companion_call.backgroundColor = backgroundColor
+                cat_companion_task.backgroundColorMouseOver = backgroundColor
                 switch = 1
             else
-                cat_companion_name.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-                cat_companion_task.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-                cat_companion_order.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-                cat_companion_call.backgroundColor = { r = 0, g = 0, b = 0, a = 0 }
-                cat_companion_task.backgroundColorMouseOver = { r = 0, g = 0, b = 0, a = 0 }
+                cat_companion_name.backgroundColor = baseColor
+                cat_companion_task.backgroundColor = baseColor
+                cat_companion_order.backgroundColor = baseColor
+                cat_companion_call.backgroundColor = baseColor
+                cat_companion_task.backgroundColorMouseOver = baseColor
                 switch = 0
             end
             panel_entry:addChild(cat_companion_name)
@@ -534,110 +537,97 @@ function on_click_tab(target_headers, target_panel)
     end
 end
 
-function on_click_companion_call(member_index)
-    local group_id = SSM:Get(0):getGroupID()
-    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
-    local member = group_members[member_index]
-    if member then
+function on_click_companion_call(memberSS)
+    if memberSS then
         getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") ..
-            member:getName() .. Get_SS_UIActionText("CallName_After"))
-        member:getTaskManager():AddToTop(ListenTask:new(member, getSpecificPlayer(0), false))
+            memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
+        memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
     end
 end
 
-context_options.show_context_menu_order = function(member_index)
-    if member_index == 1 then return end
+context_options.show_context_menu_order = function(memberSS)
+    -- if member_index == 1 then return end
+    if memberSS:getID() == 0 then return end
+    
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
-    context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, member_index) end)
-    context_menu:addOption("Chop Wood", nil, function() UIUtil_GiveOrder(2, member_index) end)
-    context_menu:addOption("Clean Up Inventory", nil, function() UIUtil_GiveOrder(3, member_index) end)
-    context_menu:addOption("Doctor", nil, function() UIUtil_GiveOrder(4, member_index) end)
-    context_menu:addOption("Explore", nil, function() UIUtil_GiveOrder(5, member_index) end)
-    context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, member_index) end)
-    context_menu:addOption("Farming", nil, function() UIUtil_GiveOrder(7, member_index) end)
-    context_menu:addOption("Forage", nil, function() UIUtil_GiveOrder(8, member_index) end)
-    context_menu:addOption("Gather Wood", nil, function() UIUtil_GiveOrder(9, member_index) end)
-    context_menu:addOption("Go Find Food", nil, function() UIUtil_GiveOrder(10, member_index) end)
-    context_menu:addOption("Go Find Water", nil, function() UIUtil_GiveOrder(11, member_index) end)
-    context_menu:addOption("Go Find Weapon", nil, function() UIUtil_GiveOrder(12, member_index) end)
-    context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, member_index) end)
-    context_menu:addOption("Lock Doors", nil, function() UIUtil_GiveOrder(14, member_index) end)
-    context_menu:addOption("Loot Room", nil, function() UIUtil_GiveOrder(15, member_index) end)
-    context_menu:addOption("Patrol", nil, function() UIUtil_GiveOrder(16, member_index) end)
-    context_menu:addOption("Sort Loot Into Base", nil, function() UIUtil_GiveOrder(17, member_index) end)
-    context_menu:addOption("Stand Ground", nil, function() UIUtil_GiveOrder(18, member_index) end)
-    context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, member_index) end)
-    context_menu:addOption("Dismiss", nil, function() UIUtil_GiveOrder(20, member_index) end)
-    context_menu:addOption("Relax", nil, function() UIUtil_GiveOrder(21, member_index) end)
-    context_menu:addOption("Return To Base", nil, function() UIUtil_GiveOrder(22, member_index) end)
-    context_menu:addOption("Pile Corpses", nil, function() UIUtil_GiveOrder(23, member_index) end)
+    context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, memberSS) end)
+    context_menu:addOption("Chop Wood", nil, function() UIUtil_GiveOrder(2, memberSS) end)
+    context_menu:addOption("Clean Up Inventory", nil, function() UIUtil_GiveOrder(3, memberSS) end)
+    context_menu:addOption("Doctor", nil, function() UIUtil_GiveOrder(4, memberSS) end)
+    context_menu:addOption("Explore", nil, function() UIUtil_GiveOrder(5, memberSS) end)
+    context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, memberSS) end)
+    context_menu:addOption("Farming", nil, function() UIUtil_GiveOrder(7, memberSS) end)
+    context_menu:addOption("Forage", nil, function() UIUtil_GiveOrder(8, memberSS) end)
+    context_menu:addOption("Gather Wood", nil, function() UIUtil_GiveOrder(9, memberSS) end)
+    context_menu:addOption("Go Find Food", nil, function() UIUtil_GiveOrder(10, memberSS) end)
+    context_menu:addOption("Go Find Water", nil, function() UIUtil_GiveOrder(11, memberSS) end)
+    context_menu:addOption("Go Find Weapon", nil, function() UIUtil_GiveOrder(12, memberSS) end)
+    context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, memberSS) end)
+    context_menu:addOption("Lock Doors", nil, function() UIUtil_GiveOrder(14, memberSS) end)
+    context_menu:addOption("Loot Room", nil, function() UIUtil_GiveOrder(15, memberSS) end)
+    context_menu:addOption("Patrol", nil, function() UIUtil_GiveOrder(16, memberSS) end)
+    context_menu:addOption("Sort Loot Into Base", nil, function() UIUtil_GiveOrder(17, memberSS) end)
+    context_menu:addOption("Stand Ground", nil, function() UIUtil_GiveOrder(18, memberSS) end)
+    context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, memberSS) end)
+    context_menu:addOption("Dismiss", nil, function() UIUtil_GiveOrder(20, memberSS) end)
+    context_menu:addOption("Relax", nil, function() UIUtil_GiveOrder(21, memberSS) end)
+    context_menu:addOption("Return To Base", nil, function() UIUtil_GiveOrder(22, memberSS) end)
+    context_menu:addOption("Pile Corpses", nil, function() UIUtil_GiveOrder(23, memberSS) end)
 end
 
-context_options.show_context_menu_role = function(member_index)
-    if member_index == 1 then return end
-    local group_id = SSM:Get(0):getGroupID()
-    local group = SSGM:GetGroupById(group_id)
-    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
-    local member = group_members[member_index]
+context_options.show_context_menu_role = function(
+    memberSS
+)
+    CreateLogLine('Giving survivor order', true, 'MemberId = ' .. tostring(MemberId))
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
 
-    -- context_menu:addOption("Call", nil, function() on_click_companion_call(member_index) end)
+    CreateLogLine('Giving survivor order', true, 'memberSS name = ' .. tostring(memberSS:getName()))
 
-    -- local order = context_menu:addOption("Order", nil, nil)
-    -- local sub_order = context_menu:getNew(context_menu) -- Replaced sub_order below with context menu directly
-    context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, member_index) end)
-    context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, member_index) end)
-    context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, member_index) end)
-    context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, member_index) end)
+    context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, memberSS) end)
+    context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, memberSS) end)
+    context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, memberSS) end)
+    context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, memberSS) end)
 
-    context_menu:addOption("Chop Wood", nil, function() UIUtil_GiveOrder(2, member_index) end)
-    context_menu:addOption("Clean Up Inventory", nil, function() UIUtil_GiveOrder(3, member_index) end)
-    context_menu:addOption("Doctor", nil, function() UIUtil_GiveOrder(4, member_index) end)
-    context_menu:addOption("Explore", nil, function() UIUtil_GiveOrder(5, member_index) end)
-    context_menu:addOption("Farming", nil, function() UIUtil_GiveOrder(7, member_index) end)
-    context_menu:addOption("Forage", nil, function() UIUtil_GiveOrder(8, member_index) end)
-    context_menu:addOption("Gather Wood", nil, function() UIUtil_GiveOrder(9, member_index) end)
-    context_menu:addOption("Go Find Food", nil, function() UIUtil_GiveOrder(10, member_index) end)
-    context_menu:addOption("Go Find Water", nil, function() UIUtil_GiveOrder(11, member_index) end)
-    context_menu:addOption("Go Find Weapon", nil, function() UIUtil_GiveOrder(12, member_index) end)
-    context_menu:addOption("Lock Doors", nil, function() UIUtil_GiveOrder(14, member_index) end)
-    context_menu:addOption("Loot Room", nil, function() UIUtil_GiveOrder(15, member_index) end)
-    context_menu:addOption("Patrol", nil, function() UIUtil_GiveOrder(16, member_index) end)
-    context_menu:addOption("Pile Corpses", nil, function() UIUtil_GiveOrder(23, member_index) end)
-    context_menu:addOption("Sort Loot Into Base", nil, function() UIUtil_GiveOrder(17, member_index) end)
-    context_menu:addOption("Stand Ground", nil, function() UIUtil_GiveOrder(18, member_index) end)
-    context_menu:addOption("Dismiss", nil, function() UIUtil_GiveOrder(20, member_index) end)
-    context_menu:addOption("Relax", nil, function() UIUtil_GiveOrder(21, member_index) end)
-    context_menu:addOption("Return To Base", nil, function() UIUtil_GiveOrder(22, member_index) end)
-    -- context_menu:addSubMenu(order, sub_order)
-
-    -- local remove = context_menu:addOption("Remove", nil, nil)
-    -- local sub_remove = context_menu:getNew(context_menu)
-    -- sub_remove:addOption("Confirm", nil, function() group:removeMember(member:getID()) end)
-    -- context_menu:addSubMenu(remove, sub_remove)
+    context_menu:addOption("Chop Wood", nil, function() UIUtil_GiveOrder(2, memberSS) end)
+    context_menu:addOption("Clean Up Inventory", nil, function() UIUtil_GiveOrder(3, memberSS) end)
+    context_menu:addOption("Doctor", nil, function() UIUtil_GiveOrder(4, memberSS) end)
+    context_menu:addOption("Explore", nil, function() UIUtil_GiveOrder(5, memberSS) end)
+    context_menu:addOption("Farming", nil, function() UIUtil_GiveOrder(7, memberSS) end)
+    context_menu:addOption("Forage", nil, function() UIUtil_GiveOrder(8, memberSS) end)
+    context_menu:addOption("Gather Wood", nil, function() UIUtil_GiveOrder(9, memberSS) end)
+    context_menu:addOption("Go Find Food", nil, function() UIUtil_GiveOrder(10, memberSS) end)
+    context_menu:addOption("Go Find Water", nil, function() UIUtil_GiveOrder(11, memberSS) end)
+    context_menu:addOption("Go Find Weapon", nil, function() UIUtil_GiveOrder(12, memberSS) end)
+    context_menu:addOption("Lock Doors", nil, function() UIUtil_GiveOrder(14, memberSS) end)
+    context_menu:addOption("Loot Room", nil, function() UIUtil_GiveOrder(15, memberSS) end)
+    context_menu:addOption("Patrol", nil, function() UIUtil_GiveOrder(16, memberSS) end)
+    context_menu:addOption("Pile Corpses", nil, function() UIUtil_GiveOrder(23, memberSS) end)
+    context_menu:addOption("Sort Loot Into Base", nil, function() UIUtil_GiveOrder(17, memberSS) end)
+    context_menu:addOption("Stand Ground", nil, function() UIUtil_GiveOrder(18, memberSS) end)
+    context_menu:addOption("Dismiss", nil, function() UIUtil_GiveOrder(20, memberSS) end)
+    context_menu:addOption("Relax", nil, function() UIUtil_GiveOrder(21, memberSS) end)
+    context_menu:addOption("Return To Base", nil, function() UIUtil_GiveOrder(22, memberSS) end)
 end
 
-context_options.show_context_menu_member = function(member_index)
-    if member_index == 1 then return end
-    local group_id = SSM:Get(0):getGroupID()
-    local group = SSGM:GetGroupById(group_id)
-    local group_members = SSGM:GetGroupById(group_id):getMembers(true)
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[member_index]
+context_options.show_context_menu_member = function(member_index, memberSS, group_id, group_members, group)
+    -- if member_index == 1 then return end -- Test disable
+    if memberSS:getID() == 0 then return end
+
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
-    context_menu:addOption("Information", nil, function() ShowSurvivorInfo(member_index) end)
-    context_menu:addOption("Call", nil, function() on_click_companion_call(member_index) end)
-    context_menu:addOption("Inventory", nil, function() create_panel_inventory_transfer(member_index) end)
+    context_menu:addOption("Information", nil, function() ShowSurvivorInfo(member_index, memberSS, group) end)
+    context_menu:addOption("Call", nil, function() on_click_companion_call(memberSS) end)
+    -- context_menu:addOption("Inventory", nil, function() create_panel_inventory_transfer(member_index) end) -- Not needed because other ways to access
 
     local use_weapon = context_menu:addOption("Use Weapon", nil, nil)
     local sub_use_weapon = context_menu:getNew(context_menu)
-    sub_use_weapon:addOption("Gun", nil, function() ForceWeaponType(nil, member, true) end)
-    sub_use_weapon:addOption("Melee", nil, function() ForceWeaponType(nil, member, false) end)
+    sub_use_weapon:addOption("Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
+    sub_use_weapon:addOption("Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
     context_menu:addSubMenu(use_weapon, sub_use_weapon)
 
     local remove = context_menu:addOption("Remove", nil, nil)
     local sub_remove = context_menu:getNew(context_menu)
     sub_remove:addOption("Confirm", nil, function() 
-        group:removeMember(member:getID()) 
+        group:removeMember(memberSS:getID()) 
     end)
     context_menu:addSubMenu(remove, sub_remove)
 end
