@@ -45,6 +45,10 @@ ContextMenu_TH = {
 		ContextMenu_SS_FollowMode = "โหมดติดตาม",
 		ContextMenu_SS_FollowMode_SingleFileLine = "ติดตามผู้นำเป็นแถวเดี่ยว",
 		ContextMenu_SS_FollowMode_DirectFollow = "ติดตามผู้นำโดยตรง"
+
+		ContextMenu_SS_FriendlyFireMode_Disable = "ปิดการยิงพวกเดียวกัน",
+		ContextMenu_SS_FriendlyFireMode_Enable = "เปิดการยิงพวกเดียวกัน",
+
 		ContextMenu_SS_SurvivorOptions = "ตัวเลือกผู้รอดชีวิต",
 		ContextMenu_SS_OrderDisplayName_Farming = "การทำฟาร์มเกษตร",
 		ContextMenu_SS_OrderDisplayName_Barricade = "ตั้งค่าสิ่งกีดขวาง",

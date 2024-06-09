@@ -384,6 +384,10 @@ function SurvivorsSquareContextHandle(square, context)
 	end
 end
 
+function setFriendlyFire(test, value) 
+	getSpecificPlayer(0):getModData().enableFriendlyFire = value;
+end
+
 function SetRulesOfEngagement(test, value)
 	getSpecificPlayer(0):getModData().ROE = value;
 
@@ -539,6 +543,19 @@ function SurvivorsFillWorldObjectContextMenu(player, context, worldobjects, test
 	submenu:addSubMenu(FollowModeOption, subsubmenu);
 	-- 
 
+	-- Friendly Fire Options
+	MakeToolTip(
+		context:addOption(
+			getSpecificPlayer(0):getModData().enableFriendlyFire and 
+				Get_SS_ContextMenuText("FriendlyFireMode_Disable")
+				or Get_SS_ContextMenuText("FriendlyFireMode_Enable"), 
+			nil, 
+			setFriendlyFire, 
+			not getSpecificPlayer(0):getModData().enableFriendlyFire
+		),
+		"Friendly Fire Mode",
+		"Choose whether you can hurt teammates"
+	);
 
 	context:addSubMenu(SurvivorOptions, submenu); --Add ">" entire Survivor Options submenu
 end

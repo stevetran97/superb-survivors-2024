@@ -44,6 +44,10 @@ ContextMenu_RU = {
     ContextMenu_SS_FollowMode = "Режим следования",
     ContextMenu_SS_FollowMode_SingleFileLine = "Следовать за лидером поодиночке",
     ContextMenu_SS_FollowMode_DirectFollow = "Следовать непосредственно за лидером"
+
+    ContextMenu_SS_FriendlyFireMode_Disable = "Отключить дружественный огонь",
+    ContextMenu_SS_FriendlyFireMode_Enable = "Включить дружественный огонь",
+
     ContextMenu_SS_SurvivorOptions = "Опции выжившего",
     ContextMenu_SS_OrderDisplayName_Farming = "Сельское хозяйство",
     ContextMenu_SS_OrderDisplayName_Barricade = "Баррикада",

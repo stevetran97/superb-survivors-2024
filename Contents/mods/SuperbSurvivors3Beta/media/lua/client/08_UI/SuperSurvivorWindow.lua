@@ -109,7 +109,7 @@ function PanelGroup:dupdate()
                 dwidth = tabWidth,
                 dheight = WINDOW_HEADER_HEIGHT,
                 label = tostring(name) 
-                    .. '(' .. tostring(role) .. ')'
+                    .. ' (' .. tostring(role) .. ')'
                 ,
                 onClick = function() context_options.show_context_menu_member(row_index, memberSS, group_id, group_members, group) end,
     
@@ -922,14 +922,10 @@ context_options.show_context_menu_member = function(member_index, memberSS, grou
     context_menu:addOption("Information", nil, function() ShowSurvivorInfo(memberSS, group) end)
     context_menu:addOption("Call", nil, function() on_click_companion_call(memberSS) end)
 
-    -- local use_weapon = context_menu:addOption("Use Weapon", nil, nil)
-    -- local sub_use_weapon = context_menu:getNew(context_menu)
-    -- sub_use_weapon:addOption("Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
-    -- sub_use_weapon:addOption("Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
-    -- context_menu:addSubMenu(use_weapon, sub_use_weapon)
+    context_menu:addOption("Equip Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
+    context_menu:addOption("Equip Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
 
-    context_menu:addOption("Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
-    context_menu:addOption("Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
+    context_menu:addOption("DEBUG: Unstuck", nil, function() memberSS:UnStuckFrozenAnim() end)
 
     local remove = context_menu:addOption("Remove", nil, nil)
     local sub_remove = context_menu:getNew(context_menu)

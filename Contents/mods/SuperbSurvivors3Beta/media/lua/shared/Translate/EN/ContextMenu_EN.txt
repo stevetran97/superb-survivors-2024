@@ -39,12 +39,18 @@ ContextMenu_EN = {
 		ContextMenu_SS_GiveWeapon = "Give Your Melee Weapon to Survivor",
 		ContextMenu_SS_SwapGuns = "Swap Guns with Survivor",
 		ContextMenu_SS_SwapWeapons = "Swap Melee Weapons with Survivor" ",
+
 		ContextMenu_SS_RulesOfEngagement = "Rules of Engagement",
 		ContextMenu_SS_AttackAnyoneOnSight = "Attack Anyone On Sight",
 		ContextMenu_SS_AttackHostilesOnSight = "Attack Hostiles On Sight",
+
 		ContextMenu_SS_FollowMode = "Follow Mode",
 		ContextMenu_SS_FollowMode_SingleFileLine = "Follow Leader in Single File",
 		ContextMenu_SS_FollowMode_DirectFollow = "Follow Leader Directly",
+
+		ContextMenu_SS_FriendlyFireMode_Disable = "Disable Friendly Fire",
+		ContextMenu_SS_FriendlyFireMode_Enable = "Enable Friendly Fire",
+
 		ContextMenu_SS_SurvivorOptions = "Survivor Options",
 		ContextMenu_SS_OrderDisplayName_Farming = "Farming",
 		ContextMenu_SS_OrderDisplayName_Barricade = "Barricade",

@@ -45,6 +45,10 @@ ContextMenu_IT = {
 		ContextMenu_SS_FollowMode = "Modalità di seguito",
 		ContextMenu_SS_FollowMode_SingleFileLine = "Seguire il leader in fila indiana",
 		ContextMenu_SS_FollowMode_DirectFollow = "Seguire direttamente il leader"
+
+		ContextMenu_SS_FriendlyFireMode_Disable = "Disabilita Fuoco Amico",
+		ContextMenu_SS_FriendlyFireMode_Enable = "Abilita Fuoco Amico",
+
 		ContextMenu_SS_SurvivorOptions = "Opizioni Sopravvissuto",
 		ContextMenu_SS_OrderDisplayName_Farming = "Coltiva",
 		ContextMenu_SS_OrderDisplayName_Barricade = "Barrica",

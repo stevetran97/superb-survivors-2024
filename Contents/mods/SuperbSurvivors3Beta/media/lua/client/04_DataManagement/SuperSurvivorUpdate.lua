@@ -86,7 +86,11 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. ' victim is a zombie: ' ..  tostring(victim:isZombie()))
 
 	if 
-		SSW:isInGroup(SSV) 
+		SSW:isInGroup(SSV)
+		and (
+			wielder:getModData().ID == 0 and
+			not getSpecificPlayer(0):getModData().enableFriendlyFire
+		)
 	then 
 		-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. 'Victim avoids Damage')
 		victim:setAvoidDamage(true);

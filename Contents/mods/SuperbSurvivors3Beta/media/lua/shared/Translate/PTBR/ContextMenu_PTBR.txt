@@ -45,6 +45,10 @@ ContextMenu_PTBR = {
 		ContextMenu_SS_FollowMode = "Modo de Seguir",
 		ContextMenu_SS_FollowMode_SingleFileLine = "Seguir o Líder em Fila Única",
 		ContextMenu_SS_FollowMode_DirectFollow = "Seguir o Líder Diretamente"
+
+		ContextMenu_SS_FriendlyFireMode_Disable = "Desativar Fogo Amigo",
+		ContextMenu_SS_FriendlyFireMode_Enable = "Ativar Fogo Amigo",
+
 		ContextMenu_SS_SurvivorOptions = "Op��es do Sobrevivente",
 		ContextMenu_SS_OrderDisplayName_Farming = "Agricultura",
 		ContextMenu_SS_OrderDisplayName_Barricade = "Barricada",

@@ -44,6 +44,10 @@ ContextMenu_KO = {
 		ContextMenu_SS_FollowMode = "따라하기 모드",
 		ContextMenu_SS_FollowMode_SingleFileLine = "리더를 일렬로 따라가기",
 		ContextMenu_SS_FollowMode_DirectFollow = "리더를 직접 따라가기"
+
+		ContextMenu_SS_FriendlyFireMode_Disable = "아군 사격 비활성화",
+		ContextMenu_SS_FriendlyFireMode_Enable = "아군 사격 활성화",
+
 		ContextMenu_SS_SurvivorOptions = "??? ??",
 		ContextMenu_SS_OrderDisplayName_Farming = "??? ???",
 		ContextMenu_SS_OrderDisplayName_Barricade = "?????? ???",
