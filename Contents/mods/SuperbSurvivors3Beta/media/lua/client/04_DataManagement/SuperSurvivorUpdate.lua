@@ -4,7 +4,7 @@ local isLocalLoggingEnabled = false;
 ---@param player IsoPlayer
 function SuperSurvivorOnDeath(player)
 	-- CreateLogLine("Test On Death", true, "A player has died " .. tostring(player));
-	if (player and player:getModData().ID ~= nil) then
+	if player and player:getModData().ID then
 		local SS = SSM:Get(player:getModData().ID);
 		-- CreateLogLine("Test On Death", true, "SS = " .. tostring(SS));
 
@@ -20,7 +20,7 @@ function SuperSurvivorGlobalUpdate(player)
 	CreateLogLine("SuperSurvivorUpdate", isLocalLoggingEnabled, "function: SuperSurvivorGlobalUpdate() called");
 
 	CreateLogLine("SuperSurvivorUpdate", isLocalLoggingEnabled, "updating player id...");
-	if (player and player:getModData().ID ~= nil) then
+	if player and player:getModData().ID then
 		local SS = SSM:Get(player:getModData().ID)
 		if (SS ~= nil) then SS:PlayerUpdate() end
 	end
@@ -59,8 +59,6 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	-- CreateLogLine('Handle Hit', true, 'SSV victim ' .. tostring(victim))
 	-- CreateLogLine('Handle Hit', true, 'SSV victim modData' .. tostring(victim:getModData()))
 	-- CreateLogLine('Handle Hit', true, 'SSV victim modData ID' .. tostring(victim:getModData().ID))
-
-
 
 	local SSV = SSM:Get(victim:getModData().ID);
 
