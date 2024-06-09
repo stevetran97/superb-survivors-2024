@@ -78,11 +78,11 @@ end
 function PanelSurvivorInfo:on_click_call()
     local group_id = SSM:Get(0):getGroupID()
     local group_members = SSGM:GetGroupById(group_id):getMembers(true)
-    local member = group_members[self.member_index]
-    if (member) then
+    local memberSS = self.memberSS
+    if memberSS then
         getSpecificPlayer(0):Say(getText("ContextMenu_SS_CallName_Before") ..
-            member:getName() .. getText("ContextMenu_SS_CallName_After"))
-        member:getTaskManager():AddToTop(ListenTask:new(member, getSpecificPlayer(0), false))
+            memberSS:getName() .. getText("ContextMenu_SS_CallName_After"))
+        memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
     end
 end
 
@@ -153,11 +153,11 @@ function PanelSurvivorInfo:new(x, y, width, height)
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
     self.__index = self
-    o.member_index = nil
+    o.memberSS = nil
     return o
 end
 
-function ShowSurvivorInfo(member_index, memberSS, group)
+function ShowSurvivorInfo(memberSS, group)
     if not group then
         panel_survivor_info:setVisible(false)
         return
@@ -231,7 +231,9 @@ function ShowSurvivorInfo(member_index, memberSS, group)
     -- text_info = text_info .. getText("ContextMenu_SS_FollowCharId") .. ": " .. tostring(SSM:Get(memberSS.player:getModData().FollowCharId):getName()) .. "\n"
     -- text_info = text_info .. getText("ContextMenu_SS_FollowedByCharId") .. ": " .. tostring(SSM:Get(memberSS.player:getModData().FollowedByCharId):getName()) .. "\n"
 
-    panel_survivor_info.member_index = member_index
+    -- panel_survivor_info.member_index = member_index
+    panel_survivor_info.memberSS = memberSS
+
     panel_survivor_info.text_panel.text = text_info
     panel_survivor_info.text_panel:paginate()
     panel_survivor_info:setVisible(true)

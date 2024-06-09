@@ -126,6 +126,14 @@ end
 
 local isLoggingSurvivorOrder = true;
 
+
+function handleGiveOrder(order_index, memberSS) 
+    getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") .. memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
+    memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
+    SurvivorOrder(nil, memberSS.player, Orders[order_index], nil)
+end
+
+
 function UIUtil_GiveOrder(
     order_index, 
     memberSS
@@ -133,12 +141,21 @@ function UIUtil_GiveOrder(
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "function: UIUtil_GiveOrder() called");
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "order_index: " .. tostring(order_index));
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "Order: " .. tostring(Orders[order_index]));
-
     CreateLogLine("UIUtils", isLoggingSurvivorOrder, "memberSS: " .. tostring(memberSS:getName()));
     if memberSS then
-        getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") .. memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
-        memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
-        SurvivorOrder(nil, memberSS.player, Orders[order_index], nil)
+        -- Case: Give Order to All
+        if memberSS:getID() == 0 then 
+            local group = memberSS:getGroup()
+            for i, MemberId in ipairs(group.Members) do
+                if i ~= 0 then
+                    local Member = SSM:Get(MemberId)
+                    handleGiveOrder(order_index, Member)
+                end
+            end
+        -- Case: Give Order to One
+        else
+            handleGiveOrder(order_index, memberSS)
+        end
     end
 end
 

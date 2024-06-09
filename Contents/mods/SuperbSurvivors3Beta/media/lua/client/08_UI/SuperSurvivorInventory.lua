@@ -64,26 +64,25 @@ function InventoryRow:initialize()
     ISCollapsableWindow.initialise(self);
 end
 
-function InventoryRow:on_click_transfer(direction)
-    -- > player to member
-    -- < member to player
-    local item_id = self.item:getID();
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index];
-    local member_inventory = member.player:getInventory();
+function on_click_transfer(item, memberSS, direction)
+    -- > player to Member
+    -- < Member to player
+    local item_id = item:getID();
+    local member_inventory = memberSS.player:getInventory();
     local player_inventory = getPlayerInventory(0).inventory;
     if direction == ">" then
-        if self.item:isEquipped() then
-            ISTimedActionQueue.add(ISUnequipAction:new(getSpecificPlayer(0), self.item, 1));
+        if item:isEquipped() then
+            ISTimedActionQueue.add(ISUnequipAction:new(getSpecificPlayer(0), item, 1));
         end
         player_inventory:removeItemWithID(item_id);
-        member_inventory:addItem(self.item);
+        member_inventory:addItem(item);
         --
     else
-        if self.item:isEquipped() then
-            ISTimedActionQueue.add(ISUnequipAction:new(member.player, self.item, 1));
+        if item:isEquipped() then
+            ISTimedActionQueue.add(ISUnequipAction:new(memberSS.player, item, 1));
         end
         member_inventory:removeItemWithID(item_id);
-        player_inventory:addItem(self.item);
+        player_inventory:addItem(item);
         --
     end
     inventoryPanels[1]:dupdate(); -- Cows: Player Inventory
@@ -131,7 +130,9 @@ function InventoryRow:createChildren()
     local cat_icon = ISButton:new(0, 0, 25, 25, "", nil, nil);
     local cat_item = ISButton:new(25, 0, 250, 25, tostring(self.item:getName()), nil, nil);
     local cat_type = ISButton:new(25 + 250, 0, 150, 25, tostring(self.item:getCategory()), nil, nil);
-    local cat_transfer = ISButton:new(25 + 250 + 150, 0, 50, 25, self.direction, nil, function() self:on_click_transfer(self.direction) end);
+    local cat_transfer = ISButton:new(25 + 250 + 150, 0, 50, 25, self.direction, nil, 
+        function() on_click_transfer(self.item, self.memberSS, self.direction) end
+    );
     cat_icon:setImage(self.item:getTex());
     cat_icon:forceImageSize(25, 25);
     cat_icon.onMouseDown = function() return end
@@ -191,8 +192,7 @@ function PanelMemberInventory:dupdate()
     self:clearChildren()
     local dy = 0;
     local switch = 0;
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index];
-    local items = member.player:getInventory():getItems();
+    local items = self.memberSS.player:getInventory():getItems();
     local scroll_height = 0;
     -- Cows: There should be a better way.. because if an inventory has over > 100 items, that means > 100 new items are being re-rendered every time...
     for i = 0, items:size() - 1 do
@@ -200,7 +200,7 @@ function PanelMemberInventory:dupdate()
         local inventory_row = InventoryRow:new(dy, self.width, 25, item, "<", switch, i);
         switch = (switch == 0) and 1 or 0;
         -- Cows: Don't show equipped items.
-        if (not item:isEquipped()) then
+        if not item:isEquipped() then
             self:addChild(inventory_row);
             dy = dy + 25;
             scroll_height = scroll_height + 1;
@@ -298,7 +298,7 @@ end
 --****************************************************
 PanelInventoryTransfer = ISPanel:derive("PanelInventoryTransfer")
 
-function create_panel_inventory_transfer(member_index)
+function create_panel_inventory_transfer(memberSS)
     if panel_inventory_transfer then
         panel_inventory_transfer:removeFromUIManager();
         panel_inventory_transfer = nil;
@@ -306,7 +306,7 @@ function create_panel_inventory_transfer(member_index)
     panel_inventory_transfer = PanelInventoryTransfer:new(
         window_super_survivors.x,
         window_super_survivors.y + window_super_survivors.height + 8, 475 * 2, (25 * 10) + (8 * 5),
-        member_index
+        memberSS
     );
     panel_inventory_transfer:addToUIManager();
     panel_inventory_transfer:setVisible(true);
@@ -320,8 +320,7 @@ function PanelInventoryTransfer:createChildren()
     local isLocalFunctionLoggingEnabled = false;
 	CreateLogLine("SuperSurvivorInventory", isLocalFunctionLoggingEnabled, "function: createChildren() called");
     self:clearChildren();
-    local member = SSGM:GetGroupById(SSM:Get(0):getGroupID()):getMembers(true)[self.member_index];
-    local member_inventory = member.player:getInventory();
+    local member_inventory = self.memberSS.player:getInventory();
     local player_inventory = getPlayerInventory(0).inventory;
     self.header_player = TitleBar:new(
         0,
@@ -335,7 +334,7 @@ function PanelInventoryTransfer:createChildren()
     self.header_member = TitleBar:new(
         self.width / 2,
         self.width / 2,
-        tostring(member:getName()) ..
+        tostring(self.memberSS:getName()) ..
         "    [" ..
         string.format("%.2f", member_inventory:getCapacityWeight()) ..
         " / " .. string.format("%.2f", member_inventory:getContentsWeight()) .. "]",
@@ -343,9 +342,11 @@ function PanelInventoryTransfer:createChildren()
     );
     local button_close = ISButton:new(0, self.height - 25, self.width, 25, "close", nil,
         function() self:removeFromUIManager() end);
-    InventoryRow.member_index = self.member_index;
-    PanelOwnInventory.member_index = self.member_index;
-    PanelMemberInventory.member_index = self.member_index;
+
+    InventoryRow.memberSS = self.memberSS;
+    PanelOwnInventory.memberSS = self.memberSS;
+    PanelMemberInventory.memberSS = self.memberSS;
+
     self:addChild(self.header_player);
     self:addChild(self.header_member);
     self:addChild(PanelOwnInventory);
@@ -399,13 +400,13 @@ function PanelInventoryTransfer:onMouseDown(x, y)
     self:bringToTop();
 end
 
-function PanelInventoryTransfer:new(x, y, width, height, member_index)
+function PanelInventoryTransfer:new(x, y, width, height, memberSS)
     local o = {};
     o = ISPanel:new(x, y, width, height);
     setmetatable(o, self);
     self.__index = self;
     o.borderColor = { r = 1, g = 1, b = 1, a = 0.2 };
     o.backgroundColor = { r = 0, g = 0, b = 0, a = 0.7 };
-    o.member_index = member_index;
+    o.memberSS = memberSS
     return o;
 end

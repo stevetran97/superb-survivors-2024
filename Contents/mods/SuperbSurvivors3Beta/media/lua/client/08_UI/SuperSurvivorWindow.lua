@@ -109,7 +109,7 @@ function PanelGroup:dupdate()
                 dwidth = tabWidth,
                 dheight = WINDOW_HEADER_HEIGHT,
                 label = tostring(name) 
-                    -- .. '(' .. tostring(role) .. ')'
+                    .. '(' .. tostring(role) .. ')'
                 ,
                 onClick = function() context_options.show_context_menu_member(row_index, memberSS, group_id, group_members, group) end,
     
@@ -121,7 +121,7 @@ function PanelGroup:dupdate()
             {
                 dwidth = tabWidth,
                 dheight = WINDOW_HEADER_HEIGHT,
-                label = tostring(role),
+                label = memberSS:getID() == 0 and "Give Order to All" or "Give Order",
                 onClick = function() context_options.show_context_menu_role(memberSS) end,
     
                 borderColor = baseColor,
@@ -134,7 +134,7 @@ function PanelGroup:dupdate()
                 dwidth = tabWidth,
                 dheight = WINDOW_HEADER_HEIGHT,
                 label = "Inventory",
-                onClick = function() create_panel_inventory_transfer(row_index) end,
+                onClick = function() create_panel_inventory_transfer(memberSS) end,
     
                 borderColor = baseColor,
                 backgroundColor = backgroundColor,
@@ -145,7 +145,7 @@ function PanelGroup:dupdate()
                 dwidth = tabWidth,
                 dheight = WINDOW_HEADER_HEIGHT,
                 label = "Equipment",
-                onClick = function() create_panel_loadout(row_index) end,
+                onClick = function() create_panel_loadout(memberSS) end,
     
                 borderColor = baseColor,
                 backgroundColor = backgroundColor,
@@ -164,7 +164,7 @@ function PanelGroup:dupdate()
         -- local cat_member_role = ISButton:new(panel_entry.dwidth, 0, panel_entry.dwidth, WINDOW_HEADER_HEIGHT, tostring(role), nil,
         --     function() context_options.show_context_menu_role(memberSS) end)
         -- local cat_member_inventory = ISButton:new(panel_entry.dwidth * 2, 0, panel_entry.dwidth / 2, WINDOW_HEADER_HEIGHT, "Inventory", nil,
-        --     function() create_panel_inventory_transfer(row_index) end)
+        --     function() create_panel_inventory_transfer(memberSS) end)
         -- local cat_member_loadout = ISButton:new(panel_entry.dwidth * 2 + cat_member_inventory.width - 1, 0,
         --     panel_entry.dwidth / 2, WINDOW_HEADER_HEIGHT, "Equipment", nil, function() create_panel_loadout(row_index) end)
 
@@ -902,88 +902,42 @@ end
 
 
 context_options.show_context_menu_order = function(memberSS)
-    -- if member_index == 1 then return end
     if memberSS:getID() == 0 then return end
     
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
     addOrdersToContextMenu(context_menu, memberSS)
-    -- context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, memberSS) end)
-    -- context_menu:addOption("Chop Wood", nil, function() UIUtil_GiveOrder(2, memberSS) end)
-    -- context_menu:addOption("Clean Up Inventory", nil, function() UIUtil_GiveOrder(3, memberSS) end)
-    -- context_menu:addOption("Doctor", nil, function() UIUtil_GiveOrder(4, memberSS) end)
-    -- context_menu:addOption("Explore", nil, function() UIUtil_GiveOrder(5, memberSS) end)
-    -- context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, memberSS) end)
-    -- context_menu:addOption("Farming", nil, function() UIUtil_GiveOrder(7, memberSS) end)
-    -- context_menu:addOption("Forage", nil, function() UIUtil_GiveOrder(8, memberSS) end)
-    -- context_menu:addOption("Gather Wood", nil, function() UIUtil_GiveOrder(9, memberSS) end)
-    -- context_menu:addOption("Go Find Food", nil, function() UIUtil_GiveOrder(10, memberSS) end)
-    -- context_menu:addOption("Go Find Water", nil, function() UIUtil_GiveOrder(11, memberSS) end)
-    -- context_menu:addOption("Go Find Weapon", nil, function() UIUtil_GiveOrder(12, memberSS) end)
-    -- context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, memberSS) end)
-    -- context_menu:addOption("Lock Doors", nil, function() UIUtil_GiveOrder(14, memberSS) end)
-    -- context_menu:addOption("Loot Room", nil, function() UIUtil_GiveOrder(15, memberSS) end)
-    -- context_menu:addOption("Patrol", nil, function() UIUtil_GiveOrder(16, memberSS) end)
-    -- context_menu:addOption("Sort Loot Into Base", nil, function() UIUtil_GiveOrder(17, memberSS) end)
-    -- context_menu:addOption("Stand Ground", nil, function() UIUtil_GiveOrder(18, memberSS) end)
-    -- context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, memberSS) end)
-    -- context_menu:addOption("Dismiss", nil, function() UIUtil_GiveOrder(20, memberSS) end)
-    -- context_menu:addOption("Relax", nil, function() UIUtil_GiveOrder(21, memberSS) end)
-    -- context_menu:addOption("Return To Base", nil, function() UIUtil_GiveOrder(22, memberSS) end)
-    -- context_menu:addOption("Pile Corpses", nil, function() UIUtil_GiveOrder(23, memberSS) end)
 end
 
 context_options.show_context_menu_role = function(
-    memberSS
-)
+        memberSS
+    )
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
     addOrdersToContextMenu(context_menu, memberSS)
-
-    -- context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, memberSS) end)
-    -- context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, memberSS) end)
-    -- context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, memberSS) end)
-    -- context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, memberSS) end)
-
-    -- context_menu:addOption("Chop Wood", nil, function() UIUtil_GiveOrder(2, memberSS) end)
-    -- context_menu:addOption("Clean Up Inventory", nil, function() UIUtil_GiveOrder(3, memberSS) end)
-    -- context_menu:addOption("Doctor", nil, function() UIUtil_GiveOrder(4, memberSS) end)
-    -- context_menu:addOption("Explore", nil, function() UIUtil_GiveOrder(5, memberSS) end)
-    -- context_menu:addOption("Farming", nil, function() UIUtil_GiveOrder(7, memberSS) end)
-    -- context_menu:addOption("Forage", nil, function() UIUtil_GiveOrder(8, memberSS) end)
-    -- context_menu:addOption("Gather Wood", nil, function() UIUtil_GiveOrder(9, memberSS) end)
-    -- context_menu:addOption("Go Find Food", nil, function() UIUtil_GiveOrder(10, memberSS) end)
-    -- context_menu:addOption("Go Find Water", nil, function() UIUtil_GiveOrder(11, memberSS) end)
-    -- context_menu:addOption("Go Find Weapon", nil, function() UIUtil_GiveOrder(12, memberSS) end)
-    -- context_menu:addOption("Lock Doors", nil, function() UIUtil_GiveOrder(14, memberSS) end)
-    -- context_menu:addOption("Loot Room", nil, function() UIUtil_GiveOrder(15, memberSS) end)
-    -- context_menu:addOption("Patrol", nil, function() UIUtil_GiveOrder(16, memberSS) end)
-    -- context_menu:addOption("Pile Corpses", nil, function() UIUtil_GiveOrder(23, memberSS) end)
-    -- context_menu:addOption("Sort Loot Into Base", nil, function() UIUtil_GiveOrder(17, memberSS) end)
-    -- context_menu:addOption("Stand Ground", nil, function() UIUtil_GiveOrder(18, memberSS) end)
-    -- context_menu:addOption("Dismiss", nil, function() UIUtil_GiveOrder(20, memberSS) end)
-    -- context_menu:addOption("Relax", nil, function() UIUtil_GiveOrder(21, memberSS) end)
-    -- context_menu:addOption("Return To Base", nil, function() UIUtil_GiveOrder(22, memberSS) end)
 end
 
 context_options.show_context_menu_member = function(member_index, memberSS, group_id, group_members, group)
-    -- if member_index == 1 then return end -- Test disable
     if memberSS:getID() == 0 then return end
 
     local context_menu = ISContextMenu.get(0, getMouseX(), getMouseY(), 1, 1)
-    context_menu:addOption("Information", nil, function() ShowSurvivorInfo(member_index, memberSS, group) end)
+    context_menu:addOption("Information", nil, function() ShowSurvivorInfo(memberSS, group) end)
     context_menu:addOption("Call", nil, function() on_click_companion_call(memberSS) end)
-    -- context_menu:addOption("Inventory", nil, function() create_panel_inventory_transfer(member_index) end) -- Not needed because other ways to access
 
-    local use_weapon = context_menu:addOption("Use Weapon", nil, nil)
-    local sub_use_weapon = context_menu:getNew(context_menu)
-    sub_use_weapon:addOption("Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
-    sub_use_weapon:addOption("Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
-    context_menu:addSubMenu(use_weapon, sub_use_weapon)
+    -- local use_weapon = context_menu:addOption("Use Weapon", nil, nil)
+    -- local sub_use_weapon = context_menu:getNew(context_menu)
+    -- sub_use_weapon:addOption("Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
+    -- sub_use_weapon:addOption("Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
+    -- context_menu:addSubMenu(use_weapon, sub_use_weapon)
+
+    context_menu:addOption("Gun", nil, function() ForceWeaponType(nil, memberSS, true) end)
+    context_menu:addOption("Melee", nil, function() ForceWeaponType(nil, memberSS, false) end)
 
     local remove = context_menu:addOption("Remove", nil, nil)
     local sub_remove = context_menu:getNew(context_menu)
-    sub_remove:addOption("Confirm", nil, function() 
-        group:removeMember(memberSS:getID()) 
-    end)
+    sub_remove:addOption("Confirm", nil, 
+        function() 
+            group:removeMember(memberSS:getID()) 
+        end
+    )
     context_menu:addSubMenu(remove, sub_remove)
 end
 
