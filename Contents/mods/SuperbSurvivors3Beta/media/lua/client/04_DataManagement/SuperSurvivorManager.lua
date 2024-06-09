@@ -329,10 +329,11 @@ function SuperSurvivorManager:GunShotHandle(SSW)
 				and SuperSurvivorObj:getTaskManager():getCurrentTask() ~= "Surender"
 				and not SuperSurvivorObj.player:isDead()
 				and not SuperSurvivorObj:RealCanSee(getSpecificPlayer(0))
-				and (GetDistanceBetween(getSpecificPlayer(0), SuperSurvivorObj.player) <= range)
+				and (GetXYDistanceBetween(getSpecificPlayer(0), SuperSurvivorObj.player) <= range)
 			then
-				SuperSurvivorObj:getTaskManager():AddToTop(GoCheckItOutTask:new(SuperSurvivorObj,
-					getSpecificPlayer(0):getCurrentSquare()))
+				SuperSurvivorObj:getTaskManager():AddToTop(
+					GoCheckItOutTask:new(SuperSurvivorObj, getSpecificPlayer(0):getCurrentSquare())
+				)
 			end
 		end
 	end

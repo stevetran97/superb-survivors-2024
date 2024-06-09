@@ -104,44 +104,47 @@ end
 Events.LoadGridsquare.Add(SuperSurvivorsLoadGridsquare); --- This is a potential performance killer... because it scans through all the known map squares.
 -- Batmane Note response - This should be a problem whenever Player 1 is moving since it only runs whenever squares are being rerendered
 
+function PlaySound(object, soundName)
+	if not soundName then return end
+	if object:getEmitter():isPlaying(soundName) then return end
+    return object:getEmitter():playSoundImpl(soundName, IsoObject.new())
+end
+
+
 function SuperSurvivorsOnSwing(player, weapon)
 	local ID = player:getModData().ID
-	if (ID ~= nil) then
-		local SS = SSM:Get(ID)
-		if (SS) and not player:isLocalPlayer() then
-			if weapon:isRanged() then
+	if not ID then return end
+	local SS = SSM:Get(ID)
+	if SS and not player:isLocalPlayer() then
+		if weapon:isRanged() then
+			if weapon:haveChamber() then
+				weapon:setRoundChambered(false);
+			end
+			-- remove ammo, add one to chamber if we still have some
+			if weapon:getCurrentAmmoCount() >= weapon:getAmmoPerShoot() then
 				if weapon:haveChamber() then
-					weapon:setRoundChambered(false);
+					weapon:setRoundChambered(true);
 				end
-				-- remove ammo, add one to chamber if we still have some
-				if weapon:getCurrentAmmoCount() >= weapon:getAmmoPerShoot() then
-					if weapon:haveChamber() then
-						weapon:setRoundChambered(true);
-					end
-					weapon:setCurrentAmmoCount(weapon:getCurrentAmmoCount() - weapon:getAmmoPerShoot())
-				end
-				if weapon:isRackAfterShoot() then -- shotgun need to be rack after each shot to rechamber round
-					player:setVariable("RackWeapon", weapon:getWeaponReloadType());
-				end
+				weapon:setCurrentAmmoCount(weapon:getCurrentAmmoCount() - weapon:getAmmoPerShoot())
 			end
-
-			local range = weapon:getSoundRadius()
-			local volume = weapon:getSoundVolume()
-			if weapon:isAimedFirearm() then 
-				if weapon:isRoundChambered() then
-					addSound(player, player:getX(), player:getY(), player:getZ(), range, volume)
-					getSoundManager():PlayWorldSound(weapon:getSwingSound(), player:getCurrentSquare(), 0.5, range, 1.0, false)
-				end
-			else
-				addSound(player, player:getX(), player:getY(), player:getZ(), range, volume)
-				getSoundManager():PlayWorldSound(weapon:getSwingSound(), player:getCurrentSquare(), 0.5, range, 1.0, false)
+			if weapon:isRackAfterShoot() then -- shotgun need to be rack after each shot to rechamber round
+				player:setVariable("RackWeapon", weapon:getWeaponReloadType());
 			end
-
-			player:NPCSetAttack(false)
-			player:NPCSetMelee(false)
-		elseif player:isLocalPlayer() and weapon:isRanged() then
-			SSM:GunShotHandle(SS)
 		end
+
+		if weapon:isAimedFirearm() then 
+			if weapon:isRoundChambered() then
+				PlaySound(player, weapon:getSwingSound())
+				-- weapon:getShellFallSound()
+			end
+		else
+			PlaySound(player, weapon:getSwingSound())
+		end
+
+		player:NPCSetAttack(false)
+		player:NPCSetMelee(false)
+	elseif player:isLocalPlayer() and weapon:isRanged() then
+		SSM:GunShotHandle(SS)
 	end
 end
 
