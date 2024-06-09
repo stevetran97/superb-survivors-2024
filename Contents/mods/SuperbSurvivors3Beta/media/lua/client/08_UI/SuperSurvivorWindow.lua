@@ -86,7 +86,7 @@ end
 local PanelGroup = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
 table.insert(SurvivorPanels, 1, PanelGroup)
 
-local numPanelGroupTabs = 3
+local numPanelGroupTabs = 4
 -- This is very similar to the Companion menu
 function PanelGroup:dupdate()
     self:clearChildren()
