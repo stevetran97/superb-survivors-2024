@@ -386,6 +386,7 @@ end
 
 function setFriendlyFire(test, value) 
 	getSpecificPlayer(0):getModData().enableFriendlyFire = value;
+	getSpecificPlayer(0):Say('Friendly Fire Mode Set to: ' .. tostring(value));
 end
 
 function SetRulesOfEngagement(test, value)
