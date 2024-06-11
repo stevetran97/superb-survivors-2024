@@ -27,6 +27,8 @@ function SuperSurvivor:CreateBaseSurvivorObject()
 	survivorObject.GroupBraveryUpdatedTicks = 0; -- Cows: I can't find any references using GroupBraveryUpdatedTicks...
 	survivorObject.WaitTicks = 0;
 	survivorObject.TriggerHeldDown = false;
+	survivorObject.isAttacking = false; -- Determines whether user is currently attacking and whether they can start another attack
+
 
 	survivorObject.AmmoTypes = {};
 	survivorObject.AmmoBoxTypes = {};
@@ -3289,6 +3291,11 @@ function SuperSurvivor:LoadBulletsSpareMag()
 
 	local ammoCount = ISInventoryPaneContextMenu.transferBullets(player, magazine:getAmmoType(), magazine:getCurrentAmmoCount(), magazine:getMaxAmmo())
 	if ammoCount == 0 then return end
+
+	-- Animation
+	if ZombRand(0, 3) == 0 then 
+		self:setSneaking(true)
+	end
 	
 	-- CreateLogLine("LoadBulletsSpareMag", true, tostring(self:getName()) .. " is loading bullets into spare mag");
 	ISTimedActionQueue.add(ISLoadBulletsInMagazine:new(player, magazine, ammoCount))
@@ -4135,27 +4142,44 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
 		damage = weapon:getMaxDamage();
 	end
 
+	local weaponWeight = weapon:getWeight()
+    local swingDelay = weaponWeight * globalBaseUpdateDelayTicks - 20
+    if swingDelay < globalBaseUpdateDelayTicks then swingDelay = globalBaseUpdateDelayTicks end
+
 	-- Makes sure if the npc has their weapon out first, aimed, facing target, attack animation
-	if self:WeaponReady() then
+
+	-- Inflict Damage
+	if 
+		self:WeaponReady() and
+		(RealDistance <= maxrange or zNPC_AttackRange) and
+		self.player:NPCGetRunning() == false 
+	then
 		self:StopWalk()
 		self.player:faceThisObject(victim)
 		self.player:NPCSetAttack(true);
 		self.player:NPCSetMelee(true);
-		self.player:AttemptAttack(10.0);
-	end
-
-	-- Inflict Damage
-	if (RealDistance <= maxrange or zNPC_AttackRange) 
-		and self.player:NPCGetRunning() == false 
-	then
-		local hit = victim:Hit(weapon, self.player, damage, false, 1.0, false)
-
-		if victim == getSpecificPlayer(0) then 
-			self:Wait(1)
-		end
+		self.player:AttemptAttack(swingDelay + 120)
+		
+		setTimeout(
+			function() 
+				local hit = victim:Hit(weapon, self.player, damage, false, 1.0, false)
+				victim:setAttackedBy(self.player)
+			end, 
+			swingDelay - 30
+		)
 	end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _Attack() end ---");
 end
+
+
+--- OnHitZombie event 
+---@param zombie IsoZombie Zombie that gets hit.
+---@param character IsoPlayer Attacking Character.
+---@param bodyPartType string Hit body part.
+---@param handWeapon HandWeapon handWeapon of character.
+local function OnHitZombie(zombie, character, bodyPartType, handWeapon) return character:playSound(handWeapon:getZombieHitSound()) end
+
+Events.OnHitZombie.Add(OnHitZombie)
 
 -- Batmane TODO - Remove attack ticks for gun function and see if anything breaks -- Seems like it doesnt need it
 -- Used only for Guns
@@ -4193,47 +4217,43 @@ function SuperSurvivor:AttackWithGun(victim)
 		if self.UsingFullAuto then
 			self.TriggerHeldDown = true;
 		end
-		if self.player ~= nil then
-			CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
+	-- if self.player then
+		CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
 
-			local distance = GetXYDistanceBetween(self.player, victim) 
+		local distance = GetXYDistanceBetween(self.player, victim) 
 
-			local minrange = self:getMinWeaponRange() + 0.1
-			local damage = weapon:getMaxDamage();
+		local minrange = self:getMinWeaponRange() + 0.1
+		local damage = weapon:getMaxDamage();
 
-			-- Animations
-			self.player:NPCSetAiming(true)
+		-- Animations
+		self.player:NPCSetAiming(true)
 
-			-- Hit registration
-			-- Shove attack
-			if distance < minrange 
-				-- or self.player:getPrimaryHandItem() == nil 
-			then
-				self:Speak("Get off of me!")
-				self.player:NPCSetAttack(true)
-				victim:Hit(weapon, self.player, damage, true, 1.0, false)
+		-- Hit registration
+		-- Shove attack
+		if distance < minrange 
+			-- or self.player:getPrimaryHandItem() == nil 
+		then
+			self:Speak("Get off of me!")
+			self.player:NPCSetAttack(true)
+			victim:Hit(weapon, self.player, damage, true, 1.0, false)
 
-				if victim == getSpecificPlayer(0) then 
-					self:Wait(1)
-				end
-			-- Actual attack
-			else
-				self.player:NPCSetAttack(true)
-				self.player:AttemptAttack(10.0); -- Try to animate gun fire
+			if victim == getSpecificPlayer(0) then 
+				self:Wait(1)
+			end
+		-- Actual attack
+		else
+			self.player:NPCSetAttack(true)
+			self.player:AttemptAttack(10.0); -- Try to animate gun fire
 
-				local hitChance = self:getGunHitChance(weapon, victim);
-				local dice = ZombRand(0, 100);
+			local hitChance = self:getGunHitChance(weapon, victim);
+			local dice = ZombRand(0, 100);
 
-				-- Added RealCanSee to see if it works | and (damage > 0)
-				if hitChance >= dice and damage > 0 and self:RealCanSee(victim) then
-					victim:Hit(weapon, self.player, damage, false, 1.0, false);
-
-					if victim == getSpecificPlayer(0) then 
-						self:Wait(1)
-					end
-				end
+			-- Added RealCanSee to see if it works | and (damage > 0)
+			if hitChance >= dice and damage > 0 and self:RealCanSee(victim) then
+				victim:Hit(weapon, self.player, damage, false, 1.0, false);
 			end
 		end
+		-- end
 	else
 		local pwep = self.player:getPrimaryHandItem()
 		local pwepContainer = pwep:getContainer()

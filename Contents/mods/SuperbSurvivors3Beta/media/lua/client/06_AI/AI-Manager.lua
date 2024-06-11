@@ -314,7 +314,7 @@ function AIMediumPriorityTasks(TaskMangerIn)
 
 		-- Wander if not companion
 		else
-			if SurvivorRoles[currentNPC:getGroupRole()] == nil then 
+			if not SurvivorRoles[currentNPC:getGroupRole()] then 
 				if TaskMangerIn:getCurrentTask() ~= "Wander" then
 					TaskMangerIn:AddToTop(WanderTask:new(currentNPC));
 				end
@@ -336,7 +336,6 @@ function AILowPriorityTasks(TaskMangerIn)
 	local npcGroup = currentNPC:getGroup();
 	-- Manages AI getting water
 	if SurvivorNeedsFoodWater -- Sandbox Setting
-		-- and npcIsInAction == false
 		and TaskMangerIn:getCurrentTask() ~= "Enter New Building"
 		and TaskMangerIn:getCurrentTask() ~= "Eat Food"
 		and TaskMangerIn:getCurrentTask() ~= "Find This"
@@ -344,7 +343,6 @@ function AILowPriorityTasks(TaskMangerIn)
 			(currentNPC:isThirsty() and npcIsInBase)
 			or currentNPC:isVThirsty()
 		)
-		-- and currentNPC:getDangerSeenCount() == 0
 	then
 		if not currentNPC:hasWater() and currentNPC:getNoWaterNearBy() == false then 
 			if npcGroup then
@@ -369,20 +367,14 @@ function AILowPriorityTasks(TaskMangerIn)
 	if 
 		SurvivorNeedsFoodWater and
 		TaskMangerIn:getCurrentTask() ~= "Enter New Building"
-		-- and TaskMangerIn:getCurrentTask() ~= "Clean Inventory"
-		-- and npcIsInAction == false
 		and TaskMangerIn:getCurrentTask() ~= "Eat Food"
 		and TaskMangerIn:getCurrentTask() ~= "Find This"
-		-- and TaskMangerIn:getCurrentTask() ~= "First Aide"
-		-- and TaskMangerIn:getCurrentTask() ~= "Listen"
 		and (
 			(currentNPC:isHungry() and npcIsInBase)
 			or currentNPC:isVHungry()
 		)
-		-- and currentNPC:getDangerSeenCount() == 0
 	then
 		if not currentNPC:hasFood() and currentNPC:getNoFoodNearBy() == false 
-		-- and (getSpecificPlayer(0) == nil or not getSpecificPlayer(0):isAsleep()) 
 		then
 			if npcGroup then
 				local area = npcGroup:getGroupAreaCenterSquare("FoodStorageArea")
@@ -401,6 +393,12 @@ function AILowPriorityTasks(TaskMangerIn)
 	if checkAiTaskIs(TaskMangerIn, "Eat Food") then return false end -- No further task if above task is in progress
 
 
+
+	-- ----------------------------- --
+	-- AI Animations --
+	-- ----------------------------- --
+	-- Add Animation here to look around
+	
 
 	-- ----------------------------- --
 	-- Idle Chatter --

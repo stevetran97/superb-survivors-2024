@@ -546,7 +546,7 @@ function SurvivorsFillWorldObjectContextMenu(player, context, worldobjects, test
 
 	-- Friendly Fire Options
 	MakeToolTip(
-		context:addOption(
+		submenu:addOption(
 			getSpecificPlayer(0):getModData().enableFriendlyFire and 
 				Get_SS_ContextMenuText("FriendlyFireMode_Disable")
 				or Get_SS_ContextMenuText("FriendlyFireMode_Enable"), 

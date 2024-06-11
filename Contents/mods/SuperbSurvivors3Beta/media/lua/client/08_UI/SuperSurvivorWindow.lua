@@ -534,6 +534,8 @@ function WindowSuperSurvivors:createChildren()
     self.tab_height = 24;
     ISCollapsableWindow.createChildren(self)
 
+    local mainPlayerSS = SSM:Get(0);
+
     ---------------------------------------------------
     -- Headers for Group
     ---------------------------------------------------
@@ -571,7 +573,7 @@ function WindowSuperSurvivors:createChildren()
             dwidth = group_panel_tab_width,
             dheight = WINDOW_HEADER_HEIGHT,
             label = "Roles",
-            onClick = function() return end,
+            onClick = function() context_options.show_context_menu_role(mainPlayerSS) end,
 
             borderColor = outlineColor,
             backgroundColor = baseColor,               
@@ -738,8 +740,8 @@ function WindowSuperSurvivors:createChildren()
         {
             dwidth = companion_panel_tab_width,
             dheight = WINDOW_HEADER_HEIGHT,
-            label = "Command",
-            onClick = function() return end,
+            label = "Command All",
+            onClick = function() context_options.show_context_menu_role(mainPlayerSS) end,
 
             borderColor = outlineColor,
             backgroundColor = baseColor,
@@ -749,8 +751,9 @@ function WindowSuperSurvivors:createChildren()
         {
             dwidth = companion_panel_tab_width,
             dheight = WINDOW_HEADER_HEIGHT,
-            label = "Call",
-            onClick = function() return end,
+            label = "Call All",
+            onClick = function() on_click_companion_call(mainPlayerSS) return end,
+            
 
             borderColor = outlineColor,
             backgroundColor = baseColor,
@@ -865,11 +868,28 @@ function on_click_tab(target_headers, target_panel)
     end
 end
 
+
+function handleCallOverSS(memberSS) 
+    getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") ..
+    memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
+    memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
+end
+
 function on_click_companion_call(memberSS)
     if memberSS then
-        getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") ..
-            memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
-        memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))
+        -- Case: Call Over All
+        if memberSS:getID() == 0 then 
+            local group = memberSS:getGroup()
+            for i, MemberId in ipairs(group.Members) do
+                if i ~= 0 then
+                    local Member = SSM:Get(MemberId)
+                    handleCallOverSS(Member)
+                end
+            end
+        -- Case: Call Over One
+        else
+            handleCallOverSS(memberSS)
+        end
     end
 end
 
