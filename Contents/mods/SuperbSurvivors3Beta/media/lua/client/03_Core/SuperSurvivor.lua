@@ -4096,7 +4096,10 @@ end
 function SuperSurvivor:doShove(victim, weapon)
 	if self.player:isDoShove() then return end
 	self:Speak("Get off of me!")
-	self.player:setForceShove(true)
+	-- self.player:setForceShove(true)
+	self.player:NPCSetAttack(true);
+	self.player:NPCSetMelee(true);
+
 	victim:Hit(weapon, self.player, 1, true, 1.0, false)
 	if not instanceof(victim, "IsoZombie") then return end
 
@@ -4200,7 +4203,10 @@ end
 ---@param character IsoPlayer Attacking Character.
 ---@param bodyPartType string Hit body part.
 ---@param handWeapon HandWeapon handWeapon of character.
-local function OnHitZombie(zombie, character, bodyPartType, handWeapon) return character:playSound(handWeapon:getZombieHitSound()) end
+local function OnHitZombie(zombie, character, bodyPartType, handWeapon) return 
+	-- if not character:getAttackType() then return end
+	character:playSound(handWeapon:getZombieHitSound()) 
+end
 
 Events.OnHitZombie.Add(OnHitZombie)
 
