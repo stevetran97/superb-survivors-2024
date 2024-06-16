@@ -4096,7 +4096,7 @@ end
 function SuperSurvivor:doShove(victim, weapon)
 	if self.player:isDoShove() then return end
 	self:Speak("Get off of me!")
-	self.player:setDoShove(true) 
+	self.player:setForceShove(true)
 	victim:Hit(weapon, self.player, 1, true, 1.0, false)
 	if not instanceof(victim, "IsoZombie") then return end
 
