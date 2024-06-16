@@ -234,6 +234,7 @@ end
 --****************************************************
 local ListPanelBase = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
 ListPanelBase:setVisible(false)
+table.insert(SurvivorPanels, 2, ListPanelBase)
 
 -- ListPanelBaseEntry
 local ListPanelBaseEntry = ISPanel:derive("ListPanelBaseEntry")
