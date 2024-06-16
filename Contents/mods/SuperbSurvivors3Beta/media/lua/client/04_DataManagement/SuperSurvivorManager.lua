@@ -48,8 +48,6 @@ function SuperSurvivorManager:LoadSurvivor(ID, square)
 		return false 
 	end
 
-
-
 	if ID and square then --
 		if self.SuperSurvivors[ID] and self.SuperSurvivors[ID].player then
 			-- Do not load survivor if they are already in a cell and the survivor object exists

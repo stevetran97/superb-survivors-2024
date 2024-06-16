@@ -124,9 +124,7 @@ function UIUtil_GetMemberInfo(
     return name, role, task, ai_mode
 end
 
-local isLoggingSurvivorOrder = true;
-
-
+local isLoggingSurvivorOrder = false;
 function handleGiveOrder(order_index, memberSS) 
     getSpecificPlayer(0):Say(Get_SS_UIActionText("CallName_Before") .. memberSS:getName() .. Get_SS_UIActionText("CallName_After"))
     memberSS:getTaskManager():AddToTop(ListenTask:new(memberSS, getSpecificPlayer(0), false))

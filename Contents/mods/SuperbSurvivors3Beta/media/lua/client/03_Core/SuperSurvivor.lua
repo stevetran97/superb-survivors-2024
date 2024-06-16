@@ -4056,24 +4056,6 @@ end
 -- 	return damage
 -- end
 
---- Gets the change of a shoot based on aiming skill, weapon, victim's distance
---- Cows: I've updated it with all the weird cover-based and distance modifier removed.
----@param weapon any
----@param victim any
----@return number represents the chance of a hit
-function SuperSurvivor:getGunHitChance(weapon, victim)
-	local isLocalFunctionLoggingEnabled = false;
-	CreateLogLine("SuperSurvivor", isLocalFunctionLoggingEnabled, "SuperSurvivor:getGunHitChance() called");
-	local aimingLevel = self.player:getPerkLevel(Perks.FromString("Aiming"));
-	local aimingPerkModifier = weapon:getAimingPerkHitChanceModifier();
-	local weaponHitChance = weapon:getHitChance();
-	local hitChance = weaponHitChance + (aimingPerkModifier * aimingLevel);
-
-	CreateLogLine("SuperSurvivor", isLocalFunctionLoggingEnabled, "Gun Hit Chance: " .. tostring(hitChance));
-	CreateLogLine("SuperSurvivor", isLocalFunctionLoggingEnabled, "--- SuperSurvivor:getGunHitChance() end ---");
-	return hitChance;
-end
-
 -- Batmane - I think I managed to fix the frozen melee animation by not setting melee or attack to false when attack task was complete
 function SuperSurvivor:UnStuckFrozenAnim()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:UnStuck FrozenAnim() called");
@@ -4101,7 +4083,43 @@ function SuperSurvivor:UnStuckFrozenAnim()
 	ISTimedActionQueue.add(ISGetHitFromBehindAction:new(self.player, getSpecificPlayer(0)))
 end
 
--- Function for Handling Melee Attacks
+
+
+function SuperSurvivor:faceThisObjectSS(object) 
+	self.player:faceThisObject(object);
+	-- If not facing the target then return
+	local dot = self.player:getDotWithForwardDirection(object:getX(), object:getY());
+	-- CreateLogLine('Survivor Aiming', true, 'dot = ' .. tostring(dot))
+	if dot < 0 then return false end -- target is behind shooter
+end
+
+function SuperSurvivor:doShove(victim, weapon)
+	if self.player:isDoShove() then return end
+	self:Speak("Get off of me!")
+	self.player:setDoShove(true) 
+	victim:Hit(weapon, self.player, 1, true, 1.0, false)
+	if not instanceof(victim, "IsoZombie") then return end
+
+	-- Need to implement knock down direction
+	if ZombRand(4) == 0 then 
+		victim:knockDown(false) 
+	else
+		-- if not victim:isStaggerBack() then 
+			victim:setStaggerBack(true)
+		-- end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+-- HANDLE MELEE
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
 function SuperSurvivor:AttackWithMelee(victim) -- New Function
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:NPC _Attack() called");
 
@@ -4147,26 +4165,31 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
     if swingDelay < globalBaseUpdateDelayTicks then swingDelay = globalBaseUpdateDelayTicks end
 
 	-- Makes sure if the npc has their weapon out first, aimed, facing target, attack animation
-
 	-- Inflict Damage
-	if 
-		self:WeaponReady() and
-		(RealDistance <= maxrange or zNPC_AttackRange) and
-		self.player:NPCGetRunning() == false 
+
+	if self.player:NPCGetRunning() == true then return end
+	
+	if (RealDistance <= maxrange) or zNPC_AttackRange
 	then
 		self:StopWalk()
-		self.player:faceThisObject(victim)
-		self.player:NPCSetAttack(true);
-		self.player:NPCSetMelee(true);
-		self.player:AttemptAttack(swingDelay + 120)
-		
-		setTimeout(
-			function() 
-				local hit = victim:Hit(weapon, self.player, damage, false, 1.0, false)
-				victim:setAttackedBy(self.player)
-			end, 
-			swingDelay - 30
-		)
+		if self:faceThisObjectSS(victim) == false then return end
+
+		-- Shove Attack
+		if RealDistance <= minrange then 
+			self:doShove(victim, weapon)
+		elseif self:WeaponReady() then
+			self.player:NPCSetAttack(true);
+			self.player:NPCSetMelee(true);
+			self.player:AttemptAttack(swingDelay + 120)
+			
+			setTimeout(
+				function() 
+					victim:Hit(weapon, self.player, damage, false, 1.0, false)
+					victim:setAttackedBy(self.player)
+				end, 
+				swingDelay - 30
+			)
+		end
 	end
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "--- SuperSurvivor:NPC _Attack() end ---");
 end
@@ -4180,6 +4203,47 @@ end
 local function OnHitZombie(zombie, character, bodyPartType, handWeapon) return character:playSound(handWeapon:getZombieHitSound()) end
 
 Events.OnHitZombie.Add(OnHitZombie)
+
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+-- HANDLE GUNS
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------
+
+
+--- Gets the change of a shoot based on aiming skill, weapon, victim's distance
+--- Cows: I've updated it with all the weird cover-based and distance modifier removed.
+---@param weapon any
+---@param victim any
+---@return number represents the chance of a hit
+function SuperSurvivor:getGunHitChance(weapon, victim)
+	local aimingLevel = self.player:getPerkLevel(Perks.FromString("Aiming"));
+	local aimingPerkModifier = weapon:getAimingPerkHitChanceModifier();
+	local weaponHitChance = weapon:getHitChance();
+	local hitChance = weaponHitChance + (aimingPerkModifier * aimingLevel);
+
+	CreateLogLine("SuperSurvivor", false, "Gun Hit Chance: " .. tostring(hitChance));
+	return hitChance;
+end
+
+function SuperSurvivor:fireOneBullet(weapon, victim)
+	local damage = weapon:getMaxDamage();
+
+	self.player:NPCSetAttack(true)
+	self.player:AttemptAttack(10.0); -- Try to animate gun fire
+
+	local hitChance = self:getGunHitChance(weapon, victim);
+	local dice = ZombRand(0, 100);
+
+	-- Added RealCanSee to see if it works | and (damage > 0)
+	if hitChance >= dice and damage > 0 and self:RealCanSee(victim) then
+		victim:Hit(weapon, self.player, damage, false, 1.0, false);
+	end
+end
+
 
 -- Batmane TODO - Remove attack ticks for gun function and see if anything breaks -- Seems like it doesnt need it
 -- Used only for Guns
@@ -4208,52 +4272,38 @@ function SuperSurvivor:AttackWithGun(victim)
 			ForcePVPOn = true;
 			SurvivorTogglePVP();
 		end
-		-- self:StopWalk()
-		self.player:getModData().Running = false -- Try to allow walk and gun
-		self:setRunning(false) -- Try to allow walk and gun
+		self:StopWalk()
 
-		self.player:faceThisObject(victim);
+		-- Animations
+		if self:faceThisObjectSS(victim) == false then return end
+		self.player:NPCSetAiming(true)
 
 		if self.UsingFullAuto then
 			self.TriggerHeldDown = true;
 		end
-	-- if self.player then
 		CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:GetDistanceBetween() called");
-
-		local distance = GetXYDistanceBetween(self.player, victim) 
-
-		local minrange = self:getMinWeaponRange() + 0.1
-		local damage = weapon:getMaxDamage();
-
-		-- Animations
-		self.player:NPCSetAiming(true)
 
 		-- Hit registration
 		-- Shove attack
-		if distance < minrange 
-			-- or self.player:getPrimaryHandItem() == nil 
+		local minrange = self:getMinWeaponRange() + 0.1
+		local distance = GetXYDistanceBetween(self.player, victim) 
+		if distance < minrange
 		then
-			self:Speak("Get off of me!")
-			self.player:NPCSetAttack(true)
-			victim:Hit(weapon, self.player, damage, true, 1.0, false)
-
-			if victim == getSpecificPlayer(0) then 
-				self:Wait(1)
-			end
+			self:doShove(victim, weapon)
 		-- Actual attack
 		else
-			self.player:NPCSetAttack(true)
-			self.player:AttemptAttack(10.0); -- Try to animate gun fire
-
-			local hitChance = self:getGunHitChance(weapon, victim);
-			local dice = ZombRand(0, 100);
-
-			-- Added RealCanSee to see if it works | and (damage > 0)
-			if hitChance >= dice and damage > 0 and self:RealCanSee(victim) then
-				victim:Hit(weapon, self.player, damage, false, 1.0, false);
-			end
+			if not self.player:IsAiming() then return end
+			self:fireOneBullet(weapon, victim)
+			-- Code for bursts
+			-- if ZombRand(4) == 0 then 
+			-- 	setTimeout(
+			-- 		function() 
+			-- 			self:fireOneBullet(weapon, victim)
+			-- 		end, 
+			-- 		globalBaseUpdateDelayTicks / 4
+			-- 	)
+			-- end
 		end
-		-- end
 	else
 		local pwep = self.player:getPrimaryHandItem()
 		local pwepContainer = pwep:getContainer()
@@ -4530,20 +4580,21 @@ function SuperSurvivor:SuitUp(SuitName)
 		local hoursSurvived = math.min(math.floor(getGameTime():getWorldAgeHours() / 24.0), 28)
 		local result = ZombRand(1, 72) + hoursSurvived
 
-		if (result > 98) then -- 2% (at 28 days)
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_SurvivorBag"))
-		elseif (result > 96) then -- 2%
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_ALICEpack"))
-		elseif (result > 92) then -- 4%
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_BigHikingBag"))
-		elseif (result > 80) then -- 12%
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_NormalHikingBag"))
-		elseif (result > 60) then -- 20% / (12/72 or 16% at start)
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_DuffelBag"))
-		elseif (result > 48) then -- 12% / (12/72 or 16% at start)
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_Schoolbag"))
-		elseif (result > 36) then -- 12% / (12/72 or 16% at start)
-			self.player:setClothingItem_Back(self.player:getInventory():AddItem("Base.Bag_Satchel"))
+		-- Define the items with their respective thresholds in ascending order
+		local bags = {
+			{threshold = 36, item = "Base.Bag_Satchel"},         -- 12%
+			{threshold = 48, item = "Base.Bag_Schoolbag"},       -- 12%
+			{threshold = 60, item = "Base.Bag_DuffelBag"},       -- 20%
+			{threshold = 80, item = "Base.Bag_NormalHikingBag"}, -- 12%
+			{threshold = 92, item = "Base.Bag_BigHikingBag"},    -- 4%
+			{threshold = 96, item = "Base.Bag_ALICEpack"},       -- 2%
+			{threshold = 98, item = "Base.Bag_SurvivorBag"}      -- 2%
+		}
+
+		-- Use the binary search function to find the appropriate bag
+		local bagItem = binarySearch(bags, result)
+		if bagItem then
+			self.player:setClothingItem_Back(self.player:getInventory():AddItem(bagItem))
 		end
 	end
 end

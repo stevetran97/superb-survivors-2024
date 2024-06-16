@@ -1,4 +1,4 @@
-require "07_UI/UIUtils";
+require "08_UI/UIUtils";
 
 local ButtonShowLocators = ISButton:derive("ButtonShowLocators")
 local flag_show = false

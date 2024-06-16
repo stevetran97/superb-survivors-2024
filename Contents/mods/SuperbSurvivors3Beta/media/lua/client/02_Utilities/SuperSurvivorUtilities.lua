@@ -226,3 +226,25 @@ function Get_SS_Active_Count()
 
 	return actualActiveSurvivors
 end
+
+
+-- Define a utility function for binary search
+-- Finds item that meets the minimum threshold value
+-- items must contain a .threshold attribute and be in numerically increasing order (by .threshold) for comparison
+-- the item attribute of the found item is the value
+function binarySearch(items, thresholdValue)
+    local left, right = 1, #items
+    while left <= right do
+        local mid = math.floor((left + right) / 2)
+        if thresholdValue > items[mid].threshold then
+            if mid == #items or thresholdValue <= items[mid + 1].threshold then
+                return items[mid].item
+            else
+                left = mid + 1
+            end
+        else
+            right = mid - 1
+        end
+    end
+    return nil
+end

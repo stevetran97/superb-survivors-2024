@@ -1,5 +1,5 @@
 require "04_Group.SuperSurvivorManager";
-require "07_UI/SuperSurvivorWindow";
+require "08_UI/SuperSurvivorContextWindow/SuperSurvivorWindow";
 
 --****************************************************
 -- PanelHeader
@@ -249,18 +249,56 @@ function PanelBaseInfo:createChildren()
     self.text_y1 = ISLabel:new(8, (self.panel_header.height * 3) + (8 * 3), 25, "y1: 9182", 1, 1, 1, 1, nil, true)
     self.text_x2 = ISLabel:new(8, (self.panel_header.height * 4) + (8 * 4), 25, "x2: 9182", 1, 1, 1, 1, nil, true)
     self.text_y2 = ISLabel:new(8, (self.panel_header.height * 5) + (8 * 5), 25, "y2: 8981", 1, 1, 1, 1, nil, true)
-    self.button_select_area = ISButton:new(self.width - 8 - 100, self.panel_header.height + 8, 100, 25, "select area",
-        nil, function() self:on_click_select_area() end)
-    self.button_set = ISButton:new(self.width - 8 - 100, (self.panel_header.height * 2) + (8 * 2), 100, 25, "set", nil,
-        function() self:on_click_set() end)
-    self.button_cancel = ISButton:new(self.width - 8 - 100, (self.panel_header.height * 3) + (8 * 3), 100, 25, "cancel",
-        nil, function() self:on_click_cancel() end)
-    self.button_clear = ISButton:new(self.width - 8 - 100, (self.panel_header.height * 4) + (8 * 4), 100, 25, "clear",
-        nil, function() self:on_click_clear() end)
-    self.button_manual_edit = ISButton:new(self.width - 8 - 100, (self.panel_header.height * 5) + (8 * 5), 100, 25,
-        "manual edit", nil, function() self:on_click_manual() end)
-    self.button_close = ISButton:new(8, (self.panel_header.height * 6) + (8 * 6), self.width - 16, 25, "close", nil,
-        function() self:on_click_close() end)
+    self.button_select_area = ISButton:new(
+        self.width - 8 - 100, 
+        self.panel_header.height + 8, 
+        100, 
+        25, 
+        "select area",
+        nil, 
+        function() self:on_click_select_area() end
+    )
+    self.button_set = ISButton:new(
+        self.width - 8 - 100, 
+        (self.panel_header.height * 2) + (8 * 2), 
+        100, 
+        25, 
+        "set", 
+        nil,
+        function() self:on_click_set() end
+    )
+    self.button_cancel = ISButton:new(
+        self.width - 8 - 100, (self.panel_header.height * 3) + (8 * 3),
+        100, 25, "cancel",
+        nil, 
+        function() self:on_click_cancel() end
+    )
+    self.button_clear = ISButton:new(
+        self.width - 8 - 100, (self.panel_header.height * 4) + (8 * 4), 
+        100, 
+        25, 
+        "clear",
+        nil, 
+        function() self:on_click_clear() end
+    )
+    self.button_manual_edit = ISButton:new(
+        self.width - 8 - 100, 
+        (self.panel_header.height * 5) + (8 * 5), 
+        100, 
+        25,
+        "manual edit", 
+        nil, 
+        function() self:on_click_manual() end
+    )
+    self.button_close = ISButton:new(
+        8, 
+        (self.panel_header.height * 6) + (8 * 6), 
+        self.width - 16, 
+        25, 
+        "close", 
+        nil,
+        function() self:on_click_close() end
+    )
     --self.panel_header.borderColor = { r = 1, g = 1, b = 1, a = 0.2 }
     --self.panel_header.onMouseDown = function() return  end
     --self.panel_header.backgroundColorMouseOver = self.panel_header.backgroundColor

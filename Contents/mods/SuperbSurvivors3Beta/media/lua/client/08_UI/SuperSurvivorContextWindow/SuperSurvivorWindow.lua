@@ -1,5 +1,6 @@
 require "04_Group.SuperSurvivorManager";
-require "07_UI/UIUtils";
+require "08_UI/UIUtils";
+-- Batmane we don't need these imports because everything is global
 
 local WINDOW_HEADER_HEIGHT = 30;
 local WINDOW_HEIGHT = (WINDOW_HEADER_HEIGHT * 10) + (WINDOW_HEADER_HEIGHT * 3) - 4; -- Cows: 30 * 3 to cover the window header, panel header, and the tabs buttons. -4 to remove empty space.
@@ -81,14 +82,14 @@ function addOneRow(row_index, rowInfoArray, position, borderColor, backgroundCol
 end
 
 --****************************************************
--- PanelGroup
+-- ListPanelGroup
 --****************************************************
-local PanelGroup = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
-table.insert(SurvivorPanels, 1, PanelGroup)
+local ListPanelGroup = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
+table.insert(SurvivorPanels, 1, ListPanelGroup)
 
-local numPanelGroupTabs = 4
+local numListPanelGroupTabs = 4
 -- This is very similar to the Companion menu
-function PanelGroup:dupdate()
+function ListPanelGroup:dupdate()
     self:clearChildren()
     local dy = 0
     -- local switch = 0
@@ -101,7 +102,7 @@ function PanelGroup:dupdate()
         local name, role = UIUtil_GetMemberInfo(memberSS, group_id, group_members, group)
         if role == "IGUI_SS_Job_Leader" then role = Get_SS_ContextMenuText("Job_Leader") end
 
-        local tabWidth = WINDOW_WIDTH / numPanelGroupTabs
+        local tabWidth = WINDOW_WIDTH / numListPanelGroupTabs
 
         local rowInfoArray = {
             -- cat_companion_name
@@ -157,7 +158,7 @@ function PanelGroup:dupdate()
         -- local panel_entry = ISPanel:new(0, dy, WINDOW_WIDTH, WINDOW_HEADER_HEIGHT)
         -- panel_entry.borderColor = outlineColor
         -- panel_entry.backgroundColor = baseColor
-        -- panel_entry.dwidth = WINDOW_WIDTH / numPanelGroupTabs
+        -- panel_entry.dwidth = WINDOW_WIDTH / numListPanelGroupTabs
 
         -- local cat_member_name = ISButton:new(0, 0, panel_entry.dwidth, WINDOW_HEADER_HEIGHT, tostring(name) .. '(' .. tostring(role) .. ')', nil,
         --     function() context_options.show_context_menu_member(row_index, memberSS, group_id, group_members, group) end)
@@ -203,7 +204,7 @@ function PanelGroup:dupdate()
     self:setScrollHeight(WINDOW_HEADER_HEIGHT * #group_members)
 end
 
-function PanelGroup:prerender()
+function ListPanelGroup:prerender()
     self:setStencilRect(0, 0, self.width, self.height)
     if self.background then
         self:drawRectStatic(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r,
@@ -215,11 +216,11 @@ function PanelGroup:prerender()
     end
 end
 
-function PanelGroup:render()
+function ListPanelGroup:render()
     self:clearStencilRect()
 end
 
-function PanelGroup:onMouseWheel(dir)
+function ListPanelGroup:onMouseWheel(dir)
     dir = dir * -1
     dir = (self:getScrollHeight() / 50) * dir
     dir = self:getYScroll() + dir
@@ -227,17 +228,17 @@ function PanelGroup:onMouseWheel(dir)
     return true
 end
 
---****************************************************
--- PanelBase
---****************************************************
-local PanelBase = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
-PanelBase:setVisible(false)
-table.insert(SurvivorPanels, 2, PanelBase)
 
--- PanelBaseEntry
-local PanelBaseEntry = ISPanel:derive("PanelBaseEntry")
+--****************************************************
+-- ListPanelBase
+--****************************************************
+local ListPanelBase = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
+ListPanelBase:setVisible(false)
 
-function PanelBaseEntry:initialize()
+-- ListPanelBaseEntry
+local ListPanelBaseEntry = ISPanel:derive("ListPanelBaseEntry")
+
+function ListPanelBaseEntry:initialize()
     ISCollapsableWindow.initialise(self)
 end
 
@@ -257,23 +258,56 @@ function is_area_set(area_name)
     return (sum ~= 0) and true or false
 end
 
-function PanelBaseEntry:createChildren()
+function ListPanelBaseEntry:createChildren()
     local context_area_name = (self.area_name == "Bounds") and "BaseArea" or self.area_name
-    local cat_area_name = ISButton:new(1, 0, self.dwidth, WINDOW_HEADER_HEIGHT, getText("ContextMenu_SS_" .. context_area_name), nil,
-        function() print(self.area_name) end)
-    local cat_area_set = ISButton:new(self.dwidth + 1, 0, self.dwidth, WINDOW_HEADER_HEIGHT, self.area_set, nil, nil)
-    local cat_area_show = ISButton:new(self.dwidth * 2, 0, self.dwidth, WINDOW_HEADER_HEIGHT,
-        base_area_visibility[self.area_name].button_title, nil,
-        function() on_click_base_show(self.group_id, self.area_name) end)
-    local cat_area_edit = ISButton:new(self.dwidth * 3, 0, self.dwidth, WINDOW_HEADER_HEIGHT, "edit", nil,
-        function() create_panel_base_info(self.area_name) end)
+
+    local cat_area_name = ISButton:new(
+        1, 
+        0, 
+        self.dwidth, 
+        WINDOW_HEADER_HEIGHT, 
+        getText("ContextMenu_SS_" .. context_area_name), 
+        nil,
+        function() print(self.area_name) end
+    )
+    local cat_area_set = ISButton:new(
+        self.dwidth + 1, 
+        0, 
+        self.dwidth, 
+        WINDOW_HEADER_HEIGHT, 
+        self.area_set, 
+        nil, 
+        nil
+    )
+    local cat_area_show = ISButton:new(
+        self.dwidth * 2, 
+        0, 
+        self.dwidth, 
+        WINDOW_HEADER_HEIGHT,
+        base_area_visibility[self.area_name].button_title, 
+        nil,
+        function() on_click_base_show(self.group_id, self.area_name) end
+    )
+    local cat_area_edit = ISButton:new(
+        self.dwidth * 3, 
+        0, 
+        self.dwidth, 
+        WINDOW_HEADER_HEIGHT, 
+        "edit", 
+        nil,
+        function() create_panel_base_info(self.area_name) end
+    )
+
     cat_area_name.onMouseDown = function() return end
     cat_area_set.onMouseDown = function() return end
+
     cat_area_name.borderColor = baseColor
     cat_area_set.borderColor = baseColor
     cat_area_show.borderColor = baseColor
     cat_area_edit.borderColor = baseColor
+
     cat_area_show.enable = is_area_set(self.area_name)
+    
     if self.switch == 0 then
         cat_area_name.backgroundColor = backgroundColor
         cat_area_set.backgroundColor = backgroundColor
@@ -296,15 +330,15 @@ function PanelBaseEntry:createChildren()
 end
 
 
-local numPanelBaseTabs = 4
-function PanelBaseEntry:new(x, y, width, height, area_name, area_set, area_show, switch, group_id)
+local numListPanelBaseTabs = 4
+function ListPanelBaseEntry:new(x, y, width, height, area_name, area_set, area_show, switch, group_id)
     local o = {}
     o = ISPanel:new(x, y, width, height)
     setmetatable(o, self)
     self.__index = self
     o.borderColor = outlineColor
     o.backgroundColor = baseColor
-    o.dwidth = WINDOW_WIDTH / numPanelBaseTabs
+    o.dwidth = WINDOW_WIDTH / numListPanelBaseTabs
     o.area_name = area_name
     o.area_set = area_set
     o.area_show = area_show
@@ -313,7 +347,7 @@ function PanelBaseEntry:new(x, y, width, height, area_name, area_set, area_show,
     return o
 end
 
-function PanelBase:dupdate()
+function ListPanelBase:dupdate()
     self:clearChildren()
     local dy = 0
     local switch = 0
@@ -322,8 +356,17 @@ function PanelBase:dupdate()
     if not group then return end--clear panel on player death
     -- bounds area
     local base_set = (is_area_set("Bounds")) and "set" or "not set"
-    local panel_entry_base = PanelBaseEntry:new(0, dy, WINDOW_WIDTH, WINDOW_HEADER_HEIGHT, "Bounds", base_set,
-        base_area_visibility["Bounds"].button_title, switch, group_id)
+    local panel_entry_base = ListPanelBaseEntry:new(
+        0, 
+        dy, 
+        WINDOW_WIDTH, 
+        WINDOW_HEADER_HEIGHT, 
+        "Bounds", 
+        base_set,
+        base_area_visibility["Bounds"].button_title, 
+        switch, 
+        group_id
+    )
     switch = (switch == 0) and 1 or 0
     self:addChild(panel_entry_base)
     dy = dy + WINDOW_HEADER_HEIGHT
@@ -331,8 +374,17 @@ function PanelBase:dupdate()
     local area_count = 1
     for area_name, _ in pairs(group.GroupAreas) do
         local area_set = (is_area_set(tostring(area_name))) and "set" or "not set"
-        local panel_entry_area = PanelBaseEntry:new(0, dy, WINDOW_WIDTH, WINDOW_HEADER_HEIGHT, tostring(area_name), area_set,
-            base_area_visibility[tostring(area_name)].button_title, switch, group_id)
+        local panel_entry_area = ListPanelBaseEntry:new(
+            0, 
+            dy, 
+            WINDOW_WIDTH, 
+            WINDOW_HEADER_HEIGHT, 
+            tostring(area_name), 
+            area_set,
+            base_area_visibility[tostring(area_name)].button_title, 
+            switch, 
+            group_id
+        )
         switch = (switch == 0) and 1 or 0
         self:addChild(panel_entry_area)
         dy = dy + WINDOW_HEADER_HEIGHT
@@ -344,7 +396,7 @@ function PanelBase:dupdate()
     self:setScrollHeight(WINDOW_HEADER_HEIGHT * area_count)
 end
 
-function PanelBase:prerender()
+function ListPanelBase:prerender()
     self:setStencilRect(0, 0, self.width, self.height)
     if self.background then
         self:drawRectStatic(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r,
@@ -356,11 +408,11 @@ function PanelBase:prerender()
     end
 end
 
-function PanelBase:render()
+function ListPanelBase:render()
     self:clearStencilRect()
 end
 
-function PanelBase:onMouseWheel(dir)
+function ListPanelBase:onMouseWheel(dir)
     dir = dir * -1
     dir = (self:getScrollHeight() / 50) * dir
     dir = self:getYScroll() + dir
@@ -369,15 +421,15 @@ function PanelBase:onMouseWheel(dir)
 end
 
 --****************************************************
--- PanelCompanions
+-- ListPanelCompanions
 --****************************************************
-local PanelCompanions = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
-PanelCompanions:setVisible(false)
-table.insert(SurvivorPanels, 3, PanelCompanions)
+local ListPanelCompanions = ISPanel:new(0, 60, WINDOW_WIDTH, PANEL_HEIGHT)
+ListPanelCompanions:setVisible(false)
+table.insert(SurvivorPanels, 3, ListPanelCompanions)
 
-local numPanelCompanionsTabs = 3
-local PanelCompanionsLeftIndent = 1
-function PanelCompanions:dupdate()
+local numListPanelCompanionsTabs = 3
+local ListPanelCompanionsLeftIndent = 1
+function ListPanelCompanions:dupdate()
     self:clearChildren()
     local dy = 0
     -- local switch = 0
@@ -392,9 +444,9 @@ function PanelCompanions:dupdate()
         -- local panel_entry = ISPanel:new(0, dy, WINDOW_WIDTH, WINDOW_HEADER_HEIGHT)
         -- panel_entry.borderColor = outlineColor
         -- panel_entry.backgroundColor = baseColor
-        -- panel_entry.dwidth = WINDOW_WIDTH / numPanelCompanionsTabs
+        -- panel_entry.dwidth = WINDOW_WIDTH / numListPanelCompanionsTabs
 
-        local tabWidth = WINDOW_WIDTH / numPanelCompanionsTabs
+        local tabWidth = WINDOW_WIDTH / numListPanelCompanionsTabs
 
         local rowInfoArray = {
             -- cat_companion_name
@@ -480,7 +532,7 @@ function PanelCompanions:dupdate()
     self:setScrollHeight(WINDOW_HEADER_HEIGHT * companion_count)
 end
 
-function PanelCompanions:prerender()
+function ListPanelCompanions:prerender()
     self:setStencilRect(0, 0, self.width, self.height)
     if self.background then
         self:drawRectStatic(0, 0, self.width, self.height, self.backgroundColor.a, self.backgroundColor.r,
@@ -492,11 +544,11 @@ function PanelCompanions:prerender()
     end
 end
 
-function PanelCompanions:render()
+function ListPanelCompanions:render()
     self:clearStencilRect()
 end
 
-function PanelCompanions:onMouseWheel(dir)
+function ListPanelCompanions:onMouseWheel(dir)
     dir = dir * -1
     dir = (self:getScrollHeight() / 50) * dir
     dir = self:getYScroll() + dir
@@ -557,7 +609,7 @@ function WindowSuperSurvivors:createChildren()
     -- self.headers_group:addChild(self.headers_group_status)
     -- self.headers_group:addChild(self.headers_group_inventory)
 
-    local group_panel_tab_width = self.width / numPanelGroupTabs
+    local group_panel_tab_width = self.width / numListPanelGroupTabs
     local rowInfoArrayGroup = {
         {
             dwidth = group_panel_tab_width,
@@ -633,7 +685,7 @@ function WindowSuperSurvivors:createChildren()
     -- self.headers_base:addChild(self.headers_base_show)
     -- self.headers_base:addChild(self.headers_base_modify)
 
-    local base_panel_tab_width = self.width / numPanelBaseTabs
+    local base_panel_tab_width = self.width / numListPanelBaseTabs
     local rowInfoArrayBase = {
         {
             dwidth = base_panel_tab_width,
@@ -691,7 +743,7 @@ function WindowSuperSurvivors:createChildren()
     -- self.headers_companions = ISPanel:new(0, self.y_pos, self.width, 25)
     -- self.headers_companions:setVisible(false)
     -- table.insert(survivor_headers, 1, self.headers_companions)
-    -- self.headers_companions_width = self.width / numPanelCompanionsTabs
+    -- self.headers_companions_width = self.width / numListPanelCompanionsTabs
     -- self.headers_companions_name = ISButton:new(1, 0, self.headers_companions_width, 25, "Name", nil, nil)
     -- -- self.headers_companions_task = ISButton:new(self.headers_companions_width + 1, 0, self.headers_companions_width, 25,
     -- --     "Task", nil, nil)
@@ -715,7 +767,7 @@ function WindowSuperSurvivors:createChildren()
     -- self.headers_companions:addChild(self.headers_companions_command)
     -- self.headers_companions:addChild(self.headers_companions_call)
 
-    local companion_panel_tab_width = self.width / numPanelCompanionsTabs
+    local companion_panel_tab_width = self.width / numListPanelCompanionsTabs
     local rowInfoArrayCompanions = {
         {
             dwidth = companion_panel_tab_width,
@@ -771,9 +823,9 @@ function WindowSuperSurvivors:createChildren()
     -- ------------------------------------------------
     -- ------------------------------------------------
     -- Add Panels 
-    self:addChild(PanelGroup)
-    self:addChild(PanelBase)
-    self:addChild(PanelCompanions)
+    self:addChild(ListPanelGroup)
+    self:addChild(ListPanelBase)
+    self:addChild(ListPanelCompanions)
 
     ---------------------------------------------------
     -- Tabs Buttons - For Switching Between
@@ -781,16 +833,16 @@ function WindowSuperSurvivors:createChildren()
     self.tabs = ISPanel:new(0, self.height - 25 + 3, 846, self.tab_height)
     self.tab_group = ISButton:new(
         0, 0, self.tab_width, self.tab_height, "Group", nil,
-        function() on_click_tab(self.headers_group, PanelGroup) end
+        function() on_click_tab(self.headers_group, ListPanelGroup) end
     );
     self.tab_base = ISButton:new(
         self.tab_width, 0, self.tab_width, self.tab_height, "Base", nil,
-        function() on_click_tab(self.headers_base, PanelBase) end
+        function() on_click_tab(self.headers_base, ListPanelBase) end
     );
     self.tab_companions = ISButton:new(
         self.tab_width * 2, 0, self.tab_width, self.tab_height, "Companions", nil,
         function()
-            on_click_tab(self.headers_companions, PanelCompanions)
+            on_click_tab(self.headers_companions, ListPanelCompanions)
         end
     );
     self.tab_group.borderColor = outlineColor
