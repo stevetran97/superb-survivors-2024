@@ -49,7 +49,8 @@ local function spawnNpcs(mySS, spawnSquare)
             end
 
             npcSurvivor.player:getModData().isRobber = false;
-            npcSurvivor:setName("Survivor " .. name);
+            -- npcSurvivor:setName("Survivor " .. name); -- Name only
+            npcSurvivor:setName(name);
             CreateLogLine("Spawn Survivor", true, " Created New Survivor with the name " .. tostring(npcSurvivor:getName()) .. ' with an id of ' .. tostring(npcSurvivor:getID()) .. ' inside of group ' .. tostring(npcSurvivorGroup:getID()));
 
             Equip_SS_RandomNpc(npcSurvivor, false);
@@ -98,7 +99,8 @@ local function spawnRaiders(mySS, spawnSquare)
                 end
                 raider:setHostile(true);
                 raider.player:getModData().isRobber = true;
-                raider:setName("Raider " .. name); 
+                -- raider:setName("Raider " .. name);
+                raider:setName(name); -- name only
 				CreateLogLine("Spawn Survivor", true, " Created New Raider with the name " .. tostring(raider:getName()) .. ' with an id of ' .. tostring(raider:getID()) .. ' inside of group ' .. tostring(raiderGroup:getID()));
 
                 raider:getTaskManager():AddToTop(PursueTask:new(raider, mySS:Get()));
