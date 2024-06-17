@@ -98,6 +98,26 @@ function SuperSurvivorGroupManager:countGroups()
 	return newCount
 end
 
+function SuperSurvivorGroupManager:initPlayer0Group() 
+	local Group;
+	if not SSM:Get(0):getGroupID() then
+		Group = SSGM:newGroupWithID(0); -- Batmane - This breaks stuff
+		-- GID = Group:getID();
+		Group:addMember(SSM:Get(0), "Leader");
+	else
+		local GID = SSM:Get(0):getGroupID();
+		Group = SSGM:GetGroupById(GID);
+		if Group:getID() ~= 0 then 
+			Group = SSGM:GetGroupById(0);
+			if Group then 
+				Group = SSGM:newGroupWithID(0);
+			end
+			Group:addMember(SSM:Get(0), "Leader");
+		end
+	end
+	return Group
+end
+
 
 -- This function doesnt seem to work well -- Batmane
 function SuperSurvivorGroupManager:newGroupWithID(ID)

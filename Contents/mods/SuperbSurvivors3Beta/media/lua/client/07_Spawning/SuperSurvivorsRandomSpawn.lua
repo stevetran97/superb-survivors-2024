@@ -135,19 +135,20 @@ function SuperSurvivorsRandomSpawn()
 
     local mySS = SSM:Get(0);
     if not mySS then return end -- inhibit spawn while the main player is dead.
-    local hisGroup = mySS:getGroup();
+    local hisGroup = SSGM:initPlayer0Group()
+    -- local hisGroup = mySS:getGroup();
+    -- if not hisGroup then
+    --     hisGroup = SSGM:newGroupWithID(0);
+    --     hisGroup:addMember(SSM:Get(0), "Leader");
+    -- end
 
-    if not hisGroup then
-        hisGroup = SSGM:newGroupWithID(0);
-        hisGroup:addMember(SSM:Get(0), "Leader");
-    end
-    if hisGroup:getID() ~= 0 then 
-        hisGroup = SSGM:GetGroupById(0);
-        if hisGroup then 
-            hisGroup = SSGM:newGroupWithID(0);
-        end
-        hisGroup:addMember(SSM:Get(0), "Leader");
-    end
+    -- if hisGroup:getID() ~= 0 then 
+    --     hisGroup = SSGM:GetGroupById(0);
+    --     if hisGroup then 
+    --         hisGroup = SSGM:newGroupWithID(0);
+    --     end
+    --     hisGroup:addMember(SSM:Get(0), "Leader");
+    -- end
 
     if getSpecificPlayer(0) == nil 
         or hisGroup == nil 

@@ -86,29 +86,34 @@ function AskToJoin(test, player) -- When the NPC asks another npc to join a grou
 
 	local Relationship = SS:getRelationshipWP()
 	local result = ((ZombRand(10) + Relationship) >= 8)
+	
+	if not result then 
+		SS:Speak(Get_SS_DialogueSpeech("No"))
+		return 
+	end
 
-	if (result) then
-		local group = SS:getGroup()
-		CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "joining group: " .. tostring(SS:getGroupID()));
+	local group = SS:getGroup()
+	CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "joining group: " .. tostring(SS:getGroupID()));
 
-		if group then
-			SS:Speak(Get_SS_DialogueSpeech("Roger"));
+	if not group then 
+		return 
+	end
 
-			if MySS:getGroup() then
-				local members = MySS:getGroup():getMembers(true)
-				for x = 1, #members do
-					if (members[x] and members[x].player ~= nil) then
-						members[x]:Speak(Get_SS_DialogueSpeech("Roger"));
-						group:addMember(members[x], Get_SS_JobText("Companion"));
-					end
-				end
-			else
-				group:addMember(MySS, Get_SS_JobText("Companion"));
+	SS:Speak(Get_SS_DialogueSpeech("Welcome aboard"));
+
+	if MySS:getGroup() then
+		local members = MySS:getGroup():getMembers(true)
+		for x = 1, #members do
+			if (members[x] and members[x].player ~= nil) then
+				members[x]:Speak(Get_SS_DialogueSpeech("Roger"));
+				group:addMember(members[x], Get_SS_JobText("Companion"));
 			end
 		end
 	else
-		SS:Speak(Get_SS_DialogueSpeech("No"))
+		group:addMember(MySS, Get_SS_JobText("Companion"));
 	end
+
+
 	CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "--- function: AskToJoin() END ---");
 end
 
@@ -126,17 +131,18 @@ function InviteToParty(test, player) -- When the player offers an NPC to join th
 
 	if (result) then
 		SS:Speak(Get_SS_DialogueSpeech("Roger"))
-		local GID, Group
-		if SSM:Get(0):getGroupID() == nil then
-			-- Group = SSGM:newGroup() -- Batmane - This is potentially bugged. Player group should be 0 and never a brand new group
-			Group = SSGM:newGroupWithID(0)
-			Group:addMember(SSM:Get(0), Get_SS_JobText("Leader")) -- This breaks the group system because it creates a new group for player 0 which is not group 0. We need to reserve a group just for the player
-		else
-			GID = SSM:Get(0):getGroupID()
-			Group = SSGM:GetGroupById(GID)
-		end
+		-- local GID, Group
+		-- if SSM:Get(0):getGroupID() == nil then
+		-- 	-- Group = SSGM:newGroup() -- Batmane - This is potentially bugged. Player group should be 0 and never a brand new group
+		-- 	Group = SSGM:newGroupWithID(0)
+		-- 	Group:addMember(SSM:Get(0), Get_SS_JobText("Leader")) -- This breaks the group system because it creates a new group for player 0 which is not group 0. We need to reserve a group just for the player
+		-- else
+		-- 	GID = SSM:Get(0):getGroupID()
+		-- 	Group = SSGM:GetGroupById(GID)
+		-- end
+		local Group = SSGM:initPlayer0Group()
 
-		if (Group) then
+		if Group then
 			Group:addMember(SS, Get_SS_JobText("Companion"))
 		else
 			CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "error could not find or create group");

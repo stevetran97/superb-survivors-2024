@@ -229,7 +229,7 @@ function FollowTask:update()
 	-- end
 
 
-	if distance > GFollowDistance + self.FollowDistanceOffset + 5 
+	if distance > (GFollowDistance + self.FollowDistanceOffset + 7)
 	then
 		self.parent:setRunning(true)
 	else
@@ -250,6 +250,8 @@ function FollowTask:update()
 		else
 			CreateLogLine("FollowTask", isLocalLoggingEnabled, "no rope square");
 		end
+
+		return
 	-- Going Down
 	elseif self.FollowChar:getZ() < self.parent.player:getZ() and 
 		self.parent:isInSameBuilding(self.FollowChar) == false 
@@ -275,87 +277,91 @@ function FollowTask:update()
 				end
 				return
 			end
-		else
-			CreateLogLine("FollowTask", isLocalLoggingEnabled, "no rope square");
+
+			return			
 		end
+		CreateLogLine("FollowTask", isLocalLoggingEnabled, "no rope square");
 	end
 	-- Rope Climbing Logic End
 	-- General Path finding start
-	if not ropeSquare then
-		if distance > (GFollowDistance + self.FollowDistanceOffset) 
-		then
-			local gotosquare = self.FollowChar:getCurrentSquare()
-			if gotosquare then
-				if gotosquare:getRoom() and gotosquare:getRoom():getBuilding() then
-					self.parent.TargetBuilding = gotosquare:getRoom():getBuilding()
+	if ropeSquare then return end
+	-- Handle Getting in Players car if player is in a care
+	if self.FollowChar:getVehicle() and not self.parent:Get():getVehicle() then
+		local car = self.FollowChar:getVehicle()
+		self.MySeat = -1
+		local doorseat = -1
+		local lastgoodDoor = nil
+		local lastgoodDoorDistance = 999
+		local tempDoor = nil
+		local numOfSeats = car:getScript():getPassengerCount()
+		
+		for seat = numOfSeats - 1, 1, -1 do
+			tempDoor = car:getPassengerDoor(seat)
+			if not tempDoor then tempDoor = car:getPassengerDoor2(seat) end
+
+			if tempDoor then
+				if not lastgoodDoor or ZombRand(2) == 1 then
+					lastgoodDoor = tempDoor
+					--car.lol()
+					local tempdistance = GetXYDistanceBetween(tempDoor, self.parent.player)
+					lastgoodDoorDistance = tempdistance
+				end
+				if car:isSeatOccupied(seat) == false then doorseat = seat end
+			end
+			if self.MySeat == -1 and car:isSeatOccupied(seat) == false then
+				self.MySeat = seat
+			end
+			if doorseat ~= -1 and self.MySeat ~= -1 then break end
+		end
+
+		if self.MySeat ~= -1 then
+			local doorsquare
+
+			doorsquare = lastgoodDoor
+
+			if (doorsquare ~= nil) then
+				self.parent:StopWalk()
+				local distance = GetXYDistanceBetween(self.parent.player, doorsquare)
+
+				if (distance > 3) then
+					ISTimedActionQueue.add(ISWalkToTimedAction:new(self.parent:Get(), doorsquare))
 				else
-					self.parent.TargetBuilding = nil
-				end
-				self.parent:walkTo(gotosquare)
-			end
-		-- Handle Getting in Players car if player is in a car
-		elseif self.FollowChar:getVehicle() and not self.parent:Get():getVehicle() then
-			local car = self.FollowChar:getVehicle()
-			self.MySeat = -1
-			local doorseat = -1
-			local lastgoodDoor = nil
-			local lastgoodDoorDistance = 999
-			local tempDoor = nil
-			local numOfSeats = car:getScript():getPassengerCount()
-			
-			for seat = numOfSeats - 1, 1, -1 do
-				tempDoor = car:getPassengerDoor(seat)
-				if not tempDoor then tempDoor = car:getPassengerDoor2(seat) end
-
-				if tempDoor then
-					if not lastgoodDoor or ZombRand(2) == 1 then
-						lastgoodDoor = tempDoor
-						--car.lol()
-						local tempdistance = GetXYDistanceBetween(tempDoor, self.parent.player)
-						lastgoodDoorDistance = tempdistance
-					end
-					if car:isSeatOccupied(seat) == false then doorseat = seat end
-				end
-				if self.MySeat == -1 and car:isSeatOccupied(seat) == false then
-					self.MySeat = seat
-				end
-				if doorseat ~= -1 and self.MySeat ~= -1 then break end
-			end
-
-			if (self.MySeat ~= -1) then
-				local doorsquare
-
-				doorsquare = lastgoodDoor
-
-				if (doorsquare ~= nil) then
 					self.parent:StopWalk()
-					local distance = GetXYDistanceBetween(self.parent.player, doorsquare)
-
-					if (distance > 3) then
-						ISTimedActionQueue.add(ISWalkToTimedAction:new(self.parent:Get(), doorsquare))
-					else
-						self.parent:StopWalk()
-						ISTimedActionQueue.add(ISEnterVehicle:new(self.parent:Get(), self.FollowChar:getVehicle(), 1))
-						if (self.MySeat ~= 1) then
-							ISTimedActionQueue.add(ISSwitchVehicleSeat:new(self.parent:Get(),
-								self.MySeat))
-						end
+					ISTimedActionQueue.add(ISEnterVehicle:new(self.parent:Get(), self.FollowChar:getVehicle(), 1))
+					if (self.MySeat ~= 1) then
+						ISTimedActionQueue.add(ISSwitchVehicleSeat:new(self.parent:Get(),
+							self.MySeat))
 					end
-					--ISTimedActionQueue.add(ISEnterVehicle:new(self.parent:Get(), self.FollowChar:getVehicle(), doorseat))
-					--
-					-- local waittime = ZombRand(1, 3)
-					-- self.parent:Wait(waittime)
 				end
+				--ISTimedActionQueue.add(ISEnterVehicle:new(self.parent:Get(), self.FollowChar:getVehicle(), doorseat))
+				--
+				-- local waittime = ZombRand(1, 3)
+				-- self.parent:Wait(waittime)
 			end
-			--elseif (self.FollowChar:getVehicle() ~= nil) and (self.parent:Get():getVehicle() ~= nil) then
-			--ISTimedActionQueue.add(ISSwitchVehicleSeat:new(self.parent:Get(), self.MySeat))
-		-- Handle getting out of car when player is not in car
-		elseif not self.FollowChar:getVehicle() and self.parent:Get():getVehicle() then
-			self.MySeat = -1
-			ISTimedActionQueue.add(ISExitVehicle:new(self.parent:Get()))
-			self.parent:Wait(1)
-		else
-			--self.parent:Speak("ELSE")
+		end
+
+		return
+		--elseif (self.FollowChar:getVehicle() ~= nil) and (self.parent:Get():getVehicle() ~= nil) then
+		--ISTimedActionQueue.add(ISSwitchVehicleSeat:new(self.parent:Get(), self.MySeat))
+	-- Handle getting out of car when player is not in car
+	elseif not self.FollowChar:getVehicle() and self.parent:Get():getVehicle() then
+		self.MySeat = -1
+		ISTimedActionQueue.add(ISExitVehicle:new(self.parent:Get()))
+		self.parent:Wait(1)
+
+		return
+	end
+
+	if distance > (GFollowDistance + self.FollowDistanceOffset) 
+	then
+		local gotosquare = self.FollowChar:getCurrentSquare()
+		if gotosquare then
+			if gotosquare:getRoom() and gotosquare:getRoom():getBuilding() then
+				self.parent.TargetBuilding = gotosquare:getRoom():getBuilding()
+			else
+				self.parent.TargetBuilding = nil
+			end
+			self.parent:walkTo(gotosquare)
 		end
 	end
 	-- else

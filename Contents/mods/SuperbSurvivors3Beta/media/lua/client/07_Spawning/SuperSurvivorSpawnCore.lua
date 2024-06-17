@@ -256,17 +256,18 @@ function SuperSurvivorSpawnWife(player)
         MData.isHostile = false;
 
         -- Repeatable Util to create player initial group
-        local GID, Group;
-        if SSM:Get(0):getGroupID() == nil then
-            -- Group = SSGM:newGroup();
-            Group = SSGM:newGroupWithID(0); -- Batmane - This breaks stuff
+        -- local GID, Group;
+        -- if SSM:Get(0):getGroupID() == nil then
+        --     -- Group = SSGM:newGroup();
+        --     Group = SSGM:newGroupWithID(0); -- Batmane - This breaks stuff
             
-            GID = Group:getID();
-            Group:addMember(SSM:Get(0), "Leader");
-        else
-            GID = SSM:Get(0):getGroupID();
-            Group = SSGM:GetGroupById(GID);
-        end
+        --     GID = Group:getID();
+        --     Group:addMember(SSM:Get(0), "Leader");
+        -- else
+        --     GID = SSM:Get(0):getGroupID();
+        --     Group = SSGM:GetGroupById(GID);
+        -- end
+        local Group = SSGM:initPlayer0Group()
 
         Group:addMember(wife, Get_SS_JobText("Companion"))
 
@@ -295,16 +296,16 @@ function SuperSurvivorPlayerInit(player)
 	if player:getPlayerNum() == 0 then
 		SSM:init();
 		-- MyGroup = SSGM:newGroup();
-
-        local MyGroup, GID
-        if SSM:Get(0):getGroupID() == nil then
-			-- Group = SSGM:newGroup() -- Batmane - This is potentially bugged. Player group should be 0 and never a brand new group
-			MyGroup = SSGM:newGroupWithID(0)
-			MyGroup:addMember(SSM:Get(0), Get_SS_JobText("Leader")) -- This breaks the group system because it creates a new group for player 0 which is not group 0. We need to reserve a group just for the player
-		else
-            GID = SSM:Get(0):getGroupID();
-			MyGroup = SSGM:GetGroupById(GID)
-		end
+        -- local MyGroup, GID
+        -- if SSM:Get(0):getGroupID() == nil then
+		-- 	-- Group = SSGM:newGroup() -- Batmane - This is potentially bugged. Player group should be 0 and never a brand new group
+		-- 	MyGroup = SSGM:newGroupWithID(0)
+		-- 	MyGroup:addMember(SSM:Get(0), Get_SS_JobText("Leader")) -- This breaks the group system because it creates a new group for player 0 which is not group 0. We need to reserve a group just for the player
+		-- else
+        --     GID = SSM:Get(0):getGroupID();
+		-- 	MyGroup = SSGM:GetGroupById(GID)
+		-- end
+        local MyGroup = SSGM:initPlayer0Group()
 
 		local spawnBuilding = SSM:Get(0):getBuilding();
 
