@@ -1,7 +1,7 @@
 require "00_SuperbSurviorModVariables/SuperSurvivorsSuitsList"
 -- this file has the functions for survivor's suits
 
-local isLocalLoggingEnabled = true;
+local isLocalLoggingEnabled = false;
 
 --- Gets a random outfit for a survivor
 ---@param SS any survivor that will wear the outfit

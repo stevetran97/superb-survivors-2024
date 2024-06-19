@@ -1181,19 +1181,19 @@ end
 
 function SuperSurvivor:getBuilding()
 	CreateLogLine("SuperSurvivor", isLocalLoggingEnabled, "SuperSurvivor:getBuilding() called");
-	if (self.player == nil) then
+	if not self.player then
 		return nil;
 	end
 
 	local sq = self.player:getCurrentSquare();
 
-	if (sq) then
+	if sq then
 		local room = sq:getRoom();
 
-		if (room) then
+		if room then
 			local building = room:getBuilding();
 
-			if (building) then
+			if building then
 				return building;
 			end
 		end
@@ -1589,6 +1589,7 @@ function SuperSurvivor:DoVisionV3()
 				then
 					-- Handle Number of zombies in critical range - for running
 					if currentDistance < criticalDangerRange
+						and self:isInSameRoom(character) -- Only consider zombies in the same room to be 'On the NPC', so keep them defending the building 
 						-- and character:getZ() == self.player:getZ() -- Need to find better system to handle stairs and slight elevation diff
 					then
 						self.EnemiesOnMe = self.EnemiesOnMe + 1;
@@ -2732,7 +2733,7 @@ function SuperSurvivor:updateSurvivorStatus()
 		if self.TargetSquare and self.TargetSquare:getZ() ~= self.player:getZ() and getGameSpeed() > 2 then
 			self.TargetSquare = nil
 			self:StopWalk()
-			self:Wait(2) -- from 10 wait at most 4 seconds
+			self:Wait(10) -- from 10 wait at most 4 seconds
 		end
 
 		-- Batmane - This can just be run like every 10 minutes or so 
@@ -4150,7 +4151,7 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
 		CreateLogLine("Batmane NPC _Attack Error Distance", true, tostring(self:getName()) .. "has no saved distance to enemy ");
 	end
 
-	local minrange = self:getMinWeaponRange() + 0.2;
+	-- local minrange = self:getMinWeaponRange() + 0.2;
 	local maxrange = self:getMaxWeaponRange() - 0.1;
 
 	local zNPC_AttackRange = self:isEnemyInRange(self.LastEnemySeen);
@@ -4178,9 +4179,10 @@ function SuperSurvivor:AttackWithMelee(victim) -- New Function
 		if self:faceThisObjectSS(victim) == false then return end
 
 		-- Shove Attack
-		if RealDistance <= minrange then 
-			self:doShove(victim, weapon)
-		elseif self:WeaponReady() then
+		-- if RealDistance <= minrange then 
+		-- 	self:doShove(victim, weapon)
+		-- else
+		if self:WeaponReady() then
 			self.player:NPCSetAttack(true);
 			self.player:NPCSetMelee(true);
 			self.player:AttemptAttack(swingDelay + 120)

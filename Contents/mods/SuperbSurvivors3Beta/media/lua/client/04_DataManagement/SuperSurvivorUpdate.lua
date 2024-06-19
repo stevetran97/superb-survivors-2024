@@ -55,23 +55,7 @@ end
 -- Whenever character is hit, recalculate stuff
 function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 	local SSW = SSM:Get(wielder:getModData().ID);
-
-	-- CreateLogLine('Handle Hit', true, 'SSV victim ' .. tostring(victim))
-	-- CreateLogLine('Handle Hit', true, 'SSV victim modData' .. tostring(victim:getModData()))
-	-- CreateLogLine('Handle Hit', true, 'SSV victim modData ID' .. tostring(victim:getModData().ID))
-
 	local SSV = SSM:Get(victim:getModData().ID);
-
-	-- if not victim:isZombie() then 
-	-- 	CreateLogLine('Debug invincible dead char', true, 'SuperSurvivorPVPHandle SSW = ' .. tostring(SSW))
-	-- 	CreateLogLine('Debug invincible dead char', true, 'SuperSurvivorPVPHandle SSV = ' .. tostring(SSV))
-	-- end
-
-	-- local fakehit = false -- means no hit when registered
-	
-	-- CreateLogLine('Handle Hit', true, 'Run PVP Handle ')
-	-- CreateLogLine('Handle Hit', true, 'SSV ' .. tostring(SSV))
-	-- CreateLogLine('Handle Hit', true, 'SSW ' .. tostring(SSW))
 
 	if 
 		not SSV or 
@@ -80,11 +64,6 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 		return false 
 	end
 
-	-- Handle Avoid Damage when victim is in the same group as the attacker
-	-- Debug tests
-	-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. ' victim is an enemy: ' ..  tostring(SSW:isEnemy(victim) ))
-	-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. ' victim is a zombie: ' ..  tostring(victim:isZombie()))
-
 	if 
 		SSW:isInGroup(SSV)
 		and (
@@ -92,38 +71,9 @@ function SuperSurvivorPVPHandle(wielder, victim, weapon, damage)
 			not getSpecificPlayer(0):getModData().enableFriendlyFire
 		)
 	then 
-		-- CreateLogLine('Debug invincible dead char', true, tostring(SSV:getName()) .. 'Victim avoids Damage')
 		victim:setAvoidDamage(true);
 		return false
 	end
-
-	-- Test Replace this due to dead player being invincible
-	-- if victim.setAvoidDamage ~= nil then
-	-- 	if SSW:isInGroup(victim) then
-	-- 		CreateLogLine('Debug invincible dead char', true, 'IS SAME GROUP')
-
-	-- 		fakehit = true;
-	-- 		victim:setAvoidDamage(true);
-	-- 	end
-	-- -- Handle Avoid Damage when victim is in the same group as the attacker
-	-- elseif victim.setNoDamage then
-	-- 	if SSW:isInGroup(victim) then
-	-- 		fakehit = true;
-	-- 		victim:setNoDamage(true);
-	-- 	else
-	-- 		victim:setNoDamage(false);
-	-- 	end
-	-- end
-
-
-
-	-- Batmane Test Impact sound -- None of these are working
-	-- local sound = weapon:getZombieHitSound() -- No impact sound for some reason
-	-- local sound = weapon:getImpactSound()
-	-- local range = 2
-	-- local volume = 2
-	-- addSound(wielder, wielder:getX(), wielder:getY(), wielder:getZ(), range, volume)
-	-- getSoundManager():PlayWorldSound(sound, wielder:getCurrentSquare(), 0.5, range, 1.0, false)
 
 	if not instanceof(victim, "IsoPlayer") then return end
 

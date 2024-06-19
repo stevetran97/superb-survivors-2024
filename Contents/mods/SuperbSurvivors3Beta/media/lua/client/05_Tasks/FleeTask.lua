@@ -77,13 +77,8 @@ function FleeTask:update()
 	local attemptIdx = 0
 	local targetSquareObj
 	while attemptIdx <= angleDivisions do 
-		-- CreateLogLine('DebugFlee', true, tostring(self.parent:getName()) .. 'attemptIdx = ' .. tostring(attemptIdx))
-
 		local angleDeg = attemptIdx * angleCheckIncrement
 		local angleRad = math.rad(angleDeg)
-		-- CreateLogLine('DebugFlee', isFleeCallLogged, tostring(self.parent:getName()) .. 'angleDeg = ' .. tostring(angleDeg))
-		-- CreateLogLine('DebugFlee', isFleeCallLogged, tostring(self.parent:getName()) .. 'angleRad = ' .. tostring(angleRad))
-
 		local fleeVector
 		if attemptIdx ~= 0 then 
 			fleeVector = {
@@ -98,7 +93,6 @@ function FleeTask:update()
 
 		-- Batmanes: New Flee Function Start
 		local targetSquareToTravelTo = getXYSq2FromSq1ToVector(self.parent.player, convertToUnitVector(fleeVector), self.distanceToGo)
-		CreateLogLine("DebugFlee", isFleeCallLogged, tostring(self.parent:getName()) .. " is actually fleeing to SQUARE " .. tostring(targetSquareToTravelTo));
 
 		if attemptIdx > angleDivisions - 1 then
 			if not targetSquareToTravelTo or
@@ -112,14 +106,13 @@ function FleeTask:update()
 		end
 
 		-- Randomize target square
-		local fleeTargetRange = math.ceil(self.distanceToGo/2)
+		-- local fleeTargetRange = math.ceil(self.distanceToGo/2)
+		-- local fleeTargetRange = (self.parent:getBuilding() ~= nil and 3) or 5
+		local fleeTargetRange = math.max(self.distanceToGo/2, 2)
 		targetSquareToTravelTo.x = math.ceil(targetSquareToTravelTo.x + ZombRand(-fleeTargetRange, fleeTargetRange))
 		targetSquareToTravelTo.y = math.ceil(targetSquareToTravelTo.y + ZombRand(-fleeTargetRange, fleeTargetRange))
 
 		targetSquareObj = self.parent.player:getCell():getGridSquare(targetSquareToTravelTo.x, targetSquareToTravelTo.y, self.parent.player:getZ())
-
-		CreateLogLine('DebugFlee', isFleeCallLogged, tostring(self.parent:getName()) .. ' targetSquareObj = ' .. tostring(targetSquareObj))
-		CreateLogLine('DebugFlee', isFleeCallLogged, tostring(self.parent:getName()) .. ' self.parent.player:getCurrentSquare() = ' .. tostring(self.parent.player:getCurrentSquare()))
 
 		if targetSquareObj and not targetSquareObj:isBlockedTo(self.parent.player:getCurrentSquare()) then 
 			CreateLogLine('DebugFlee', isFleeCallLogged, tostring(self.parent:getName()) .. 'Found a flee square!')
@@ -131,7 +124,7 @@ function FleeTask:update()
 		if attemptIdx > angleDivisions - 1 then
 			if not targetSquareObj
 			then
-				CreateLogLine('Flee Errors', isFleeCallLogged, 'FleeTask:update(): Cannot find a target square to travel to')
+				CreateLogLine('Flee Errors', true, tostring(self.parent:getName()) .. ' FleeTask:update(): Cannot find a target square to travel to')
 				self.Complete = true
 				return
 			end
@@ -143,6 +136,10 @@ function FleeTask:update()
 
 	local distToTravelSquare = GetXYDistanceBetween(self.parent.player, targetSquareObj)
 	CreateLogLine("DebugFlee", isFleeCallLogged, tostring(self.parent:getName()) .. " has distance to flee to of " .. tostring(distToTravelSquare));
+	CreateLogLine("DebugFlee", isFleeCallLogged, tostring(self.parent:getName()) .. " isMoving " .. tostring(self.parent.player:isMoving()));
+	CreateLogLine("DebugFlee", isFleeCallLogged, tostring(self.parent:getName()) .. " isPlayerMoving " .. tostring(self.parent.player:isPlayerMoving()));
+	CreateLogLine("DebugFlee", isFleeCallLogged, tostring(self.parent:getName()) .. " getPath2 " .. tostring(self.parent.player:getPath2()));
+
 
 	if distToTravelSquare < 1 then 
 		self.Complete = true

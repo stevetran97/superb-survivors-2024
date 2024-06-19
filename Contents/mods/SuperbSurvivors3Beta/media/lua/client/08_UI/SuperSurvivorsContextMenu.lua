@@ -81,7 +81,8 @@ end
 function AskToJoin(test, player) -- When the NPC asks another npc to join a group
 	CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "function: AskToJoin() called");
 	local SS = SSM:Get(player:getModData().ID)
-	local MySS = SSM:Get(0)
+	-- local MySS = SSM:Get(0)
+	local myGroup = SSGM:initPlayer0Group()
 	getSpecificPlayer(0):Say(Get_SS_UIActionText("CanIJoin"))
 
 	local Relationship = SS:getRelationshipWP()
@@ -92,27 +93,29 @@ function AskToJoin(test, player) -- When the NPC asks another npc to join a grou
 		return 
 	end
 
-	local group = SS:getGroup()
-	CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "joining group: " .. tostring(SS:getGroupID()));
+	local targetGroup = SS:getGroup()
+	CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "joining targetGroup: " .. tostring(SS:getGroupID()));
 
-	if not group then 
+	if not targetGroup then 
 		return 
 	end
 
 	SS:Speak(Get_SS_DialogueSpeech("Welcome aboard"));
 
-	if MySS:getGroup() then
-		local members = MySS:getGroup():getMembers(true)
-		for x = 1, #members do
-			if (members[x] and members[x].player ~= nil) then
-				members[x]:Speak(Get_SS_DialogueSpeech("Roger"));
-				group:addMember(members[x], Get_SS_JobText("Companion"));
-			end
-		end
-	else
-		group:addMember(MySS, Get_SS_JobText("Companion"));
-	end
+	-- if MySS:getGroup() then
+	-- local members = MySS:getGroup():getMembers(true)
+	local members = targetGroup:getMembers(true)
 
+	-- for x = 1, #members do
+	for x, member in pairs(members) do
+		if member and member.player then
+			member:Speak(Get_SS_DialogueSpeech("Roger"));
+			myGroup:addMember(member, Get_SS_JobText("Companion"));
+		end
+	end
+	-- else
+	-- 	targetGroup:addMember(MySS, Get_SS_JobText("Companion"));
+	-- end
 
 	CreateLogLine("SuperSurvivorsContextMenu", isLocalLoggingEnabled, "--- function: AskToJoin() END ---");
 end
@@ -127,9 +130,9 @@ function InviteToParty(test, player) -- When the player offers an NPC to join th
 	local result = ((ZombRand(10) + Relationship) >= 8)
 
 	local task = SS:getTaskManager():getTaskFromName("Listen")
-	if (task ~= nil) and (task.Name == "Listen") then task:Talked() end
+	if task and task.Name == "Listen" then task:Talked() end
 
-	if (result) then
+	if result then
 		SS:Speak(Get_SS_DialogueSpeech("Roger"))
 		-- local GID, Group
 		-- if SSM:Get(0):getGroupID() == nil then

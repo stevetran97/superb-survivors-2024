@@ -1,32 +1,32 @@
 -- Check if SSM is loaded and game speed isn't on pause before updating the Survivors routines.
 -- Batmane: Survivor OnTick Routines
 function SuperSurvivorsOnTick()
-	if SSM ~= nil and getGameSpeed() ~= 0 then
+	if SSM  and getGameSpeed() ~= 0 then
 		SSM:UpdateSurvivorsRoutine();
 	end
 end
 
 -- Batmane: Survivor EveryDay, EveryHour, Every10min Routines - Breakup tick based routines into other listeners to save computation
 function SuperSurvivorsOnEveryDay()
-	if SSM ~= nil and getGameSpeed() ~= 0 then
+	if SSM  and getGameSpeed() ~= 0 then
 		SSM:UpdateSurvivorsDailyRoutine();
 	end
 end
 
 function SuperSurvivorsOnEveryHour()
-	if SSM ~= nil and getGameSpeed() ~= 0 then
+	if SSM  and getGameSpeed() ~= 0 then
 		SSM:UpdateSurvivorsHourlyRoutine();
 	end
 end
 
 function SuperSurvivorsOnEvery10min()
-	if SSM ~= nil and getGameSpeed() ~= 0 then
+	if SSM  and getGameSpeed() ~= 0 then
 		SSM:UpdateSurvivors10MinRoutine();
 	end
 end
 
 function SuperSurvivorGroupsOnEveryMin()
-	if SSGM ~= nil and getGameSpeed() ~= 0 then
+	if SSGM and getGameSpeed() ~= 0 then
 		SSGM:UpdateSurvivorGroups1MinRoutine();
 	end
 end
