@@ -2056,29 +2056,30 @@ function SuperSurvivor:NPC_CheckIfCanReadyGun()
 	return false;
 end
 
+-- Never Used
 -- Function List for checking specific scenarios of NPC tasks
 -- This one is for if the NPC is trying to get out or inside a building but can not
 -- This **should** be the complete list of tasks that would get an npc stuck
-function SuperSurvivor:NPC_TaskCheck_EnterLeaveBuilding()
-	if
-		(self:getTaskManager():getCurrentTask() ~= "Enter New Building") and -- AttemptEntryIntoBuildingTask
-		(
-			(self:getTaskManager():getCurrentTask() == "Find New Building") or -- FindUnlootedBuildingTask
-			(self:getTaskManager():getCurrentTask() == "Wander In Area") or
-			(self:getTaskManager():getCurrentTask() == "Wander In Base") or
-			(self:getTaskManager():getCurrentTask() == "Loot Category") or
-			(self:getTaskManager():getCurrentTask() == "Find Building") or
-			(self:getTaskManager():getCurrentTask() == "Threaten") or
-			(self:getTaskManager():getCurrentTask() == "Attack") or
-			(self:getTaskManager():getCurrentTask() == "Pursue") or
-			(self:getTaskManager():getCurrentTask() == "Flee")
-		)
-	then
-		return true;
-	else
-		return false;
-	end
-end
+-- function SuperSurvivor:NPC_TaskCheck_EnterLeaveBuilding()
+-- 	if
+-- 		(self:getTaskManager():getCurrentTask() ~= "Enter New Building") and -- AttemptEntryIntoBuildingTask
+-- 		(
+-- 			(self:getTaskManager():getCurrentTask() == "Find New Building") or -- FindUnlootedBuildingTask
+-- 			(self:getTaskManager():getCurrentTask() == "Wander In Area") or
+-- 			(self:getTaskManager():getCurrentTask() == "Wander In Base") or
+-- 			(self:getTaskManager():getCurrentTask() == "Loot Category") or
+-- 			(self:getTaskManager():getCurrentTask() == "Find Building") or
+-- 			(self:getTaskManager():getCurrentTask() == "Threaten") or
+-- 			(self:getTaskManager():getCurrentTask() == "Attack") or
+-- 			(self:getTaskManager():getCurrentTask() == "Pursue") or
+-- 			(self:getTaskManager():getCurrentTask() == "Flee")
+-- 		)
+-- 	then
+-- 		return true;
+-- 	else
+-- 		return false;
+-- 	end
+-- end
 
 -- Individual task checklist. This list is used to help for AI-manager lua to not be a clutter
 function SuperSurvivor:Task_IsAttack()

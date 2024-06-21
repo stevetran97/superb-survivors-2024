@@ -24,6 +24,7 @@ Orders = {
     "Relax",
     "Return To Base",
     "Pile Corpses",
+    "Sentry",
 };
 
 OrderDesc = {
@@ -48,6 +49,7 @@ OrderDesc = {
     ["Dismiss"] = getText("ContextMenu_SS_OrderDesc_Dismiss"),
     ["Relax"] = getText("ContextMenu_SS_OrderDesc_Relax"),
     ["Pile Corpses"] = getText("ContextMenu_SS_OrderDesc_Pile_Corpses"),
+    ["Sentry"] = getText("ContextMenu_SS_OrderDesc_Sentry"),
     ["Return To Base"] = getText("ContextMenu_SS_OrderDesc_Return_To_Base"),
     ["Stop"] = getText("ContextMenu_SS_OrderDesc_Stop")
 };
@@ -74,6 +76,7 @@ OrderDisplayName = {
     ["Dismiss"] = getText("ContextMenu_SS_OrderDisplayName_Dismiss"),
     ["Relax"] = getText("ContextMenu_SS_OrderDisplayName_Relax"),
     ["Pile Corpses"] = getText("ContextMenu_SS_OrderDisplayName_Pile_Corpses"),
+    ["Sentry"] = getText("ContextMenu_SS_OrderDisplayName_Sentry"),
     ["Return To Base"] = getText("ContextMenu_SS_OrderDisplayName_Return_To_Base"),
     ["Stop"] = getText("ContextMenu_SS_OrderDisplayName_Stop")
 };

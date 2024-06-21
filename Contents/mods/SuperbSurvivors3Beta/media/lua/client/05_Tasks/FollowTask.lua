@@ -276,9 +276,7 @@ function FollowTask:update()
 					ISTimedActionQueue.add(ISClimbOverFence:new(self.parent.player, hoppable))
 				end
 				return
-			end
-
-			return			
+			end		
 		end
 		CreateLogLine("FollowTask", isLocalLoggingEnabled, "no rope square");
 	end

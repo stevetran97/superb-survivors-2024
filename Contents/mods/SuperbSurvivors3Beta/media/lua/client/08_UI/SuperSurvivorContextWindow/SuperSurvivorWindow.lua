@@ -949,6 +949,7 @@ end
 function addOrdersToContextMenu(context_menu, memberSS)
     context_menu:addOption("Stop", nil, function() UIUtil_GiveOrder(19, memberSS) end)
     context_menu:addOption("Follow", nil, function() UIUtil_GiveOrder(6, memberSS) end)
+    context_menu:addOption("Sentry", nil, function() UIUtil_GiveOrder(24, memberSS) end)
     context_menu:addOption("Guard", nil, function() UIUtil_GiveOrder(13, memberSS) end)
     context_menu:addOption("Barricade", nil, function() UIUtil_GiveOrder(1, memberSS) end)
 

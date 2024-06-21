@@ -327,7 +327,12 @@ function SurvivorOrder(test, player, order, orderParam)
 				else
 					ASuperSurvivor:Speak(Get_SS_DialogueSpeech("IDontKnowHowDoctor"))
 				end
-			end
+			end,
+			["Sentry"] = function()
+				ASuperSurvivor:setGroupRole(Get_SS_JobText("Guard"))
+				local sentrySquare = getSpecificPlayer(0):getCurrentSquare()
+				TaskMangerIn:AddToTop(SentryTask:new(ASuperSurvivor, sentrySquare))
+			end,
 		}
 
 		ASuperSurvivor:Speak(Get_SS_DialogueSpeech("Roger"))
