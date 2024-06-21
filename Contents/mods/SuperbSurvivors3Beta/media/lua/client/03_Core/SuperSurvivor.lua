@@ -2746,10 +2746,10 @@ function SuperSurvivor:updateSurvivorStatus()
 	-- Batmane TODO - Most of the task manager does not need to update 1-3 times every second unless the ai is attacking.
 	-- WIP - Cows: Check if player(0) exists, because during respawn after death, player actually does not exist!
 	if 
-		-- getSpecificPlayer(0) and
-		-- not getSpecificPlayer(0):isAsleep() and
+		getSpecificPlayer(0) and
+		not getSpecificPlayer(0):isAsleep() and
 		self:getGroupRole() ~= "Random Solo" -- WIP - Cows: ... "Random Solo" apparently doesn't get tasks updates...
-		-- and getSpecificPlayer(0):isAlive() -- WIP - Cows: Added a check isPlayerAlive, otherwise errors will be thrown here.
+		and getSpecificPlayer(0):isAlive() -- WIP - Cows: Added a check isPlayerAlive, otherwise errors will be thrown here.
 	then
 		-- WIP - Cows: There is actually an error here, and it will run often if the player dies.
 		-- CreateLogLine("SuperSurvivorBatmane", true, tostring(self:getName()) .. " group role is " ..tostring(self:getGroupRole()));
