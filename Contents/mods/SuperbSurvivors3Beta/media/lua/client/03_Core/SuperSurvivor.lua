@@ -1819,8 +1819,7 @@ function SuperSurvivor:walkTo(square)
 
 	local parent
 	if instanceof(square, "IsoObject") then
-		CreateLogLine("Walk to", true, tostring(self:getName()) .. " has target walk Square is an object ...");
-
+		-- CreateLogLine("Walk to", true, tostring(self:getName()) .. " has target walk Square is an object ...");
 		parent = square:getSquare()
 	else
 		parent = square
@@ -1848,14 +1847,13 @@ function SuperSurvivor:walkTo(square)
 			-- local building = door:getOppositeSquare():getBuilding() -- Never gets used
 			self:NPC_ManageLockedDoors() -- This function will be sure ^ doesn't make the npc stuck in these cases
 		end
-		if (self.StuckDoorTicks < 7) then
+		if self.StuckDoorTicks < 7 then
 			self:TrackWalkToAttempt(square)
 			self:WalkToPoint(adjacent:getX(), adjacent:getY(), adjacent:getZ())
 			return
 		end
 		CreateLogLine("Walk to", true, tostring(self:getName()) .. " Error: could not walkToPoint ...");
 	end
-	--]]
 end
 
 function SuperSurvivor:walkTowards(x, y, z)
@@ -2684,7 +2682,7 @@ function SuperSurvivor:updateSurvivorStatus()
 	end
 
 	-- Everything in here runs 1 per second if FPS is 60 no matter if UpdateTicksDelay has been intensified
-	if self.Reducer % (globalBaseUpdateDelayTicks) 
+	if self.Reducer % (globalBaseUpdateDelayTicks) == 0 
 	then 
 		-- Handle Vision, Enemy Counting, Remembering Enemy Target, etc.
 		self:DoVisionV3() -- Only allow Vision to run once per second at 60 fps
@@ -2692,7 +2690,7 @@ function SuperSurvivor:updateSurvivorStatus()
 	end
 
 	-- Only runs once every 2 seconds at 60 FPS no matter if UpdateTicksDelay has been intensified
-	if self.Reducer % (2 * globalBaseUpdateDelayTicks)
+	if self.Reducer % (2 * globalBaseUpdateDelayTicks) == 0
 	then
 		-- Fire Immunity - This can run every few seconds or so
 		-- Disable this because it protects raiders from molotov

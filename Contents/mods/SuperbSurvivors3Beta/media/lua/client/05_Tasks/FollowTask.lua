@@ -246,12 +246,9 @@ function FollowTask:update()
 		if ropeSquare then
 			ISTimedActionQueue.add(ISWalkToTimedAction:new(self.parent.player, ropeSquare))
 			ISTimedActionQueue.add(ISClimbSheetRopeAction:new(self.parent.player, false))
-			-- self.parent:Wait(4)
-		else
-			CreateLogLine("FollowTask", isLocalLoggingEnabled, "no rope square");
+			return
 		end
 
-		return
 	-- Going Down
 	elseif self.FollowChar:getZ() < self.parent.player:getZ() and 
 		self.parent:isInSameBuilding(self.FollowChar) == false 

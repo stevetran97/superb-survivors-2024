@@ -77,7 +77,10 @@ function AIEssentialTasks(TaskMangerIn)
 	if currentNPC:HasInjury() and 
 		currentNPC.EnemiesOnMe > 0
 	then
-		if TaskMangerIn:getCurrentTask() ~= "Flee" then 
+		if TaskMangerIn:getCurrentTask() ~= "Flee" 
+			-- or currentNPC.player:getPath2() -- If Player does not currently have movement, add new flee task to see if the random square gets them moving.
+			-- or currentNPC.Reducer % (globalBaseUpdateDelayTicks * 2) == 0 
+		then 
 			currentNPC:Speak("Cover me! I'm hurt and I need to get away!");
 			TaskMangerIn:AddToTop(FleeTask:new(currentNPC, true, startingDangerRange + 4));
 		end
@@ -90,7 +93,8 @@ function AIEssentialTasks(TaskMangerIn)
 		currentNPC.EnemiesOnMe >= 2 -- 2 enemies in grabbing distance -- more the npcBravery # of zombies in fight radius 
 	then
 		CreateLogLine("SuperSurvivor", isFleeCallLogged, tostring(currentNPC:getName()) .. " needs to flee because they are afraid");
-		if TaskMangerIn:getCurrentTask() ~= "Flee" then 
+		if TaskMangerIn:getCurrentTask() ~= "Flee" 
+		then 
 			currentNPC:Speak("This is too much! Let's get out of here!");
 			TaskMangerIn:AddToTop(FleeTask:new(currentNPC, true, startingDangerRange));
 		end
@@ -102,7 +106,8 @@ function AIEssentialTasks(TaskMangerIn)
 		currentNPC:usingGun() and
 		currentNPC.EnemiesOnMe >= 2 -- Let see how walking away from 2 to 1 zombie works - Batmane
 	then
-		if TaskMangerIn:getCurrentTask() ~= "Flee" then 
+		if TaskMangerIn:getCurrentTask() ~= "Flee" 
+		then 
 			currentNPC:Speak("Cover me! I need space to use my gun!");
 			if currentNPC.EnemiesOnMe > 2 then -- This is not ideal, Ideally they should run if theres a tonne of enemies mildly close
 				-- Run away

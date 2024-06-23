@@ -62,6 +62,10 @@ function FleeTask:isValid()
 	end
 end
 
+
+-- Function to get flee path.
+-- 
+
 local angleCheckRange = 360
 local angleDivisions = 4 -- increments of 90deg
 local angleCheckIncrement = angleCheckRange / angleDivisions
